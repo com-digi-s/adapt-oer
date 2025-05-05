@@ -77,9 +77,6 @@
 - Uses **Flask routes to generate, bundle, and deliver quizzes as SCORM packages**.
 - Uses `transpile_bson.py` to **convert MongoDB BSON data into JSON-compatible format**.
 
-📌 **Design Pattern Used**: **Decorator Pattern**
-- Quiz data is **transformed, filtered, and enriched** before export.
-
 ---
 
 ## **Dependencies**
@@ -109,5 +106,5 @@
 
 ---
 
-## **📌 Summary**
+## **Summary**
 This project is a **SCORM-compatible e-learning content manager** that integrates **MongoDB, Flask-Admin, and Flask-Login** to provide an **admin dashboard for managing quizzes, courses, and media assets**. It follows **best practices in design patterns** to ensure scalability, modularity, and efficiency.
