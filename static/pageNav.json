@@ -1,0 +1,139 @@
+{
+  "_component": "pageNav",
+  "_classes": "",
+  "_isOptional": false,
+  "_isAvailable": true,
+  "_isHidden": false,
+  "_isVisible": true,
+  "_isResetOnRevisit": "false",
+  "_ariaLevel": 0,
+  "_disableAccessibilityState": false,
+  "title": "Weiter zur",
+  "displayTitle": "",
+  "body": "",
+  "_id": "7fc1cceb-a18c-45e4-a4cc-f39622d49470",
+  "_parentId": "63f8d648c0b812002aaeccfa",
+  "_type": "component",
+  "_layout": "right",
+  "_onScreen": {
+    "_isEnabled": false,
+    "_classes": "",
+    "_percentInviewVertical": 50
+  },
+  "_pageLevelProgress": {
+    "_isEnabled": true,
+    "_isCompletionIndicatorEnabled": false
+  },
+  "_tutor": {
+    "_isInherited": true,
+    "_type": "notify",
+    "_classes": "",
+    "_hasNotifyBottomButton": false,
+    "_button": {
+      "text": "{{_globals._extensions._tutor.hideFeedback}}",
+      "ariaLabel": "{{_globals._extensions._tutor.hideFeedback}}"
+    }
+  },
+  "_additionalResources": {
+    "_isEnabled": false,
+    "_showOnModelCompleted": false,
+    "_appendTo": "bottom",
+    "text": "",
+    "_items": [],
+    "_classes": ""
+  },
+  "instruction": "<script>var mutationCallback=function(mutationsList,observer){for(var mutation of mutationsList){if(mutation.type==='childList'){var wrapper=document.getElementById('wrapper');if(wrapper&&(wrapper.children.length>0||wrapper.querySelector('.page'))){observer.disconnect();setupIntersectionObserver();break}}}};function setupIntersectionObserver(){var elements=document.querySelectorAll('.component');if(elements.length>=2){var targetElement=elements[elements.length-2];var intersectionCallback=function(entries){entries.forEach(function(entry){var arrowElement=document.querySelector('.abs__btn-arrow.is-right');if(entry.isIntersecting){arrowElement.classList.add('last-next')}else{arrowElement.classList.remove('last-next')}})};var observer=new IntersectionObserver(intersectionCallback);observer.observe(targetElement)}}var observer=new MutationObserver(mutationCallback);observer.observe(document.getElementById('wrapper'),{childList:true,subtree:true});</script>",
+  "_loopStyle": "allPages",
+  "_shouldSkipOptionalPages": false,
+  "_buttons": {
+    "_returnToPreviousLocation": {
+      "_isEnabled": false,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "Return",
+      "ariaLabel": "Return to previous location",
+      "_showTooltip": false,
+      "tooltip": "{{displayTitle}}"
+    },
+    "_previous": {
+      "_isEnabled": false,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "Modulübersicht",
+      "ariaLabel": "Modulübersicht",
+      "_showTooltip": false,
+      "tooltip": "{{displayTitle}}",
+      "_customRouteId": "#"
+    },
+    "_root": {
+      "_isEnabled": true,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "Kurs\u00fcbersicht",
+      "ariaLabel": "Go to main menu",
+      "_showTooltip": false,
+      "tooltip": "{{displayTitle}}",
+      "_customRouteId": ""
+    },
+    "_up": {
+      "_isEnabled": false,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "Modulübersicht",
+      "ariaLabel": "Back to menu",
+      "_showTooltip": true,
+      "tooltip": "{{displayTitle}}",
+      "_customRouteId": "#"
+    },
+    "_next": {
+      "_isEnabled": true,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": true,
+      "text": "<b>nächste Lerneinheit:</b><br>{{displayTitle}}",
+      "ariaLabel": "Next Page",
+      "_showTooltip": false,
+      "tooltip": "{{displayTitle}}",
+      "_customRouteId": ""
+    },
+    "_sibling": {
+      "_isEnabled": false,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "{{inc index}}",
+      "ariaLabel": "Page {{inc index}}",
+      "_showTooltip": false,
+      "tooltip": "{{displayTitle}}",
+      "_customRouteId": ""
+    },
+    "_close": {
+      "_isEnabled": false,
+      "_lockUntilPageComplete": false,
+      "_order": 0,
+      "_classes": "",
+      "_iconClass": "",
+      "_alignIconRight": false,
+      "text": "Schluss f\u00fcr heute",
+      "ariaLabel": "Close window",
+      "_showTooltip": false,
+      "tooltip": "Close window"
+    }
+  }
+}

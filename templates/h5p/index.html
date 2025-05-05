@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5P Preview</title>
+</head>
+<body>
+    <div id='h5p-container'></div>
+
+    <script type="text/javascript" src="/static/h5p/h5p-standalone/dist/main.bundle.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const el = document.getElementById('h5p-container');
+
+            // Retrieve the h5p folder path from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const h5pFolderPath = "{{ h5pPath }}";
+
+            const options = {
+                h5pJsonPath:  h5pFolderPath,
+                frameJs: '/static/h5p/h5p-standalone/dist/frame.bundle.js',
+                frameCss: '/static/h5p/h5p-standalone/dist/h5p.css',
+            }
+            new H5PStandalone.H5P(el, options);
+        });
+    </script>
+</body>
+</html>

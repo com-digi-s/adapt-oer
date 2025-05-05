@@ -1,0 +1,25 @@
+.container {
+  max-width: 100% !important;
+}
+
+.icon-ok-circle {
+  color: green;
+}
+
+.icon-minus-sign {
+  color: darkred;
+}
+
+.glossary-term {
+    text-decoration: underline;
+    cursor: help;
+}
+
+td > .matching > div, td > .matching > ul > div {
+    height: 15rem;
+}
+
+ul {
+    padding: 0rem;
+    list-style: none;
+}
