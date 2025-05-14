@@ -18,14 +18,20 @@ def add_files_to_zip(zip_file, base_dir, prefix=""):
             arcname = os.path.join(prefix, os.path.relpath(file_path, base_dir))
             zip_file.write(file_path, arcname, ZIP_DEFLATED)
 
-def add_zip_to_zip(zip_file, path, arcname=None):
+def add_zip_to_zip(zip_file, path, flat=False, arcname=None):
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
+            
+            if flat is True:
+                name = filename
+            else:
+                name = filepath
+            
             if arcname: 
-                zip_file.write(filepath, arcname=os.path.join(arcname, filename))
+                zip_file.write(filepath, name, arcname=os.path.join(arcname, filename))
             else: 
-                zip_file.write(filepath)
+                zip_file.write(filepath, name)
 
 def number_to_letter(n):
     return chr(n - 1 + ord('A'))

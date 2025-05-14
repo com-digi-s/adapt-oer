@@ -680,51 +680,76 @@ class ContentsView(MyModelView, metaclass=Meta):
 
 	@action('export_unit_in_course', 'Lerneinheit mit Kurs exportieren', 'Der Kurs wird mit Startpunkt auf die ausgewählte Lerneinheit exportiert.')
 	def export_unit_with_course_context(self, ids):
-			try:
-					if len(ids) != 1:
-							flash("Bitte genau eine Lerneinheit auswählen.", "error")
-							return
+		def get_zip_for_contentobject(id):
+			unit_id = ObjectId(id)
+			unit = db.contentobjects.find_one({'_id': unit_id})
+			course_id = unit['_courseId']
+			course_dir = os.path.join(app.config['BUILDS_DIR'], str(course_id), 'build')
 
-					unit_id = ObjectId(ids[0])
-					unit = db.contentobjects.find_one({'_id': unit_id})
-					course_id = unit['_courseId']
-					course_dir = os.path.join(app.config['BUILDS_DIR'], str(course_id), 'build')
+			if not os.path.exists(course_dir):
+				flash("Build-Verzeichnis nicht gefunden.", "error")
+				return
 
-					if not os.path.exists(course_dir):
-							flash("Build-Verzeichnis nicht gefunden.", "error")
-							return
+			# 1. Load course.json
+			course_json_path = os.path.join(course_dir, 'course', 'en', 'course.json')
+			with open(course_json_path, 'r', encoding='utf-8') as f:
+				course_data = json.load(f)
 
-					# 1. Load course.json
-					course_json_path = os.path.join(course_dir, 'course', 'en', 'course.json')
-					with open(course_json_path, 'r', encoding='utf-8') as f:
-							course_data = json.load(f)
+			# 2. Inject _start section
+			course_data['_start'] = {
+				"_isEnabled": True,
+				"_startIds": [{"_id": str(unit_id)}],
+				"_force": True,
+				"_isMenuDisabled": True
+			}
 
-					# 2. Inject _start section
-					course_data['_start'] = {
-							"_isEnabled": True,
-							"_startIds": [{"_id": str(unit_id)}],
-							"_force": True,
-							"_isMenuDisabled": True
-					}
+			# 3. Write modified course.json into a temporary copy of the build
+			tmp_build_dir = tempfile.mkdtemp()
+			shutil.copytree(course_dir, tmp_build_dir, dirs_exist_ok=True)
 
-					# 3. Write modified course.json into a temporary copy of the build
-					tmp_build_dir = tempfile.mkdtemp()
-					shutil.copytree(course_dir, tmp_build_dir, dirs_exist_ok=True)
+			with open(os.path.join(tmp_build_dir, 'course', 'en', 'course.json'), 'w', encoding='utf-8') as f:
+				json.dump(course_data, f, indent=2, ensure_ascii=False)
 
-					with open(os.path.join(tmp_build_dir, 'course', 'en', 'course.json'), 'w', encoding='utf-8') as f:
-							json.dump(course_data, f, indent=2, ensure_ascii=False)
+			# 4. Zip the build folder
+			zip_buffer = BytesIO()
 
-					# 4. Zip the build folder
-					zip_buffer = BytesIO()
-					with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
-							add_files_to_zip(zip_file, tmp_build_dir)
+			with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
+				add_files_to_zip(zip_file, tmp_build_dir)
 
-					shutil.rmtree(tmp_build_dir)
-					zip_buffer.seek(0)
-					return send_file(zip_buffer, as_attachment=True, download_name=f"{unit['title']}_kurs_export.zip")
+			shutil.rmtree(tmp_build_dir)
+			zip_buffer.seek(0)
 
-			except Exception as e:
-					flash(f"Export fehlgeschlagen: {e}", "error")
+			return (zip_buffer, f"{unit['title']}_kurs_export.zip")
+
+		try:
+			if len(ids) < 1:
+				flash("Bitte mindestens eine Lerneinheit auswählen.", "error")
+				return
+			if len(ids) == 1:
+				zip_buffer, download_name = get_zip_for_contentobject((ids[0]))
+				return send_file(zip_buffer, as_attachment=True, download_name=download_name)
+
+			if len(ids) > 1:
+				dir_of_zips = tempfile.mkdtemp()
+
+				for n, id in enumerate(ids):
+					zip_buffer, download_name = get_zip_for_contentobject(id)
+
+					with open(os.path.join(dir_of_zips, f'{n:02d}_' + download_name), 'wb') as zipfile:
+						zipfile.write(zip_buffer.getbuffer())
+
+				zip_buffer = BytesIO()
+
+				with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
+					add_zip_to_zip(zip_file, dir_of_zips, flat=True)
+
+				zip_buffer.seek(0)
+				shutil.rmtree(dir_of_zips)
+
+				return send_file(zip_buffer, as_attachment=True, download_name='lerneineiten.zip')
+
+		except Exception as e:
+				flash(f"Export fehlgeschlagen: {e}", "error")
 
 	@expose("/preview", methods=("GET",))
 	def preview(*args, **kwargs):
