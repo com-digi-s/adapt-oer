@@ -1,0 +1,41 @@
+{
+    "taskDescription": "",
+    "checkAnswer": "Pr\u00fcfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "L\u00f6sung anzeigen",
+    "behaviour": {
+        "enableRetry": true,
+        "enableSolutionsButton": true,
+        "instantFeedback": false,
+        "enableCheckButton": true
+    },
+    "textField": "Reporting Bias: *Eine Nachrichtenorganisation berichtet nur \u00fcber positive Nachrichten \u00fcber einen von ihr favorisierten politischen Kandidaten, w\u00e4hrend sie negative Nachrichten \u00fcber denselben Kandidaten ignoriert.*\nAutomation Bias: *Ein Arzt folgt den Diagnoseempfehlungen eines KI-gesteuerten medizinischen Tools, auch wenn er Grund hat, die Diagnose anzuzweifeln.*\nSelection Bias: *Ein Rekrutierungstool, das nur auf Lebensl\u00e4ufe von Kandidaten von Elite-Universit\u00e4ten trainiert wird.*\nGroup Attribution Bias: *Ein KI-System zur Aufdeckung von Betrug, das Personen aufgrund ihrer Zugeh\u00f6rigkeit zu bestimmten Gruppen ins Visier nimmt, selbst wenn keine Beweise f\u00fcr betr\u00fcgerische Aktivit\u00e4ten vorliegen.*\nImplicit Bias: *Ein Personalverantwortlicher, der unbewusst Kandidaten bevorzugt, die derselben Herkunft oder demselben Geschlecht angeh\u00f6ren wie er selbst, auch wenn er dies nicht bewusst beabsichtigt.*\n",
+    "overallFeedback": [
+        {
+            "from": 0,
+            "to": 100,
+            "feedback": "Ergebnis: @score von @total."
+        }
+    ],
+    "dropZoneIndex": "Drop Zone @index",
+    "empty": "Drop Zone @index ist leer.",
+    "contains": "Drop Zone @index enth\u00e4lt draggable @draggable.",
+    "tipLabel": "Tipp anzeigen",
+    "correctText": "Korrekt!",
+    "incorrectText": "Falsch!",
+    "resetDropTitle": "Abwurf zur\u00fccksetzen",
+    "resetDropDescription": "Sind Sie sicher, dass Sie diesen Abwurfbereich zur\u00fccksetzen wollen?",
+    "grabbed": "Draggable ist gegrabbt.",
+    "cancelledDragging": "Das Ziehen wurde abgebrochen.",
+    "correctAnswer": "Richtige Antwort:",
+    "feedbackHeader": "Feedback",
+    "scoreBarLabel": "Sie haben :num von :total Punkten",
+    "media": {
+        "disableImageZooming": false
+    },
+    "submitAnswer": "Einreichen",
+    "ariaDraggableIndex": "@index von @count draggables.",
+    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+}

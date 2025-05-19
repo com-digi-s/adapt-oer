@@ -1,0 +1,40 @@
+{
+    "taskDescription": "",
+    "checkAnswer": "Prüfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "Lösung anzeigen",
+    "behaviour": {
+        "enableRetry": true,
+        "enableSolutionsButton": true,
+        "instantFeedback": false,
+        "enableCheckButton": true
+    },
+    "textField": "",
+    "overallFeedback": [{
+            "from": 0,
+            "to": 100,
+            "feedback": "Ergebnis: @score von @total."
+        }
+    ],
+    "dropZoneIndex": "Drop Zone @index",
+    "empty": "Drop Zone @index ist leer.",
+    "contains": "Drop Zone @index enthält draggable @draggable.",
+    "tipLabel": "Tipp anzeigen",
+    "correctText": "Korrekt!",
+    "incorrectText": "Falsch!",
+    "resetDropTitle": "Abwurf zurücksetzen",
+    "resetDropDescription": "Sind Sie sicher, dass Sie diesen Abwurfbereich zurücksetzen wollen?",
+    "grabbed": "Draggable ist gegrabbt.",
+    "cancelledDragging": "Das Ziehen wurde abgebrochen.",
+    "correctAnswer": "Richtige Antwort:",
+    "feedbackHeader": "Feedback",
+    "scoreBarLabel": "Sie haben :num von :total Punkten",
+    "media": {
+        "disableImageZooming": false
+    },
+    "submitAnswer": "Einreichen",
+    "ariaDraggableIndex": "@index von @count draggables.",
+    "a11yCheck": "Überprüfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+    "a11yShowSolution": "Zeigen Sie die Lösung an. Die Aufgabe wird mit der richtigen Lösung markiert.",
+    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zurück und beginne die Aufgabe erneut."
+}

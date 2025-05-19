@@ -1,0 +1,53 @@
+{
+        "answers": [],
+        "UI": {
+            "showSolutionButton": "Show solution",
+            "tryAgainButton": "Retry",
+            "checkAnswerButton": "Check",
+            "tipsLabel": "Show tip",
+            "scoreBarLabel": "You got :num out of :total points",
+            "tipAvailable": "Tip available",
+            "feedbackAvailable": "Feedback available",
+            "readFeedback": "Read feedback",
+            "wrongAnswer": "Wrong answer",
+            "correctAnswer": "Correct answer",
+            "shouldCheck": "Should have been checked",
+            "shouldNotCheck": "Should not have been checked",
+            "noInput": "Please answer before viewing the solution",
+            "submitAnswerButton": "Submit",
+            "a11yCheck": "Check the answers. The responses will be marked as correct, incorrect, or unanswered.",
+            "a11yShowSolution": "Show the solution. The task will be marked with its correct solution.",
+            "a11yRetry": "Retry the task. Reset all responses and start the task over again."
+        },
+        "behaviour": {
+            "enableRetry": True,
+            "enableSolutionsButton": True,
+            "singlePoint": True,
+            "randomAnswers": True,
+            "showSolutionsRequiresInput": True,
+            "type": "auto",
+            "confirmCheckDialog": False,
+            "confirmRetryDialog": False,
+            "autoCheck": False,
+            "passPercentage": 100,
+            "showScorePoints": True,
+            "enableCheckButton": True
+        },
+        "confirmCheck": {
+            "header": "Finish ?",
+            "body": "Are you sure you wish to finish ?",
+            "cancelLabel": "Cancel",
+            "confirmLabel": "Finish"
+        },
+        "confirmRetry": {
+            "header": "Retry ?",
+            "body": "Are you sure you wish to retry ?",
+            "cancelLabel": "Cancel",
+            "confirmLabel": "Confirm"
+        },
+        "overallFeedback": [
+            {"from": 0, "to": 0, "feedback": "Wrong"},
+            {"from": 1, "to": 99, "feedback": "Almost!"},
+            {"from": 100, "to": 100, "feedback": "Correct!"}
+        ]
+    }

@@ -1,0 +1,130 @@
+{
+    "progressType": "dots",
+    "passPercentage": 50,
+    "questions": [{
+            "params": {
+                "answers": [],
+                "UI": {
+                    "showSolutionButton": "Lösung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Prüfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verfügbar",
+                    "feedbackAvailable": "Feedback verfügbar",
+                    "readFeedback": "Rückmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte geprüft worden sein",
+                    "shouldNotCheck": "Sollte nicht geprüft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die Lösung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "Überprüfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die Lösung an. Die Aufgabe wird mit der richtigen Lösung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zurück und beginne die Aufgabe erneut."
+                },
+                "question": "",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben möchten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Bestätigen"
+                },
+                "overallFeedback": [{
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    }, {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    }, {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        }
+    ],
+    "introPage": {
+        "showIntroPage": false,
+        "startButtonText": "Quiz starten",
+        "introduction": ""
+    },
+    "texts": {
+        "prevButton": "Vorherige Frage",
+        "nextButton": "Nächste Frage",
+        "finishButton": "Beenden",
+        "textualProgress": "Frage: @current von @total",
+        "questionLabel": "Frage",
+        "jumpToQuestion": "Springe zu Frage %d",
+        "readSpeakerProgress": "Frage @current von @total",
+        "unansweredText": "Unanswered",
+        "answeredText": "Beantwortet",
+        "currentQuestionText": "Aktuelle Frage",
+        "submitButton": "Absenden",
+        "navigationLabel": "Fragen"
+    },
+    "endGame": {
+        "showResultPage": true,
+        "solutionButtonText": "Lösung anzeigen",
+        "finishButtonText": "Beenden",
+        "showAnimations": false,
+        "überspringbar": false,
+        "skipButtonText": "Video überspringen",
+        "message": "Ihr Ergebnis:",
+        "retryButtonText": "Wiederholen",
+        "noResultMessage": "Beendet",
+        "overallFeedback": [{
+                "from": 0,
+                "to": 100,
+                "feedback": "Du hast @score von @total Punkten erreicht."
+            }
+        ],
+        "oldFeedback": {
+            "successGreeting": "Herzlichen Glückwunsch!",
+            "successComment": "Das hast du sehr gut gemacht!",
+            "failGreeting": "Oh, nein!",
+            "failComment": "Das hat nicht so gut geklappt."
+        },
+        "showSolutionButton": true,
+        "showRetryButton": true,
+        "scoreBarLabel": "Du hast @finals von @totals Punkten erreicht.",
+        "submitButtonText": "Abgeben"
+    },
+    "override": {
+        "showSolutionButton": "off",
+        "retryButton": "off",
+        "checkButton": true
+    },
+    "disableBackwardsNavigation": false,
+    "randomQuestions": false
+}

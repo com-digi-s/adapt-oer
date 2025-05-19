@@ -1,0 +1,1078 @@
+{
+    "infoWall": {
+        "propertiesGroup": {
+            "properties": [
+                {
+                    "label": "Name",
+                    "showLabel": false,
+                    "searchInProperty": false,
+                    "styling": {
+                        "bold": true,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "General information",
+                    "showLabel": false,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                }
+            ]
+        },
+        "panels": [
+            {
+                "panelTitle": "Matching",
+                "entries": [
+                    "Can you identify some of the key facts and figures associated with the Adapt Open Source project?"
+                ],
+                "keywords": "Can you identify some of the key facts and figures associated with the Adapt Open Source project?"
+            },
+            {
+                "panelTitle": "Adding titles to icons",
+                "entries": [
+                    "What JSON file would you need to edit in order to add a title to an icon in the navigation bar?"
+                ],
+                "keywords": "What JSON file would you need to edit in order to add a title to an icon in the navigation bar?"
+            },
+            {
+                "panelTitle": "Slider",
+                "entries": [
+                    "Working memory is thought to be responsible for our ability to temporarily hold and manipulate information, but according to a paper by Miller (1956) what \u2018magic number\u2019 describes its capacity?"
+                ],
+                "keywords": "Working memory is thought to be responsible for our ability to temporarily hold and manipulate information, but according to a paper by Miller (1956) what \u2018magic number\u2019 describes its capacity?"
+            },
+            {
+                "panelTitle": "Control the scroll",
+                "entries": [
+                    "The <strong>Trickle</strong> extension makes it possible to control how the learner scrolls down the page, but what elements of a page can it be applied to?"
+                ],
+                "keywords": "The <strong>Trickle</strong> extension makes it possible to control how the learner scrolls down the page, but what elements of a page can it be applied to?"
+            },
+            {
+                "panelTitle": "Do you know your plugins?",
+                "entries": [
+                    "Which of the following are types of Adapt plugins?"
+                ],
+                "keywords": "Which of the following are types of Adapt plugins?"
+            },
+            {
+                "panelTitle": "It\u2019s as simple as A, B, C",
+                "entries": [
+                    "Can you identify the missing word in the following sequence?<br>Article / ..... / Component."
+                ],
+                "keywords": "Can you identify the missing word in the following sequence?<br>Article / ..... / Component."
+            },
+            {
+                "panelTitle": "Multiple Choice Question",
+                "entries": [
+                    "In what year was the first recorded instance of a large scale assessment that consists solely of multiple choice questions?"
+                ],
+                "keywords": "In what year was the first recorded instance of a large scale assessment that consists solely of multiple choice questions?"
+            },
+            {
+                "panelTitle": "To scroll or not to scroll?",
+                "entries": [
+                    "Can you identify a few of the benefits that a vertical scrolling approach offers over the traditional back and next approach?"
+                ],
+                "keywords": "Can you identify a few of the benefits that a vertical scrolling approach offers over the traditional back and next approach?"
+            },
+            {
+                "panelTitle": "Text Input",
+                "entries": [
+                    "<p>Can you name one of the three companies that established Adapt as a community led Open Source project?</p>"
+                ],
+                "keywords": "<p>Can you name one of the three companies that established Adapt as a community led Open Source project?</p>"
+            },
+            {
+                "panelTitle": "Content objects",
+                "entries": [
+                    "What would you be referring to when describing a content object within Adapt?"
+                ],
+                "keywords": "What would you be referring to when describing a content object within Adapt?"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Datentransfer \u00fcber das Internet",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Internetprotokolle verstehen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Infrastruktur des Internets",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Antwort",
+                "entries": [
+                    "<p style=\"text-align:justify\">Warum war der Stop Motion Animationsfilm in Amerika nicht so popul\u00e4r wie in Europa?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Warum war der Stop Motion Animationsfilm in Amerika nicht so popul\u00e4r wie in Europa?</p>"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "3.1 Reflexionsfrage",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Eigene Definition",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen zum Video",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsaufgabe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Quiz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "\u00dcbung Submarine Cable Map",
+                "entries": [
+                    "<p style=\"text-align:justify\">Eine St\u00f6rung oder ein Ausfall der IT-Infrastruktur w\u00fcrde laut BMI zu \"<span class=\"markedContent\"><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\"><span>erheblichen Beeintr\u00e4chtigungen der \u00f6f</span></a><span><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\">fentlichen Sicherheit und Ordnung oder anderen dramatischen Folgen f\u00fchren</a>\"</span></span>. Durch die verh\u00e4ltnism\u00e4\u00dfig geringe Anbindung Deutschlands an das Netz der weltweiten Unterseekabel erscheinen diese hierzulande nicht im \u00f6ffentlichen Licht. In anderen L\u00e4ndern kommt es h\u00e4ufiger zu Vorf\u00e4llen.<br />&nbsp;</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Eine St\u00f6rung oder ein Ausfall der IT-Infrastruktur w\u00fcrde laut BMI zu \"<span class=\"markedContent\"><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\"><span>erheblichen Beeintr\u00e4chtigungen der \u00f6f</span></a><span><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\">fentlichen Sicherheit und Ordnung oder anderen dramatischen Folgen f\u00fchren</a>\"</span></span>. Durch die verh\u00e4ltnism\u00e4\u00dfig geringe Anbindung Deutschlands an das Netz der weltweiten Unterseekabel erscheinen diese hierzulande nicht im \u00f6ffentlichen Licht. In anderen L\u00e4ndern kommt es h\u00e4ufiger zu Vorf\u00e4llen.<br />&nbsp;</p>"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "eigenes Beispiel Daten",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsaufgabe",
+                "entries": [
+                    "<p style=\"text-align: justify;\">Ein Gedankenspiel: Stellen Sie sich vor, Sie h\u00e4tten unbegrenzte technische M\u00f6glichkeiten (auf heutigem Stand der Technik) zur Verf\u00fcgung sowie Zugang zu den Datenbanken und Datenfl\u00fcssen Ihrer Wahl.</p>"
+                ],
+                "keywords": "<p style=\"text-align: justify;\">Ein Gedankenspiel: Stellen Sie sich vor, Sie h\u00e4tten unbegrenzte technische M\u00f6glichkeiten (auf heutigem Stand der Technik) zur Verf\u00fcgung sowie Zugang zu den Datenbanken und Datenfl\u00fcssen Ihrer Wahl.</p>"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "3.1 Reflexionsfrage",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen zum Video",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Zuordnungsaufgabe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsaufgabe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "eigenes Beispiel Daten",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Anwendung von Big Data in Ihrer Disziplin",
+                "entries": [
+                    "<p>Stellen Sie sich vor, Sie h\u00e4tten ungebrenzte technische M\u00f6glichkeiten (auf heutigem Stand der Technik) zur Verf\u00fcgung sowie Zugang zu den Datenbanken und Datenfl\u00fcssen Ihrer Wahl.</p>"
+                ],
+                "keywords": "<p>Stellen Sie sich vor, Sie h\u00e4tten ungebrenzte technische M\u00f6glichkeiten (auf heutigem Stand der Technik) zur Verf\u00fcgung sowie Zugang zu den Datenbanken und Datenfl\u00fcssen Ihrer Wahl.</p>"
+            },
+            {
+                "panelTitle": "Eigene Definition",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Quiz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Rechercheaufgabe",
+                "entries": [
+                    "<p>Wenn Sie sich jetzt noch nicht ganz sicher sind, welchen Einfluss Datenfl\u00fcsse, deren Erzeugung und Big Data auf die Wissenschaft haben, haben Sie hier die M\u00f6glichkeit einer kurzen Internetrecherche. Nehmen Sie dazu gerne die f\u00fcr Sie passenden Suchoperatoren zu Hilfe.</p>"
+                ],
+                "keywords": "<p>Wenn Sie sich jetzt noch nicht ganz sicher sind, welchen Einfluss Datenfl\u00fcsse, deren Erzeugung und Big Data auf die Wissenschaft haben, haben Sie hier die M\u00f6glichkeit einer kurzen Internetrecherche. Nehmen Sie dazu gerne die f\u00fcr Sie passenden Suchoperatoren zu Hilfe.</p>"
+            },
+            {
+                "panelTitle": "\u00dcbung Submarine Cable Map",
+                "entries": [
+                    "<p style=\"text-align:justify\">Eine St\u00f6rung oder ein Ausfall der IT-Infrastruktur w\u00fcrde laut BMI zu \"<span class=\"markedContent\"><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\"><span>erheblichen Beeintr\u00e4chtigungen der \u00f6f</span></a><span><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\">fentlichen Sicherheit und Ordnung oder anderen dramatischen Folgen f\u00fchren</a>\"</span></span>. Durch die verh\u00e4ltnism\u00e4\u00dfig geringe Anbindung Deutschlands an das Netz der weltweiten Unterseekabel, erscheinen diese hierzulande nicht im \u00f6ffentlichen Licht. In anderen L\u00e4ndern kommt es h\u00e4ufiger Vorf\u00e4llen.<br />Eine Besch\u00e4ftigung mit der <a href=\"https://www.submarinecablemap.com/\">Submarine Cable Map</a> kann Aufschluss dar\u00fcber geben.</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Eine St\u00f6rung oder ein Ausfall der IT-Infrastruktur w\u00fcrde laut BMI zu \"<span class=\"markedContent\"><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\"><span>erheblichen Beeintr\u00e4chtigungen der \u00f6f</span></a><span><a href=\"https://www.bmi.bund.de/SharedDocs/downloads/DE/veroeffentlichungen/2021/09/cybersicherheitsstrategie-2021.pdf?__blob=publicationFile&amp;v=1\">fentlichen Sicherheit und Ordnung oder anderen dramatischen Folgen f\u00fchren</a>\"</span></span>. Durch die verh\u00e4ltnism\u00e4\u00dfig geringe Anbindung Deutschlands an das Netz der weltweiten Unterseekabel, erscheinen diese hierzulande nicht im \u00f6ffentlichen Licht. In anderen L\u00e4ndern kommt es h\u00e4ufiger Vorf\u00e4llen.<br />Eine Besch\u00e4ftigung mit der <a href=\"https://www.submarinecablemap.com/\">Submarine Cable Map</a> kann Aufschluss dar\u00fcber geben.</p>"
+            },
+            {
+                "panelTitle": "Drag\u00b4n\u00b4Drop \u00dcbung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was verbirgt sich hinter dem Eisberg-Modell des Internet?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Quiz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen an Daten stellen",
+                "entries": [
+                    "<p style=\"text-align:justify\">Formulieren Sie eine Forschungsfrage anhand dieser Zusammenstellung. Diese kann jeglicher Natur sein, soll sich jedoch auf die Daten des Sets berufen.<br />Z.B.:<br />\u2022 Unter der Pr\u00e4misse, dass Finnland ein gro\u00dfes, wenig bev\u00f6lkerungsreiches und naturverbundenes Land ist, warum ist der Grad der Digitalisierung dort so hoch?<br />\u2022 Hat der hohe Digitalisierungsgrad in den baltischen L\u00e4ndern etwas mit dem Fall der Sowjetunion zu tun?<br />\u2022 Warum korreliert der Ausbau der Breitbandnutzung mit den digitalen F\u00e4hikgkeiten der Bev\u00f6lkerung?<br />&nbsp;</p><p style=\"text-align:justify\">Bedenken Sie: Sie m\u00fcssen keine Antwort auf die Frage finden, sondern lediglich einen interessanten Sachverhalt beleuchten.</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Formulieren Sie eine Forschungsfrage anhand dieser Zusammenstellung. Diese kann jeglicher Natur sein, soll sich jedoch auf die Daten des Sets berufen.<br />Z.B.:<br />\u2022 Unter der Pr\u00e4misse, dass Finnland ein gro\u00dfes, wenig bev\u00f6lkerungsreiches und naturverbundenes Land ist, warum ist der Grad der Digitalisierung dort so hoch?<br />\u2022 Hat der hohe Digitalisierungsgrad in den baltischen L\u00e4ndern etwas mit dem Fall der Sowjetunion zu tun?<br />\u2022 Warum korreliert der Ausbau der Breitbandnutzung mit den digitalen F\u00e4hikgkeiten der Bev\u00f6lkerung?<br />&nbsp;</p><p style=\"text-align:justify\">Bedenken Sie: Sie m\u00fcssen keine Antwort auf die Frage finden, sondern lediglich einen interessanten Sachverhalt beleuchten.</p>"
+            },
+            {
+                "panelTitle": "Fazit",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Slider - Kosten - Nutzen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Innovation vs. pers\u00f6nliche Daten",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Daten finden",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Manipulation und Mikrotargeting",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welches Interesse korreliert mit wecher Einstellung?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was denken Sie?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen zum Video von Eli Pariser",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Wie sch\u00e4tzen Sie sich selbst ein?",
+                "entries": [
+                    "<p style=\"text-align:justify\">Platz 2 der Gr\u00fcnde, warum Deutsche Social Media nutzen, geht an \"Nachrichten lesen\". Ist f\u00fcr Sie Social Media auch ein wichtiger Kanal zum Nachrichten lesen?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Platz 2 der Gr\u00fcnde, warum Deutsche Social Media nutzen, geht an \"Nachrichten lesen\". Ist f\u00fcr Sie Social Media auch ein wichtiger Kanal zum Nachrichten lesen?</p>"
+            },
+            {
+                "panelTitle": "Welche Dateitypen benutzen Sie h\u00e4ufig und wof\u00fcr?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Know your Dateierweiterung!",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen zum Video",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "\u00c4nderungen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage - Algorithmen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage - Pressekodex",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage zum Video",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "\u00dcbung KI-Bias",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Wichtige Fragen?",
+                "entries": [
+                    "<p>DIe nebenstehende, kleine Auswahl an Leitfragen (Sie finden alle im ausf\u00fchrlichen Gutachten) veranschaulicht die Bandbreite ethischer Fragestellungen in Bezug auf Datennutzung.&nbsp;</p>"
+                ],
+                "keywords": "<p>DIe nebenstehende, kleine Auswahl an Leitfragen (Sie finden alle im ausf\u00fchrlichen Gutachten) veranschaulicht die Bandbreite ethischer Fragestellungen in Bezug auf Datennutzung.&nbsp;</p>"
+            },
+            {
+                "panelTitle": "Gedankenspiel",
+                "entries": [
+                    "<p style=\"text-align:justify\">Lassen Sie Ihren Gedanken freien Lauf und stellen Sie sich vor, Sie k\u00f6nnten auf alle Daten zugreifen, die Sie wollen, ungeachtet aller Bedenkentr\u00e4ger, ethischer Dilemmata, Skrupel oder Gewissensbisse. Au\u00dferdem haben Sie die Ressourcen, diese Daten auszuwerten und in eine Anwendung umzuf\u00fchren.</p><p style=\"text-align:justify\">Welche unerh\u00f6rten Szenarien fallen Ihnen ein, wenn Sie die Daten tats\u00e4chlich so nutzen k\u00f6nnten, wie Sie wollten, im postiven wie im negativen Sinne? H\u00e4tte diese Nutzung gesamtgesellschaftliche Auswirkungen oder eher punktuelle und individuelle?</p><p style=\"text-align:justify\">Diskutieren Sie gerne verschiedene Szenarien mit Ihren Kommilitoninnen und Kommilitonen.</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Lassen Sie Ihren Gedanken freien Lauf und stellen Sie sich vor, Sie k\u00f6nnten auf alle Daten zugreifen, die Sie wollen, ungeachtet aller Bedenkentr\u00e4ger, ethischer Dilemmata, Skrupel oder Gewissensbisse. Au\u00dferdem haben Sie die Ressourcen, diese Daten auszuwerten und in eine Anwendung umzuf\u00fchren.</p><p style=\"text-align:justify\">Welche unerh\u00f6rten Szenarien fallen Ihnen ein, wenn Sie die Daten tats\u00e4chlich so nutzen k\u00f6nnten, wie Sie wollten, im postiven wie im negativen Sinne? H\u00e4tte diese Nutzung gesamtgesellschaftliche Auswirkungen oder eher punktuelle und individuelle?</p><p style=\"text-align:justify\">Diskutieren Sie gerne verschiedene Szenarien mit Ihren Kommilitoninnen und Kommilitonen.</p>"
+            },
+            {
+                "panelTitle": "\u00dcbung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "\u00dcbung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage",
+                "entries": [
+                    "<p><span><span><span style=\"color:#000000\"><span><span><span>Wie tr\u00e4gt das Urheberrecht zur Wirtschaft bei?</span></span></span></span></span></span></p>"
+                ],
+                "keywords": "<p><span><span><span style=\"color:#000000\"><span><span><span>Wie tr\u00e4gt das Urheberrecht zur Wirtschaft bei?</span></span></span></span></span></span></p>"
+            },
+            {
+                "panelTitle": "\u00dcbung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "K\u00fcnstlerische Werke und Autor*innen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsaufgabe",
+                "entries": [
+                    "<p style=\"text-align:justify\">Trotzdem die meisten Pr\u00e4sentationen mit mehr oder minder \u00e4hnlicher Pr\u00e4sentationssoftware erstellt und gehalten werden, haben Sie sicher im Laufe der Zeit und mit steigender Anzahl von erlebten Pr\u00e4sentationen deutliche Qualit\u00e4tsunterschiede ausmachen k\u00f6nnen.&nbsp;</p><p style=\"text-align:justify\">Denken Sie an eine Pr\u00e4sentation zur\u00fcck, die Sie besonders in Erinnerung haben, ob positiv oder negativ.</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Trotzdem die meisten Pr\u00e4sentationen mit mehr oder minder \u00e4hnlicher Pr\u00e4sentationssoftware erstellt und gehalten werden, haben Sie sicher im Laufe der Zeit und mit steigender Anzahl von erlebten Pr\u00e4sentationen deutliche Qualit\u00e4tsunterschiede ausmachen k\u00f6nnen.&nbsp;</p><p style=\"text-align:justify\">Denken Sie an eine Pr\u00e4sentation zur\u00fcck, die Sie besonders in Erinnerung haben, ob positiv oder negativ.</p>"
+            },
+            {
+                "panelTitle": "Welches Verh\u00e4ltnis von Digitalen Inhalten und Text sollte eine Pr\u00e4sentation haben?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Fragen zu der Einheit",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage - Seminararbeit",
+                "entries": [
+                    "<p style=\"text-align:justify\">Laut dem Beitrag&nbsp;<a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;wem stehen die Urheberrechte an einer Seminar-, Bachelor-, Master- oder Hausarbeit zu?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Laut dem Beitrag&nbsp;<a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;wem stehen die Urheberrechte an einer Seminar-, Bachelor-, Master- oder Hausarbeit zu?</p>"
+            },
+            {
+                "panelTitle": "Frage Bilder",
+                "entries": [
+                    "<p style=\"text-align:justify\">Laut dem Beitrag&nbsp;<a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;d\u00fcrfen Studierende oder Lehrende urheberrechtlich gesch\u00fctzte Bilder, Fotos, Grafiken in Semesterarbeiten einf\u00fcgen?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Laut dem Beitrag&nbsp;<a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;d\u00fcrfen Studierende oder Lehrende urheberrechtlich gesch\u00fctzte Bilder, Fotos, Grafiken in Semesterarbeiten einf\u00fcgen?</p>"
+            },
+            {
+                "panelTitle": "Reflexionsaufgabe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Frage Kopien",
+                "entries": [
+                    "<p style=\"text-align:justify\">Laut dem Beitrag <a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;k\u00f6nnen f\u00fcr das Studium Aufs\u00e4tze oder Lehrb\u00fccher kopiert werden?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Laut dem Beitrag <a href=\"https://www.bmbf.de/bmbf/shareddocs/kurzmeldungen/de/was-forschende-und-lehrende-wissen-sollten.html\" target=\"_blank\">Was Forschende und Lehrende wissen sollten</a>,&nbsp;k\u00f6nnen f\u00fcr das Studium Aufs\u00e4tze oder Lehrb\u00fccher kopiert werden?</p>"
+            },
+            {
+                "panelTitle": "W\u00e4ren Sie damit einverstanden?",
+                "entries": [
+                    "<p>Fotografieren, malen oder zeichnen Sie? Spielen Sie Musik oder schreiben Texte oder Gedichte? Erstellen Sie Skizzen oder designen Dinge? Produzieren Sie andersartige k\u00fcnstlerische Sch\u00f6pfungen?</p>"
+                ],
+                "keywords": "<p>Fotografieren, malen oder zeichnen Sie? Spielen Sie Musik oder schreiben Texte oder Gedichte? Erstellen Sie Skizzen oder designen Dinge? Produzieren Sie andersartige k\u00fcnstlerische Sch\u00f6pfungen?</p>"
+            },
+            {
+                "panelTitle": "Gedankenspiel",
+                "entries": [
+                    "<p style=\"text-align:justify\">Stellen Sie sich vor, in 20 oder 30 Jahren haben generative, das hei\u00dft erzeugende, KI mehrere evolution\u00e4re Entwicklungen durchgemacht und produzieren dann einen Gro\u00dfteil der uns umgebenden Musik und Bilder, Texte. Sie schreiben Romane und erzeugen wissenschaftlich einwandfreie Studien. Werden zuk\u00fcnftige Generationen unter dieser Bedingung mit der gleichen Leidenschaft Lieblingslieder und -b\u00fccher haben, auch wenn sie von Computern erzeugt werden? Werden wissenschaftliche Erkenntnisse weniger wert sein, wenn der geniale Forschungsaufbau nicht auf menschlichem Einfallsreichtum beruht?<br />Ist es so, dass ein Text bedeutungslos wird, wenn hinter ihm nicht eine Person steht, die die Welt in ihrer Weise interpretiert und uns dadurch eine andere Perspektive auf die Welt erm\u00f6glicht, wie es der Philosoph Hannes Bajohr in seinem Essay <span><span><span><em><a href=\"https://www.deutschlandfunk.de/schreiben-nach-ki-artifizielle-und-postartifizielle-texte-100.html\">Schreiben nach KI - Artifizielle und Postartifizielle Texte</a> </em>argumentiert?</span></span></span></p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Stellen Sie sich vor, in 20 oder 30 Jahren haben generative, das hei\u00dft erzeugende, KI mehrere evolution\u00e4re Entwicklungen durchgemacht und produzieren dann einen Gro\u00dfteil der uns umgebenden Musik und Bilder, Texte. Sie schreiben Romane und erzeugen wissenschaftlich einwandfreie Studien. Werden zuk\u00fcnftige Generationen unter dieser Bedingung mit der gleichen Leidenschaft Lieblingslieder und -b\u00fccher haben, auch wenn sie von Computern erzeugt werden? Werden wissenschaftliche Erkenntnisse weniger wert sein, wenn der geniale Forschungsaufbau nicht auf menschlichem Einfallsreichtum beruht?<br />Ist es so, dass ein Text bedeutungslos wird, wenn hinter ihm nicht eine Person steht, die die Welt in ihrer Weise interpretiert und uns dadurch eine andere Perspektive auf die Welt erm\u00f6glicht, wie es der Philosoph Hannes Bajohr in seinem Essay <span><span><span><em><a href=\"https://www.deutschlandfunk.de/schreiben-nach-ki-artifizielle-und-postartifizielle-texte-100.html\">Schreiben nach KI - Artifizielle und Postartifizielle Texte</a> </em>argumentiert?</span></span></span></p>"
+            },
+            {
+                "panelTitle": "Reflexionsfrage",
+                "entries": [
+                    "<p style=\"text-align:justify\">Digitale Texte, Podcasts, Videos, Erkl\u00e4rvideos, Lernspiele, Quizfragen, ...<br />Es gibt vielerlei Formate, die heutzutage zur Wissensvermittlung eingesetzt werden. Welches individuell gut funktioniert, h\u00e4ngt von der eigenen Pers\u00f6nlichkeit und der dem Medium entgegengebrachten Aufmerksamkeit ab.</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Digitale Texte, Podcasts, Videos, Erkl\u00e4rvideos, Lernspiele, Quizfragen, ...<br />Es gibt vielerlei Formate, die heutzutage zur Wissensvermittlung eingesetzt werden. Welches individuell gut funktioniert, h\u00e4ngt von der eigenen Pers\u00f6nlichkeit und der dem Medium entgegengebrachten Aufmerksamkeit ab.</p>"
+            },
+            {
+                "panelTitle": "Der Wandel der Zeit",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Selbsteinsch\u00e4tzung",
+                "entries": [
+                    "<p style=\"text-align:justify\">Haben Sie sich schon einmal dar\u00fcber nachgedacht, ob Sie anstelle Ihres Faches Computerwissenschaften studieren wollen? Wenn nein oder eher nein: Warum nicht? Wenn ja oder eher ja: Warum haben Sie es nicht getan?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Haben Sie sich schon einmal dar\u00fcber nachgedacht, ob Sie anstelle Ihres Faches Computerwissenschaften studieren wollen? Wenn nein oder eher nein: Warum nicht? Wenn ja oder eher ja: Warum haben Sie es nicht getan?</p>"
+            },
+            {
+                "panelTitle": "\u00dcbung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsfrage",
+                "entries": [
+                    "<p style=\"text-align:justify\">Sind Sie schon einmal in die Lage geraten, auf fachlicher Ebene genau am Gegen\u00fcber vorbeizureden, weil er oder sie eine andere Fachsprache benutzt hat, die auf anderes Vorwissen und andere Konzepte zur\u00fcckgreift? Konnten Sie die Situation aufl\u00f6sen und wenn ja, wie?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Sind Sie schon einmal in die Lage geraten, auf fachlicher Ebene genau am Gegen\u00fcber vorbeizureden, weil er oder sie eine andere Fachsprache benutzt hat, die auf anderes Vorwissen und andere Konzepte zur\u00fcckgreift? Konnten Sie die Situation aufl\u00f6sen und wenn ja, wie?</p>"
+            },
+            {
+                "panelTitle": "Reflexion",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Werte des agilen Arbeitens",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Verst\u00e4ndigungskompetenz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Verst\u00e4ndigungskompetenz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "No Code und Low Code",
+                "entries": [
+                    "<p>&nbsp;</p><p>&nbsp;</p>"
+                ],
+                "keywords": "<p>&nbsp;</p><p>&nbsp;</p>"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    "<p>Erinnern Sie sich an die vergangene Woche und den heutigen Tag. Wie oft hatten Sie das Gef\u00fchl, zu wenig Zeit zu haben?&nbsp;</p>"
+                ],
+                "keywords": "<p>Erinnern Sie sich an die vergangene Woche und den heutigen Tag. Wie oft hatten Sie das Gef\u00fchl, zu wenig Zeit zu haben?&nbsp;</p>"
+            },
+            {
+                "panelTitle": "User Stories",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexion",
+                "entries": [
+                    "<p style=\"text-align:justify\">Was halten sie von dem Postulat von Weishaupt und Griebe? Wie w\u00fcrden diese Prinzipien die Hochschullehre ver\u00e4ndern? Glauben Sie, diese Ver\u00e4nderung w\u00e4re zum Besseren?</p>"
+                ],
+                "keywords": "<p style=\"text-align:justify\">Was halten sie von dem Postulat von Weishaupt und Griebe? Wie w\u00fcrden diese Prinzipien die Hochschullehre ver\u00e4ndern? Glauben Sie, diese Ver\u00e4nderung w\u00e4re zum Besseren?</p>"
+            },
+            {
+                "panelTitle": "Die Eisenhower Matrix",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Programmieren",
+                "entries": [
+                    "<p>Was versteht man unter Programmieren? A) Das Schreiben von Anweisungen f\u00fcr eine Maschine, um bestimmte Aufgaben auszuf\u00fchren. B) Die Kunst der Softwareentwicklung. C) Das Erstellen von Musikst\u00fccken mit Hilfe von Computern. D) Die Optimierung von Datenbanken.</p>"
+                ],
+                "keywords": "<p>Was versteht man unter Programmieren? A) Das Schreiben von Anweisungen f\u00fcr eine Maschine, um bestimmte Aufgaben auszuf\u00fchren. B) Die Kunst der Softwareentwicklung. C) Das Erstellen von Musikst\u00fccken mit Hilfe von Computern. D) Die Optimierung von Datenbanken.</p>"
+            },
+            {
+                "panelTitle": "Programmiersprache",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Programmiersprachen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Programmiersprachen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Computational Thinking",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Lizenzen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Urheberrecht",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "G\u00fcltigkeitsdauer von Urheberrecht",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Informationen \u00fcber Urheberrecht",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Creative-Common-Lizenzen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Creative Commons Lizenzen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Merkmal von KI bei Textgenerierung",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Definition Geistiges Eigentum",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "KI als Urheber",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Zeit im Internet",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Aufmerksamkeitsspanne",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Infografiken",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Pr\u00e4sentieren mit digitalen Mitteln",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Visuelle Hilfsmittel bei Pr\u00e4sentationen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "geistige und kreative Berufe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Junge Berufe",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Eigene Pr\u00e4sentationen",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Methoden-Einsatz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welches Ph\u00e4nomen sch\u00e4digt massiv soziale Beziehungen, wenn man das Handy auch in Gesellschaft nicht aus den Augen l\u00e4sst?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Wie kann man mit Stress umgehen?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Ist Stress per se schlecht?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was ist Brainfog?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was bedeutet der Begriff Fragmentierung?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Um wieviel Prozent schlechter kann die Leistung bei Multitasking sein?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was ist kein Zeitfresser?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welche Ma\u00dfnahmen helfen, einen Reaktionsraum zwischen Stressausl\u00f6sern und der eigenen Reaktion zu schaffen? ",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welche der folgenden Aktivit\u00e4ten k\u00f6nnen zu einer digitalen Entgiftung im Rahmen eines Digital Detox beitragen? ",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welche der folgenden Aussagen \u00fcber WOOP sind korrekt? ",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexionsfrage",
+                "entries": [
+                    "<p><span><span><span>Wenn so viele Studierende - und vielleicht auch Sie selber - meinen, ihr Handy w\u00fcrde vibrieren, obwohl dies nicht der Fall ist, was sagt das \u00fcber unsere Beziehung zu digitalen Ger\u00e4ten aus?&nbsp;</span></span></span></p>"
+                ],
+                "keywords": "<p><span><span><span>Wenn so viele Studierende - und vielleicht auch Sie selber - meinen, ihr Handy w\u00fcrde vibrieren, obwohl dies nicht der Fall ist, was sagt das \u00fcber unsere Beziehung zu digitalen Ger\u00e4ten aus?&nbsp;</span></span></span></p>"
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    "<p>Frage zur Reflexion zu Volatility: Wie gut k\u00f6nnen Sie sich pers\u00f6nlich anpassen und flexibel bleiben, um mit den sich schnell \u00e4ndernden Bedingungen in Ihrem Leben umzugehen?</p><p>Frage zur Reflexion zu Uncertainty: Wie gehen Sie mit Unsicherheit und mangelnder Planbarkeit um? Welche Strategien setzen Sie ein, um mit Risiken und unvorhersehbaren Ereignissen umzugehen?</p><p>Frage zur Reflexion zu Complexity: Wie gut bew\u00e4ltigen Sie die zunehmende Komplexit\u00e4t in Ihrem Leben und in Ihren Entscheidungen? Wie finden Sie Wege, um in einer vernetzten Welt effektiv zu handeln und klare Ziele zu setzen?</p><p>Frage zur Reflexion zu Ambiguity: Wie gut gehen Sie mit mehrdeutigen Informationen und Widerspr\u00fcchen um? Wie k\u00f6nnen Sie Ihre Entscheidungsfindung verbessern, wenn klare L\u00f6sungen schwer zu erkennen sind?</p>"
+                ],
+                "keywords": "<p>Frage zur Reflexion zu Volatility: Wie gut k\u00f6nnen Sie sich pers\u00f6nlich anpassen und flexibel bleiben, um mit den sich schnell \u00e4ndernden Bedingungen in Ihrem Leben umzugehen?</p><p>Frage zur Reflexion zu Uncertainty: Wie gehen Sie mit Unsicherheit und mangelnder Planbarkeit um? Welche Strategien setzen Sie ein, um mit Risiken und unvorhersehbaren Ereignissen umzugehen?</p><p>Frage zur Reflexion zu Complexity: Wie gut bew\u00e4ltigen Sie die zunehmende Komplexit\u00e4t in Ihrem Leben und in Ihren Entscheidungen? Wie finden Sie Wege, um in einer vernetzten Welt effektiv zu handeln und klare Ziele zu setzen?</p><p>Frage zur Reflexion zu Ambiguity: Wie gut gehen Sie mit mehrdeutigen Informationen und Widerspr\u00fcchen um? Wie k\u00f6nnen Sie Ihre Entscheidungsfindung verbessern, wenn klare L\u00f6sungen schwer zu erkennen sind?</p>"
+            },
+            {
+                "panelTitle": "Datensicherheit - Datenschutz",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Der Datenschutz ist Ihnen vertraut?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "F\u00fchlen Sie sich im digitalen Raum unsicher?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Welche Daten sch\u00fctzt die Datenschutzgrundverordnung DSGVO",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Personenbezogene Daten besonderer Kategorie",
+                "entries": [
+                    "<p>Personenbezogene Daten besonderer Kategorie stellen ein erh\u00f6htes Diskriminierungs-Risiko f\u00fcr die Betroffenen dar. Deshalb m\u00fcssen sie auch besonders gesch\u00fctzt werden.</p>"
+                ],
+                "keywords": "<p>Personenbezogene Daten besonderer Kategorie stellen ein erh\u00f6htes Diskriminierungs-Risiko f\u00fcr die Betroffenen dar. Deshalb m\u00fcssen sie auch besonders gesch\u00fctzt werden.</p>"
+            },
+            {
+                "panelTitle": "EU-US Zusammenarbeit im Datenschutz",
+                "entries": [
+                    "<p>In Bezug auf den Datenschutz herrscht seit langem Einigkeit zwischen den USA und Europa. Deshalb k\u00f6nnen Sie bedenkenlos mit US amerikanischen Firmen wie Google oder Zoom zusammenarbeiten.</p>"
+                ],
+                "keywords": "<p>In Bezug auf den Datenschutz herrscht seit langem Einigkeit zwischen den USA und Europa. Deshalb k\u00f6nnen Sie bedenkenlos mit US amerikanischen Firmen wie Google oder Zoom zusammenarbeiten.</p>"
+            },
+            {
+                "panelTitle": "Internationaler Datentransfer - Austausch mit L\u00e4ndern au\u00dferhalb des Europ\u00e4ischen Wirtschaftsraums",
+                "entries": [
+                    "<p>Die EU erachtet den Datenschutz in verschiedenen L\u00e4ndern als angemessen.</p><p>Welche L\u00e4nder gelten u.a. damit als sichere Drittl\u00e4nder?</p>"
+                ],
+                "keywords": "<p>Die EU erachtet den Datenschutz in verschiedenen L\u00e4ndern als angemessen.</p><p>Welche L\u00e4nder gelten u.a. damit als sichere Drittl\u00e4nder?</p>"
+            },
+            {
+                "panelTitle": "In welchem Verh\u00e4ltnis steht das Sicherheitslevel der Ma\u00dfnahmen zur Risikoangemessenheit?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Was ist wichtig f\u00fcr eine korrekte Einwilligung in die Datenverarbeitung?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            },
+            {
+                "panelTitle": "Reflexion",
+                "entries": [
+                    "<p>Haben Sie sich heute bereits irgendwo eingeloggt? Vielleicht unbewusst? Haben Sie Accounts, die Sie gar nicht mehr nutzen oder deren Existenz Sie bereits vergessen haben?</p><p>Treffen Sie eine Einsch\u00e4tzung dar\u00fcber, wie viele aktive und passive Accounts auf beliebigen Internetplattformen haben.</p>"
+                ],
+                "keywords": "<p>Haben Sie sich heute bereits irgendwo eingeloggt? Vielleicht unbewusst? Haben Sie Accounts, die Sie gar nicht mehr nutzen oder deren Existenz Sie bereits vergessen haben?</p><p>Treffen Sie eine Einsch\u00e4tzung dar\u00fcber, wie viele aktive und passive Accounts auf beliebigen Internetplattformen haben.</p>"
+            },
+            {
+                "panelTitle": "Was sind die M\u00f6glichkeiten, private und berufliche Daten zu trennen?",
+                "entries": [
+                    ""
+                ],
+                "keywords": ""
+            }
+        ],
+        "behaviour": {
+            "useFallbackImage": false,
+            "fallbackImage": {
+                "params": {
+                    "decorative": false,
+                    "contentName": "Image"
+                },
+                "library": "H5P.Image 1.1",
+                "subContentId": "c975eb3a-94f6-431f-98e6-31189c024b8b",
+                "metadata": {
+                    "contentType": "Image",
+                    "license": "U",
+                    "title": "Untitled Image"
+                }
+            },
+            "imageWidth": 150,
+            "imageHeight": 150,
+            "alternateBackground": true,
+            "offerFilterField": false,
+            "modeFilterField": "and"
+        },
+        "l10n": {
+            "noEntriesError": "The author did not enter anything.",
+            "noMatchesForFilter": "There are not matches for @query.",
+            "enterToFilter": "Enter a query to filter the content for relevant entries.",
+            "listChanged": "List changed. Showing @visible of @total items."
+        },
+        "header": ""
+    }
+}

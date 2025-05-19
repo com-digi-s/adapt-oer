@@ -1,0 +1,66 @@
+{
+    "answers": [],
+    "UI": {
+        "showSolutionButton": "L\u00f6sung anzeigen",
+        "tryAgainButton": "Erneut versuchen",
+        "checkAnswerButton": "Pr\u00fcfen",
+        "tipsLabel": "Tipp anzeigen",
+        "scoreBarLabel": "Sie haben :num von :total Punkten",
+        "tipAvailable": "Tipp verf\u00fcgbar",
+        "feedbackAvailable": "Feedback verf\u00fcgbar",
+        "readFeedback": "R\u00fcckmeldung lesen",
+        "wrongAnswer": "Falsche Antwort",
+        "rightAnswer": "Richtige Antwort",
+        "shouldCheck": "Sollte gepr\u00fcft worden sein",
+        "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+        "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+        "submitAnswerButton": "Absenden",
+        "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, false oder unbeantwortet markiert.",
+        "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+        "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und starte die Aufgabe erneut."
+    },
+    "question": "",
+    "behaviour": {
+        "enableRetry": true,
+        "enableSolutionsButton": true,
+        "singlePoint": true,
+        "randomAnswers": true,
+        "showSolutionsRequiresInput": true,
+        "type": "auto",
+        "confirmCheckDialog": false,
+        "confirmRetryDialog": false,
+        "autoCheck": false,
+        "passPercentage": 100,
+        "showScorePoints": true,
+        "enableCheckButton": true
+    },
+    "confirmCheck": {
+        "header": "Finish ?",
+        "body": "Sind Sie sicher, dass Sie den Vorgang beenden m\u00f6chten?",
+        "cancelLabel": "Abbrechen",
+        "confirmLabel": "Beenden"
+    },
+    "confirmRetry": {
+        "header": "Wiederholung?",
+        "body": "Sie wollen es erneut versuchen?",
+        "cancelLabel": "Abbrechen",
+        "confirmLabel": "Best\u00e4tigen"
+    },
+    "overallFeedback": [
+        {
+            "from": 0,
+            "to": 0,
+            "feedback": "Falsch"
+        },
+        {
+            "from": 1,
+            "to": 99,
+            "feedback": "Fast!"
+        },
+        {
+            "from": 100,
+            "to": 100,
+            "feedback": "Korrekt!"
+        }
+    ]
+}

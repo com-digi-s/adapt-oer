@@ -1,0 +1,36 @@
+{
+    "solution": {
+        "introduction": "",
+        "sample": ""
+    },
+    "keywords": [],
+    "overallFeedback": [{
+            "from": 0,
+            "to": 100,
+            "feedback": "Vielen Dank für Ihren Beitrag!"
+        }
+    ],
+    "behaviour": {
+        "inputFieldSize": "10",
+        "enableRetry": true,
+        "ignoreScoring": false,
+        "minimumLength": 100,
+        "maximumLength": 500,
+        "percentagePassing": 50,
+        "percentageMastering": 80,
+        "pointsHost": 1
+    },
+    "checkAnswer": "Überprüfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "Lösung anzeigen",
+    "feedbackHeader": "Feedback",
+    "solutionTitle": "Beispiellösung",
+    "remainingChars": "Verbleibende Zeichen: @chars",
+    "notEnoughChars": "Sie müssen mindestens @chars-Zeichen eingeben!",
+    "messageSave": "gespeichert",
+    "taskDescription": "" ,
+    "placeholderText": "",
+    "media": {},
+    "ariaYourResult": "",
+    "ariaNavigatedToSolution": ""
+}

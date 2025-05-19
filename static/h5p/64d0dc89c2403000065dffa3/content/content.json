@@ -1,0 +1,376 @@
+{
+    "progressType": "dots",
+    "passPercentage": 50,
+    "questions": [
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Beides hat nichts miteinander zu tun.</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Beides erg\u00e4nzt sich im Sinne der DSGVO</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Sind Datenschutz und Datensicherheit beide Bestandteile der DSGVO oder bezeichnen die Begriffe zwei ganz unterschiedliche Felder?</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        },
+        {
+            "params": {
+                "question": "<p>Was ist der Unterschied zwischen Datenschutz und Datensicherheit?</p>\n",
+                "answers": [
+                    {
+                        "text": "<div>Datenschutz stellt Regeln zum Umgang mit personenbezogenen Daten auf, Datensicherheit steht f\u00fcr die technischen Ma\u00dfnahmen, die zur Umsetzung der Regeln zu ergreifen sind.</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Datensicherheit stellt Regeln zum Umgang mit personenbezogenen Daten auf, Datenschutz steht f\u00fcr die technischen Ma\u00dfnahmen, die zur Umsetzung der Regeln zu ergreifen sind.</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Datenschutzschulung</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Erstellung eines Rechte- und Rollenkonzepts</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Einsatz eines Passwort-Managers</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Was ist eine technische Ma\u00dfnahme?</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        },
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Beides hat nichts miteinander zu tun.</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Beides erg\u00e4nzt sich im Sinne der DSGVO</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Sind Datenschutz und Datensicherheit beide Bestandteile der DSGVO oder bezeichnen die Begriffe zwei ganz unterschiedliche Felder?</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        }
+    ],
+    "introPage": {
+        "showIntroPage": false,
+        "startButtonText": "Quiz starten",
+        "introduction": ""
+    },
+    "texts": {
+        "prevButton": "Vorherige Frage",
+        "nextButton": "N\u00e4chste Frage",
+        "finishButton": "Beenden",
+        "textualProgress": "Frage: @current von @total",
+        "questionLabel": "Frage",
+        "jumpToQuestion": "Springe zu Frage %d",
+        "readSpeakerProgress": "Frage @current von @total",
+        "unansweredText": "Unanswered",
+        "answeredText": "Beantwortet",
+        "currentQuestionText": "Aktuelle Frage",
+        "submitButton": "Absenden",
+        "navigationLabel": "Fragen"
+    },
+    "endGame": {
+        "showResultPage": true,
+        "solutionButtonText": "L\u00f6sung anzeigen",
+        "finishButtonText": "Beenden",
+        "showAnimations": false,
+        "\u00fcberspringbar": false,
+        "skipButtonText": "Video \u00fcberspringen",
+        "message": "Ihr Ergebnis:",
+        "retryButtonText": "Wiederholen",
+        "noResultMessage": "Beendet",
+        "overallFeedback": [
+            {
+                "from": 0,
+                "to": 100,
+                "feedback": "Du hast @score von @total Punkten erreicht."
+            }
+        ],
+        "oldFeedback": {
+            "successGreeting": "Herzlichen Gl\u00fcckwunsch!",
+            "successComment": "Das hast du sehr gut gemacht!",
+            "failGreeting": "Oh, nein!",
+            "failComment": "Das hat nicht so gut geklappt."
+        },
+        "showSolutionButton": true,
+        "showRetryButton": true,
+        "scoreBarLabel": "Du hast @finals von @totals Punkten erreicht.",
+        "submitButtonText": "Abgeben"
+    },
+    "override": {
+        "showSolutionButton": "off",
+        "retryButton": "off",
+        "checkButton": true
+    },
+    "disableBackwardsNavigation": false,
+    "randomQuestions": false
+}

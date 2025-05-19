@@ -1,0 +1,13 @@
+{
+  "title": "Überschrift",
+  "instruction": "Frage",
+  "options": "Antwort",
+  "_component": "Typ",
+  "taxonomy": "Kürzel",
+  "domain": "Domäne",
+  "fact": "Fakt",
+  "entry": "Einstieg",
+  "final": "Abschluss",
+  "additional": "Zusatz",
+  "updatedAt": "zuletzt aktualisiert"
+}

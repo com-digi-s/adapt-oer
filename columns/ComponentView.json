@@ -1,0 +1,8 @@
+{
+  "title": "Überschrift (title)",
+  "options": "Inhalt", 
+  "_component": "Typ (_component)",
+  "taxonomy": "Kürzel",
+  "domain": "Domäne",
+  "updatedAt": "zuletzt aktualisiert"
+}

@@ -1,0 +1,62 @@
+{
+	"answers": [],
+	"UI": {
+		"showSolutionButton": "Lösung anzeigen",
+		"tryAgainButton": "Erneut versuchen",
+		"checkAnswerButton": "Prüfen",
+		"tipsLabel": "Tipp anzeigen",
+		"scoreBarLabel": "Sie haben :num von :total Punkten",
+		"tipAvailable": "Tipp verfügbar",
+		"feedbackAvailable": "Feedback verfügbar",
+		"readFeedback": "Rückmeldung lesen",
+		"wrongAnswer": "Falsche Antwort",
+		"rightAnswer": "Richtige Antwort",
+		"shouldCheck": "Sollte geprüft worden sein",
+		"shouldNotCheck": "Sollte nicht geprüft worden sein",
+		"noInput": "Bitte antworten Sie, bevor Sie die Lösung anzeigen",
+		"submitAnswerButton": "Absenden",
+		"a11yCheck": "Überprüfen Sie die Antworten. Die Antworten werden als richtig, false oder unbeantwortet markiert.",
+		"a11yShowSolution": "Zeigen Sie die Lösung an. Die Aufgabe wird mit der richtigen Lösung markiert.",
+		"a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zurück und starte die Aufgabe erneut."
+	},
+	"question": "",
+	"behaviour": {
+		"enableRetry": true,
+		"enableSolutionsButton": true,
+		"singlePoint": true,
+		"randomAnswers": true,
+		"showSolutionsRequiresInput": true,
+		"type": "auto",
+		"confirmCheckDialog": false,
+		"confirmRetryDialog": false,
+		"autoCheck": false,
+		"passPercentage": 100,
+		"showScorePoints": true,
+		"enableCheckButton": true
+	},
+	"confirmCheck": {
+		"header": "Finish ?",
+		"body": "Sind Sie sicher, dass Sie den Vorgang beenden möchten?",
+		"cancelLabel": "Abbrechen",
+		"confirmLabel": "Beenden"
+	},
+	"confirmRetry": {
+		"header": "Wiederholung?",
+		"body": "Sie wollen es erneut versuchen?",
+		"cancelLabel": "Abbrechen",
+		"confirmLabel": "Bestätigen"
+	},
+	"overallFeedback": [{
+		"from": 0,
+		"to": 0,
+		"feedback": "Falsch"
+	}, {
+		"from": 1,
+		"to": 99,
+		"feedback": "Fast!"
+	}, {
+		"from": 100,
+		"to": 100,
+		"feedback": "Korrekt!"
+	}]
+}

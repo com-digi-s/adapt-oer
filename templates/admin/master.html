@@ -1,0 +1,12 @@
+{% extends admin_base_template %}
+
+{% block head_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome/all.min.css') }}">
+{% endblock %}
+
+{% block tail %}
+   {{ super() }}
+   <script src="{{ url_for('static', filename='js/equal_height_matching.js') }}"></script>
+{% endblock %}

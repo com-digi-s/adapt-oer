@@ -1,0 +1,195 @@
+{
+    "infoWall": {
+        "propertiesGroup": {
+            "properties": [
+                {
+                    "label": "Name",
+                    "showLabel": false,
+                    "searchInProperty": false,
+                    "styling": {
+                        "bold": true,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "General information",
+                    "showLabel": false,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "Colors",
+                    "showLabel": true,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "Top 3 vitamins",
+                    "showLabel": true,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                }
+            ]
+        },
+        "panels": [
+            {
+                "image": {
+                    "params": {
+                        "decorative": false,
+                        "contentName": "Image",
+                        "file": {
+                            "path": "images/file-63d7a6b09819e.jpg",
+                            "mime": "image/jpeg",
+                            "copyright": {
+                                "license": "U"
+                            },
+                            "width": 400,
+                            "height": 267
+                        },
+                        "alt": "Many ripe red raspberries"
+                    },
+                    "library": "H5P.Image 1.1",
+                    "subContentId": "cafd67d8-5cf5-405f-a94b-74b94b64bac6",
+                    "metadata": {
+                        "contentType": "Image",
+                        "license": "CC0 1.0",
+                        "title": "Free raspberries images, public domain fruit CC0 photo.",
+                        "authors": [
+                            {
+                                "name": "Unknown",
+                                "role": "Author"
+                            }
+                        ],
+                        "source": "https://www.rawpixel.com/image/5919476/photo-image-public-domain-nature-fruit"
+                    }
+                },
+                "panelTitle": "Free raspberries images, public domain fruit CC0 photo.",
+                "entries": [
+                    "<p><span style=\"font-size:1.25em;\">Raspberries</span></p>\n",
+                    "<p><strong>Raspberries</strong> are edible fruits that come from various species of plants in the Rubus genus of the rose family, mostly from the Idaeobatus subgenus. The term \"raspberry\" also refers to the plants themselves, which are perennials with woody stems. In 2020, the world produced 895,771 tons of raspberries, with Russia being the largest producer, accounting for 20% of the total.</p>\n",
+                    "<p><strong><span style=\"color:#c0392b;\">red</span>, <span style=\"color:#660066;\">purple</span>, <span style=\"color:#f1c40f;\">yellow</span>, black, <span style=\"color:#2980b9;\">blue</span></strong></p>\n",
+                    "<ol>\n\t<li><em>Vitamin C</em>, 26.2 mg</li>\n\t<li><em>Choline</em>, 12.3 mg</li>\n\t<li><em>Vitamin E</em>, 0.87 mg</li>\n</ol>\n"
+                ],
+                "keywords": "computer"
+            },
+            {
+                "image": {
+                    "params": {
+                        "decorative": false,
+                        "contentName": "Image",
+                        "file": {
+                            "path": "images/file-63d7a6b960818.jpg",
+                            "mime": "image/jpeg",
+                            "copyright": {
+                                "license": "U"
+                            },
+                            "width": 400,
+                            "height": 300
+                        },
+                        "alt": "Many ripe red strawberries"
+                    },
+                    "library": "H5P.Image 1.1",
+                    "subContentId": "fc128d78-38b4-4879-9e65-87d0414df916",
+                    "metadata": {
+                        "contentType": "Image",
+                        "license": "CC PDM",
+                        "title": "strawberries",
+                        "authors": [
+                            {
+                                "name": "Fried Dough",
+                                "role": "Author"
+                            }
+                        ],
+                        "source": "https://www.flickr.com/photos/42787780@N04/6984507532",
+                        "yearFrom": 2012
+                    }
+                },
+                "panelTitle": "strawberries",
+                "entries": [
+                    "<p><span style=\"font-size:1.25em;\">Strawberries</span></p>\n",
+                    "<p><strong>Strawberries</strong> are a hybrid species of the Fragaria genus, commonly known as strawberries, grown worldwide for their fruit. Known for their distinct aroma, bright red color, juicy texture, and sweetness, strawberries are widely consumed fresh or in various processed foods such as jam, juice, pies, ice cream, milkshakes, and chocolates. Artificial strawberry flavor and scent are also commonly used in various products such as candy, soap, lip gloss, perfume, and others.</p>\n",
+                    "<p><strong><span style=\"color:#c0392b;\">red</span></strong></p>\n",
+                    "<ol>\n\t<li><em>Vitamin C,</em>&nbsp;58.8 mg</li>\n\t<li><em>Choline</em>, 5.7 mg</li>\n\t<li><em>Niacin (B3)</em>, 0.386 mg</li>\n</ol>\n"
+                ]
+            },
+            {
+                "image": {
+                    "params": {
+                        "decorative": false,
+                        "contentName": "Image",
+                        "file": {
+                            "path": "images/file-63d7a6c04d086.jpg",
+                            "mime": "image/jpeg",
+                            "copyright": {
+                                "license": "U"
+                            },
+                            "width": 400,
+                            "height": 275
+                        },
+                        "alt": "Some blueberries"
+                    },
+                    "library": "H5P.Image 1.1",
+                    "subContentId": "dcb32d60-d0a2-4432-b019-f815d8a1e353",
+                    "metadata": {
+                        "contentType": "Image",
+                        "license": "CC0 1.0",
+                        "title": "My blueberries are posted to Fickr even before I uploaded them to my own page!",
+                        "authors": [
+                            {
+                                "name": "suzyhazelwood",
+                                "role": "Author"
+                            }
+                        ],
+                        "source": "https://www.flickr.com/photos/139228535@N05/42311342185",
+                        "yearFrom": 2018
+                    }
+                },
+                "panelTitle": "My blueberries are posted to Fickr even before I uploaded them to my own page!",
+                "entries": [
+                    "<p><span style=\"font-size:1.25em;\">Blueberries</span></p>\n",
+                    "<p><strong>Blueberries</strong> are a group of flowering plants that have blue or purple berries and are found in many locations. They are part of the Cyanococcus section within the Vaccinium genus, which also includes cranberries, bilberries, huckleberries, and Madeira blueberries. Both wild (lowbush) and cultivated (highbush) blueberries for commercial purposes are native to North America, with the highbush varieties introduced to Europe in the 1930s.</p>\n",
+                    "<p><strong><span style=\"color:#660066;\">dark purple</span></strong></p>\n",
+                    "<ol>\n\t<li><em>Vitamin C</em>, 7 mg</li>\n\t<li><em>Vitamin E</em>, 0.57 mg</li>\n\t<li><em>Niacin (B3)</em>, 0.418 mg</li>\n</ol>\n"
+                ],
+                "keywords": "pancakes"
+            }
+        ],
+        "behaviour": {
+            "useFallbackImage": false,
+            "fallbackImage": {
+                "params": {
+                    "decorative": false,
+                    "contentName": "Image"
+                },
+                "library": "H5P.Image 1.1",
+                "subContentId": "c975eb3a-94f6-431f-98e6-31189c024b8b",
+                "metadata": {
+                    "contentType": "Image",
+                    "license": "U",
+                    "title": "Untitled Image"
+                }
+            },
+            "imageWidth": 150,
+            "imageHeight": 150,
+            "alternateBackground": true,
+            "offerFilterField": true,
+            "modeFilterField": "and"
+        },
+        "l10n": {
+            "noEntriesError": "The author did not enter anything.",
+            "noMatchesForFilter": "There are not matches for @query.",
+            "enterToFilter": "Enter a query to filter the content for relevant entries.",
+            "listChanged": "List changed. Showing @visible of @total items."
+        },
+        "header": ""
+    }
+}

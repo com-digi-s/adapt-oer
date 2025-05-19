@@ -1,0 +1,564 @@
+{
+    "infoWall": {
+        "propertiesGroup": {
+            "properties": [
+                {
+                    "label": "Name",
+                    "showLabel": false,
+                    "searchInProperty": false,
+                    "styling": {
+                        "bold": true,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "General information",
+                    "showLabel": false,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "Colors",
+                    "showLabel": true,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                },
+                {
+                    "label": "Top 3 vitamins",
+                    "showLabel": true,
+                    "searchInProperty": true,
+                    "styling": {
+                        "bold": false,
+                        "italic": false
+                    }
+                }
+            ]
+        },
+        "panels": [
+            {
+                "panelTitle": "Lernziele und Dauer",
+                "entries": [
+                    "<p>In dieser Lerneinheit lernen Sie etwas \u00fcber:</p><ul><li><span>Ursache-Wirkungs-Zusammenhang von Stress und Resilienz&nbsp;</span></li><li><span>Die Rolle, die Zeitdruck dabei spielt</span></li><li><span>Die Ursachen von Prokrastination und wie Sie Prokrastination nutzen k\u00f6nnen</span></li><li><span>Methoden des Arbeits- und Zeitmanagements</span></li><li><span>Zeitsouver\u00e4nit\u00e4t</span></li><li><span>Regenerationstechniken f\u00fcr eine starke Resilienz</span></li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Lernziele",
+                "entries": [
+                    "<p>In dieser Lerneinheit lernen Sie etwas \u00fcber:</p><ul><li>Bedeutung des Datenschutzes</li><li>Notwendigkeit des Datenschutzes</li><li>Vorstellung der Datenschutz-Grundverordnung DS-GVO</li><li>Grundprinzipien Prinzipien der DS-GVO</li><li>Betroffenen und Ihre Rechte</li><li>Technisch-Organisatorische Ma\u00dfnahme TOM</li><li>Datenschutz im Wandel</li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Lernziele",
+                "entries": [
+                    "<p>In dieser Lerneinheit lernen Sie etwas \u00fcber:</p><ul><li>Datenschutzmanagement&nbsp;</li><li>Datenschutz in der Forschungsarbeit</li><li>Auswahl von DSGVO konformen Anbietern</li><li>IT Sicherheit in Ihrem Alltag</li><li>Einfache sichere Kommunikation</li><li>Gute Strategien</li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Tipps f\u00fcr Produktivit\u00e4t",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Kanban in der Praxis",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Struktur",
+                "entries": [
+                    "<p><strong>Diese Lerneinheit wird verschoben in Modul 2. Digitale Gesellschaft und digitale Identit\u00e4t</strong></p><p>&nbsp;</p><p>1. Einf\u00fchrung<br />- Pers\u00f6nlicher Bezug aufbauen, ins Thema einsteigen, Werte und Normen<br />2. Werte<br />- Was ist das?<br />- pers\u00f6nliche Werte<br />- Wertemodell (von Thun, Schwartz, ...)<br />https://www.values-academy.de/wertemodell/<br />- Selbsttest - pers\u00f6nliche Werte<br />https://einguterplan.de/werte-test<br />3. Gesellschaftliche Werte und Normen<br />- kulturell bedingt/ soziokulturell/ Sinus-Milieus?<br />- (Zwang zur) Selbstoptimierung vs. Selbststeuerung<br />4. Kulturunterschied analog - digital<br />- Online-Kultur und Werte<br />https://www.wertebildung.bayern.de/topthema-medienethik/werte-40-wertebildung-in-der-digitalen-welt/<br />https://www.transcript-verlag.de/978-3-8376-5659-6/der-wert-der-digitalisierung/<br />- Plattformen (don\u00b4t be evil)<br />- US-amerikanisierung von Werten durch Dominanz der Internetriesen und durch KI<br />5. Werte auf den Pr\u00fcfstand stellen</p><p>&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Quellen",
+                "entries": [
+                    "<p>Geht es mit der Moral abw\u00e4rts?<br />https://www.spektrum.de/news/geht-es-mit-der-moral-wirklich-abwaerts/2154273</p><p>\u00dcbersicht Werte<br />https://www.bpb.de/kurz-knapp/lexika/handwoerterbuch-politisches-system/202212/werte-und-wertewandel/</p><p>Wertekonzeption<br />https://www.researchgate.net/publication/278750048_Zur_Wertekonzeption_in_den_Sozialwissenschaften_Potenzial_fachliche_Pragungen_und_mogliche_Blockaden_eines_strategisch_benutzten_Begriffes<br />https://socio.ch/general/t_albert1.htm</p><p>https://www.lwl.org/klinik_warstein_bilder/global/flyer-shop/10080.pdf</p><p>https://www.zora.uzh.ch/id/eprint/95233/1/schmidt_bamberg_davidov_herrmann_schwartz_x.pdf</p><p>Wertewandel<br />https://link.springer.com/chapter/10.1007/978-3-322-83321-1_8</p><p>https://epub.ub.uni-muenchen.de/3092/1/3092.pdf<br />https://epub.ub.uni-muenchen.de/3092/1/3092.pdf</p><p>https://www.zora.uzh.ch/id/eprint/95233/1/schmidt_bamberg_davidov_herrmann_schwartz_x.pdf</p><p>Portrait Value Questionnaireh<br />ttps://econtent.hogrefe.com/doi/10.1024/0044-3514.38.4.261<br />https://aidaform.com/templates/pvq-test.html</p><p>Bed\u00fcrfnistheorie<br />https://tu-dresden.de/mn/psychologie/ifap/differentielle-psychologie/ressourcen/dateien/old/3_Beduerfnistheorien.pdf?lang=de</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Fazit",
+                "entries": [
+                    "<p>Der Erhalt von Gesundheit und Wohlbefinden in digitalen Zeiten erfordert ein souver\u00e4nes Verhalten gegen\u00fcber den Ph\u00e4nomenen dieser Zeit. Das betrifft Ihr Privatleben wie auch Arbeit und Lernen.&nbsp;Lassen Sie sich nicht von Hektik und Tempo mitrei\u00dfen, sondern \u00fcbernehmen Sie die Steuerung. Das gelingt Ihnen, indem Sie bewusst ausw\u00e4hlen, was Sie in ihrer Zeit tun. Daf\u00fcr stehen Ihnen Methoden des Arbeits- und Zeitmanagement zur Verf\u00fcgung und die Empfehlung des Werte basierten Handelns.&nbsp;</p><p>Ziele setzen und Zwischenschritte planen, Aufgaben priorisieren und organisieren, realistische Zeitbudgets, auf ausreichenden Ausgleich achten und&nbsp;kleine Dinge sofort erledigen. So bleiben Sie fit und kommen ans Ziel.</p><ul><li><strong>Vogelperspektive einnehmen</strong></li><li><strong>Fokussieren &amp; Konzentrieren</strong></li><li><strong>Achtsamkeit &amp; Selbstreflexion</strong></li><li><strong>Mut zur L\u00fccke &amp; Gelassenheit</strong></li></ul><p><span><span style=\"color:#000000\">Und last but not least: \"Ein starkes soziales Umfeld, ein wohlwollender Umgang mit sich selbst, Durchhalteverm\u00f6gen und Wissen dar\u00fcber, was einem wirklich wichtig ist, k\u00f6nnen ausgleichend wirken und die innere Balance st\u00e4rken\u201c, so Prof. Martin Bohus vom <a href=\"https://www.zi-mannheim.de/\" onclick=\"window.open(this.href, '', 'resizable=no,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no'); return false;\">Zentralinstitut f\u00fcr Seelische Gesundheit (ZI)</a> in Mannheim.&nbsp;</span></span></p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Einleitung",
+                "entries": [
+                    "<p style=\"text-align:justify\"><span>Leben, Lernen und Arbeiten werden in der digitalen Gesellschaft neu verhandelt. Sie haben&nbsp;eine unendliche F\u00fclle an M\u00f6glichkeiten, die Ihnen eine entsprechende Menge an Entscheidungen abverlangt. Das lebenslange Lernen ist zum Ist-Zustand erkl\u00e4rt. Zugleich befinden sich viele Systeme im Umbruch, zum Beispiel in der digitalen Verwaltung.</span> Das Akronym VUKA steht f\u00fcr diese Begleiterscheinungen der digitale Transformation. Es bedeutet: Volatil, Unsicher, Komplex, Ambivalent. Oft fehlt es an verl\u00e4sslichen Entscheidungsgrundlagen und Sie m\u00fcssen sich vortasten bzw. ausprobieren. Der Wert bzw. die Bewertung von Dingen \u00e4ndert sich. Aktuell ist Twitter ein Beispiel. Ein Beispiel f\u00fcr Ambivalenz kann sein: Sie nutzen einen Fitnesstracker, obwohl sie Bedenken haben bez\u00fcglich des Umgangs mit Ihren Gesundheitsdaten. Aber der Nutzen wiegt st\u00e4rker als ihr Unwohlsein. Diese Umst\u00e4nde verunsichern und erzeugen immer gr\u00f6\u00dferen Zeitdruck, der f\u00fcr eine Mehrzahl der Menschen der gr\u00f6\u00dfte Stressfaktor ist. Die TK beleuchtet im aktuellen <a href=\"https://www.tk.de/presse/themen/praevention/gesundheitsstudien/tk-gesundheitsreport-2023-2149758?tkcm=ab\" target=\"_blank\">Gesundheitsreport</a> die Situation Studierender in Deutschland. 68% der Befragten gaben an durch Stress ersch\u00f6pft zu sein und unter Kopfschmerzen, R\u00fcckenschmerzen, Konzentrationsproblemen oder schlechtem Schlaf zu leiden. Dieses Stresserleben erschwert Offenheit f\u00fcr Neues, f\u00fchrt zu Fehlern, erzeugt Angst.</p><p style=\"text-align:justify\">Das Ziel ist daher, Zeitsouver\u00e4nit\u00e4t zur\u00fcck zu gewinnen und durch gute Selbstf\u00fchrung die eigenen Spielr\u00e4ume auszuloten und Handlungen zu steuern. Es ist m\u00f6glich, auch unter VUKA. Bedingungen, nicht getrieben und gestresst zu sein, sondern bedacht vorzugehen, Aufgaben gut zu organisieren und beweglich auf Unvorhergesehenes zu reagieren. Diese&nbsp;Lerneinheit zeigt Ihnen M\u00f6glichkeit auf und dient der St\u00e4rkung der Methodenkompetenz und Lebenskunst - die Br\u00fccke zwischen Stress und guter Organisation im Sinne von Reduktion. Sie k\u00f6nnen die Methoden pragmatisch anwenden und zu einem kompletten Workflow f\u00fcr ein Projekt oder eine Aufgabe zusammensetzen. So erm\u00f6glichen Sie einen Flow - diesen Zustand, in dem man sich Leistungsstark und motiviert f\u00fchlt und negativer in positiven Stress umgewandelt wird. Der Begriff des&nbsp;<em>\u201aFlow\u2018</em>&nbsp;wurde erstmals von dem&nbsp;Psychologen<strong>&nbsp;<a href=\"https://de.wikipedia.org/wiki/Mih%C3%A1ly_Cs%C3%ADkszentmih%C3%A1lyi\" onclick=\"window.open(this.href, '', 'resizable=no,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no'); return false;\">Mihaly Csikszentmihalyi</a></strong>&nbsp;gepr\u00e4gt. Eingebettet ist die Lehreinheit in eine Anleitung zu Umgang mit Stress und Regenerationstechniken f\u00fcr eine starke Resilienz.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Einf\u00fchrung",
+                "entries": [
+                    "<p style=\"text-align:justify\">So alt wie das Klagelied der \u00e4lteren gegen\u00fcber der neueren Generation, diese sei wahlweise faul, verkommen, hedonistisch, verschwenderisch, nicht rechtschaffen, etc., so irref\u00fchrend ist die Aussage. Man kann sich leicht vorstellen, dass eine fortw\u00e4hrende, schrittweise \"Verschlechterung\" der Generationen nach mindestens 3000 Jahren dazu f\u00fchrt, dass die Menschheit in Chaos und Anarchie untergeht.</p><p style=\"text-align:justify\">Tats\u00e4chlich geht es uns insgesamt betrachtet und trotz aller Widrigkeiten wie Pandemien, Krisen und Kriegen als Spezies besser als je zuvor (Link).</p><p style=\"text-align:justify\">Wahr ist, dass unsere Werte und damit unsere Einstellungen und unser Verhalten einer steten Ver\u00e4nderung unterworfen sind, die von denjenigen, die sie nicht teilen, h\u00e4ufig mit Argwohn betrachtet werden. Vielleicht haben Sie ja auch schon erlebt, dass Sie Dinge, die j\u00fcngere Menschen tun, beizeiten mit Kopfsch\u00fctteln betrachten.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Reflexion",
+                "entries": [
+                    "<p>Ein Selbsttest</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    "<p>Neben den individuellen Werten, bilden sich auch gesellschaftliche Werte aus, die sich je nach Kultur, Tradition, Geographie, Glaube, etc. unterscheiden.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Definition von Werten",
+                "entries": [
+                    "<p style=\"text-align:justify\">Verschiedene Disziplinen vertreten unterschiedliche Auffassungen von Werten. Hier eine kleine Auswahl.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Inhalte und Lernziele",
+                "entries": [
+                    "<p><span><span><span>Lerninhalte</span></span></span></p><ul><li><span><span><span>Anforderungen der Digitalisierung an Gesellschaft und Individuum</span></span></span></li><li><span><span><span>Einsch\u00e4tzen, ob man das m\u00f6chte</span></span></span></li></ul><p>&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Quellen",
+                "entries": [
+                    "<p>Was \u00e4lter \u00fcber j\u00fcngere denken<br />https://www.vice.com/de/article/bnb973/wir-haben-aeltere-leute-gefragt-was-sie-ueber-die-jugend-von-heute-denken</p><p>https://daserste.ndr.de/panorama/archiv/2000/Verwoehnt-und-undankbar-Was-alte-Menschen-ueber-junge-denken,erste7442.html</p><p>&nbsp;</p><p>Anforderungen<br />https://dl.gi.de/server/api/core/bitstreams/6f011936-34ba-49eb-a825-eaf743b782c7/content</p><p>https://www.bitkom.org/Digitale-Gesellschaft-2025</p><p>&nbsp;</p><p>Gesellschaft im digitalen Wandel<br />https://ict-guide.edu-ict.ch/21-gesellschaft-im-digitalen-wandel-anforderungen</p><p>&nbsp;</p><p><span><span><span><strong>Quellen:</strong><br /><a href=\"https://link.springer.com/book/10.1007/978-3-658-23359-4\" style=\"color:#0563c1; text-decoration:underline\">Arbeit im Spannungsfeld von Gesellschaft und Individuum</a><br />Gesellschaftliche Anforderungen<br /><a href=\"https://link.springer.com/chapter/10.1007/978-3-658-23359-4_5\" style=\"color:#0563c1; text-decoration:underline\">https://link.springer.com/chapter/10.1007/978-3-658-23359-4_5</a></span></span></span></p><p>&nbsp;</p><p><span><span><span><span><span>Die Gesellschaft im Individuum </span></span></span></span></span></p><p><span><span><span>Martin Heidenreich<br /><a href=\"https://www.researchgate.net/publication/283340714_Die_Gesellschaft_im_Individuum\" style=\"color:#0563c1; text-decoration:underline\">https://www.researchgate.net/publication/283340714_Die_Gesellschaft_im_Individuum</a></span></span></span></p><p>&nbsp;</p><p><span><span><span>Neue Namen neue Inhalte: com Wandel traditionsreicher Berufe<br /><a href=\"https://www.rnd.de/beruf-und-bildung/arbeit-wie-haben-sich-berufe-im-laufe-der-zeit-veraendert-B3MMUP7HKJG5ZPXZIEDN7LTWPA.html\" style=\"color:#0563c1; text-decoration:underline\">https://www.rnd.de/beruf-und-bildung/arbeit-wie-haben-sich-berufe-im-laufe-der-zeit-veraendert-B3MMUP7HKJG5ZPXZIEDN7LTWPA.html</a></span></span></span></p><p>&nbsp;</p><p><span><span><strong><span>Konsum und Gesellschaft</span></strong></span></span></p><p><span><span>Werbung, Konsumkritik und Verbraucherschutz in der Bundesrepublik der 1960er- und 1970er-Jahre</span></span></p><p><span><span><span><a href=\"https://zeithistorische-forschungen.de/1-2009/4483\" style=\"color:#0563c1; text-decoration:underline\">https://zeithistorische-forschungen.de/1-2009/4483</a></span></span></span></p><p>&nbsp;</p><p><span><span><span><strong><span><span>Gesellschaft, Alltag und Kultur in der Bundesrepublik </span></span></strong></span></span></span></p><p>&nbsp;</p><p><span><span><span><a href=\"https://www.bpb.de/shop/zeitschriften/izpb/deutschland-in-den-70er-80er-jahren-270/9762/gesellschaft-alltag-und-kultur-in-der-bundesrepublik/\" style=\"color:#0563c1; text-decoration:underline\">https://www.bpb.de/shop/zeitschriften/izpb/deutschland-in-den-70er-80er-jahren-270/9762/gesellschaft-alltag-und-kultur-in-der-bundesrepublik/</a></span></span></span></p><p>&nbsp;</p><p><span><span><span>Individuum und Gesellschaft heute<br /><a href=\"https://www.die-bonn.de/doks/bamme0401.pdf\" style=\"color:#0563c1; text-decoration:underline\">https://www.die-bonn.de/doks/bamme0401.pdf</a></span></span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span><span><span>Uns geht\u00b4s immer besser:<br />https://www.faz.net/aktuell/wissen/psychologie-und-statistik-frueher-war-es-ganz-bestimmt-nicht-besser-15795904.html</span></span></span></p><p>&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "\u00dcberblick",
+                "entries": [
+                    "<p>testest&nbsp;</p><p>links \u00dcberblick und rechts Syndrom&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Erzeuger von Technostress im Alltag",
+                "entries": [
+                    "<p>Dragano et al. (2021) haben Erzeuger von Technostress im Alltag im Kontext der Arbeit identifiziert. Das Modell wurde entsprechend f\u00fcr den hier vorliegenden Kontext angepasst.&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "VUKA",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Ursprung",
+                "entries": [
+                    "<p>\"Militarx is never reactive. It's always responsive!\" (Mike Schindler, US Navy Veteran)</p><p>In den 1990er Jahren wurde VUKA von dem US-amerikanischen Milit\u00e4r entwickelt, um jene Herausforderungen zu beschrieben, mit denen sich Milit\u00e4rstrategen in einer sich schnell ver\u00e4ndernden und unvorhersehbaren Umgebung konfrontiert sahen. Sp\u00e4ter wurde das Konzept VUKA ausgeweitet und sowohl in den gesamtgesellschaftlich auch wirtschaftlich en Bereich transferiert.&nbsp;</p><p>&nbsp;</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Davon berichten Ihre Kommiliton:innen in Interviews",
+                "entries": [
+                    "<p><strong>Erkennen Sie sich wieder?&nbsp;</strong></p><p>\"Also wie gesagt, ich muss ja immer E-Mails checken und dann ist YouTube nur einen Klick entfernt. Und das ist halt, das geht so schnell.\"</p><p>\"Also ich w\u00fcrde sagen schon. Also bestimmt auch negativ. Also ich w\u00e4re sehr froh, wenn ich (\u2026) nicht YouTube-s\u00fcchtig w\u00e4re, quasi fast schon. Also wirklich. Das w\u00e4re, glaube ich, eigentlich, ehm, ganz sch\u00f6n, weil das ist immer halt sehr verlockend\"</p><p>\"Bevor ich abends ins Bett gehe, wenn ich morgens aufwache, ist der erste Blick aufs Handy. Ist irgendwas passiert? Hat mir irgendwer geschrieben? Ich wei\u00df nicht.\"</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Digital Detox?!",
+                "entries": [
+                    "<p>Digital Detox?&nbsp;<a href=\"https://www.zdf.de/nachrichten/digitales/digital-detox-stress-social-media-100.html\">Hier</a> finden Sie einen spannenden Beitrag des ZDF, ob Digital Detox wirklich hilft.&nbsp;</p><p>Ein Studierender berichtet von seiner Wahrnehmung in Bezug auf Instagram:</p><p>\"Also vor allem Instagram. Seitdem bin ich so ein bisschen, so Instagram-Detox-m\u00e4\u00dfig unterwegs. Also ich nutze das halt immer noch aber nicht mehr so, nicht mehr so wie fr\u00fcher. Ich folge jetzt nicht irgendwelchen megasch\u00f6nen Reiseseiten oder irgendwelchen, also viele Freunde folgen irgendwelchen Supermodels, wo man so, Sie wissen was ich meine? Weils, also, (.\u2026) bestimmt ist es bewiesen, ich wei\u00df es nicht, aber ich denke es mir zumindest, dass es einfach, ehm, schlecht ist. Ich nehme Australien, also ich hab gelebt in Australien, fast ein Jahr. Und, war da an wundersch\u00f6nen Str\u00e4nden. Man f\u00e4hrt dahin und ist da am Strand und denkt sich so: \u201eEigentlich m\u00fcsste es jetzt mega Wow-Moment sein, weil es voll sch\u00f6n ist, aber ich habe den Strand schon 1000 Mal gesehen auf Instagram.\u201c Und, ehm, da gab es auch andere Str\u00e4nde, die waren noch sch\u00f6ner als der. Und man verliert so ein bisschen das Besondere, irgendwie, finde ich. Und auch wenn man jetzt zum Beispiel einen Partner hat, dann vergleicht man den auch unterbewusst, auch, wenn man es vielleicht gar nicht will, mit den Leuten, die man auf Instagram sind oder man vergleicht die Beziehung oder das eigene Leben. Das hab ich so ein bisschen, quasi gelernt. Dass das eigentlich, das Social Media gar nicht in die richtige Richtung geht. Man muss da auf jeden Fall aufpassen. Und, ehm, (\u2026) auch, dass ich mal meinen Kindern irgendwann mal, wenn es dann mal so weit ist, auf jeden Fall auch diesen Umgang versuche gut mitzugeben mit Social Media oder auch mit Smartphones allgemein. Also auf die Gefahren hinweisen, was ja unsere Eltern jetzt nicht konnten oder meine Eltern. Weil ich finde, es ist wichtig zu wissen, wie es funktioniert. Und ich sag, keine Ahnung hatten. Aber einfach so zu zeigen, jetzt hier, \u201emach das jetzt nicht\u201c. So ein bisschen regulieren einfach. Einfach so ein bisschen aufpassen, was macht mein Kind da im Internet? Dass, was man selbst sammelt, denen mitzugeben. Dass sie eben nicht die, ich sage mal, die gleichen Fehler machen und den ganzen Tag auf YouTube h\u00e4ngen und, wissen Sie, wie ich meine? So in die Richtung. Das vielleicht. Das war jetzt sehr ausschweifend.\"</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Ambivalenzen in der modernen Gesellschaft",
+                "entries": [
+                    "<p>&nbsp;</p><p>In der gegenw\u00e4rtigen Welt gibt es eine Vielzahl von Ambivalenzen, die sich auf unterschiedlichen Ebenen und in verschiedenen Kontexten manifestieren. Hier sind einige typische Ambivalenzen, die in unserer heutigen Gesellschaft und Welt existieren. Diese Ambivalenzen zeigen, dass die heutige Welt oft von komplexen und widerspr\u00fcchlichen Herausforderungen gepr\u00e4gt ist, die sorgf\u00e4ltiges Abw\u00e4gen und eine ausgewogene Herangehensweise erfordern. Es ist wichtig, diese Ambivalenzen anzuerkennen und verantwortungsbewusste Entscheidungen zu treffen, um ein nachhaltiges und ausgewogenes Gleichgewicht zu finden.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Quellen",
+                "entries": [
+                    "<p><strong>Was bedeutet Datenschutz und warum brauchen wir ihn</strong></p><p>BfDI, Grundlagen des Datenschutzrechtes:&nbsp;https://www.bfdi.bund.de/DE/Buerger/Inhalte/Allgemein/Datenschutz/GrundlagenDatenschutzrecht.html</p><p>Der Landesbeauftrage f\u00fcr Datenschutz und Informationsfreiheit, Datenschutz leicht erkl\u00e4rt:&nbsp;https://www.baden-wuerttemberg.datenschutz.de/datenschutz-leicht-erklaert/</p><p>Bitkom,&nbsp;Datenschutz als Daueraufgabe f\u00fcr die Wirtschaft:&nbsp;https://www.bitkom.org/sites/main/files/2021-09/bitkom-charts-pk-datenschutz-15-09-2021.pdf</p><p>Netzpolitik.org / der Cambridge Analytica Skandal:&nbsp;https://netzpolitik.org/2018/cambridge-analytica-was-wir-ueber-das-groesste-datenleck-in-der-geschichte-von-facebook-wissen/</p><p>Spiegel, \"Jedes 10. Unternehmen von Cyberangriffen betroffen\", 12.06.23,&nbsp;https://www.spiegel.de/wirtschaft/unternehmen/cyberkriminalitaet-jedes-zehnte-unternehmen-von-cyberangriffen-betroffen-a-c0f85761-b86b-4963-b47d-1d74400d15a6?sara_ref=re-xx-cp-sh</p><p><strong>Die DS-GVO</strong></p><p>Der Bundesbeauftrage f\u00fcr den Datenschutz und die Informationsfreiheit BFDI, \"DSGVO-BDSG - Texte und Erl\u00e4uterungen\", Mai 2022: https://www.bfdi.bund.de/SharedDocs/Downloads/DE/Broschueren/INFO1.pdf?__blob=publicationFile&amp;v=16</p><p>Statista: https://de.statista.com/infografik/26629/strafen-auf-grund-von-verstoessen-gegen-die-datenschutz-grundverordnung/#:~:text=Wie%20unsere%20Grafik%20zeigt%2C%20ist%20die%20Durchschnittsh%C3%B6he%20der,f%C3%A4llig%2C%202019%20waren%20es%20noch%20etwa%20500.000%20Euro.</p><p>Datensicherheit</p><p><span class=\"tipps-article__heading--kicker\">Datenschutz vs. Datensicherheit - der Unterschied, Lars Sandmann, 30.06.22, </span>Heise https://www.heise.de/tipps-tricks/Datenschutz-vs-Datensicherheit-der-Unterschied-7158523.html</p><p><strong>Datenschutz im Wandel</strong></p><p>BfDI, Internationaler Datentransfer:&nbsp;https://www.bfdi.bund.de/DE/Fachthemen/Inhalte/Europa-Internationales/Internationaler_Datentransfer.html</p><p>Intersoft Consulting, DSGVO Drittland: https://dsgvo-gesetz.de/themen/drittland/</p><p>European Commission:&nbsp;https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_de</p><p>Clarip: History of Data Privacy in the United States,&nbsp;www.clarip.com/data-privacy/us-history/</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Im Umgang mit dem Datenschutz nehmen Sie verschiedene Rollen ein.",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "T\u00e4tigkeiten k\u00f6nnen sein...",
+                "entries": [
+                    "<ul><li>Erheben, das hei\u00dft sammeln. ! Wissen die Personen, deren Daten gesammelt werden Bescheid und haben zugestimmt?</li><li>Ordnen</li><li>Ver\u00e4ndern</li><li>Verkn\u00fcpfen</li><li>Speichern</li><li>Auslesen</li><li>Abfragen</li><li>Verbreiten durch Ver\u00f6ffentlichen, \u00fcbermitteln an Dritte</li><li>L\u00f6schen</li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Einf\u00fchrung",
+                "entries": [
+                    "<p style=\"text-align:justify\">Der Datenschutz ist ein spannendes Thema. Dabei wird er oft nur als l\u00e4stig empfunden, als Verhinderer von Fortschritt und guten Ideen. Ganz im Gegenteil ist der Datenschutz ein Erfolgsfaktor f\u00fcr ein Gelingen der Digitalisierung. Gut umgesetzt, k\u00f6nnen die vielen Errungenschaften digitaler Technologien sorgenfrei genutzt werden. Davon waren schon die Erfinder des Internets \u00fcberzeugt. Vertrauen ist ein kostbares Gut, wenn ich meine Gesundheitsdaten freigebe. Zum Beispiel, um Forschung zu erm\u00f6glichen.&nbsp;</p><p style=\"text-align:justify\">Hier liegt allerdings der Hase im Pfeffer: Von einer guten Umsetzung sind wir noch weit entfernt. Die meisten Institutionen und Unternehmen hinken der Umsetzung hinterher und Nutzerinnen und Nutzer scheinen sich zunehmend sicherer zu f\u00fchlen, obwohl die Sicherheit abnimmt.&nbsp;</p><p style=\"text-align:justify\">Grund genug das Thema Datenschutz von allen Seiten zu beleuchten und einfache Wege der Umsetzung aufzuzeigen.&nbsp;Vor allem aber ist es wichtig, dass der Weg das Ziel ist. In einem dynamischen Umfeld ist nichts in Stein gemei\u00dfelt. Mit einem guten Grundverst\u00e4ndnis und Neugier finden Sie immer wieder Ihren Weg den Datenschutz als integralen Bestandteil der Digitalen Welt umzusetzen. In gemeinsamer Verantwortung steigt die Chance, dass vertrauensvoll im Internet surfen k\u00f6nnen.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Bundes- und Landesdatenschutzgesetze",
+                "entries": [
+                    "<p>Erg\u00e4nzt wird die DSGVO durch Bundes- und Landesdatenschutzgesetze, die im Bereich von Unternehmen und sogenannten \u00f6ffentlichen Stellen Anpassungen vornehmen konnten. Dazu geh\u00f6ren milit\u00e4rische Einrichtungen und \u00f6ffentlich-rechtliche Einrichtungen wie Universit\u00e4ten. Die Landesdatenschutzgesetze regeln zum Beispiel auch den Umgang mit Forschungsdaten. \u00dcberwiegend sind alle drei Gesetze deckungsgleich. Im Zweifelsfall hat die DSGVO den Vorrang.</p><p>Landesdatenschutzbeh\u00f6rden haben eigene Spielr\u00e4ume und nutzen sie, um den Datenschutz zu diskutieren und gemeinsam weiterzuentwickeln. Das tr\u00e4gt schon mal zur Verunsicherung bei. Wie im Falle von Microsoft Office 365 und dem Verbot bzw. der Erlaubnis zum Einsatzes in Schulen und \u00f6ffentlichen Einrichtungen.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Besondere Kategorien personenbezogener Daten",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Verantwortung",
+                "entries": [
+                    "<p style=\"text-align:justify\">Verantwortlich ist die nat\u00fcrliche oder juristische Person, die \u00fcber Zweck und Mittel der Verarbeitung entscheidet. Das kann zum Beispiel die Gesch\u00e4ftsf\u00fchrung sein.</p><p style=\"text-align:justify\">Die Mitarbeitenden sind nicht verantwortlich. Sie stimmen sich mit der Verantwortlichen ab und handeln nach Anweisung. Dabei sind sie sorgf\u00e4ltig und handeln nicht eigenm\u00e4chtig. Vorf\u00e4lle m\u00fcssen sie direkt an die Verantwortliche melden. Zum Beispiel, wenn ein nicht passwortgesch\u00fctzter USB-Stick mit einer gro\u00dfen Menge personenbezogener Daten verloren gegangen ist.</p><p style=\"text-align:justify\">Die Verantwortliche muss dann entscheiden, ob der Vorfall gemeldet werden und muss und welche Ma\u00dfnahmen einzuleiten sind.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Beratung",
+                "entries": [
+                    "<p style=\"text-align:justify\">In der Regel gibt es in die Funktion der Datenschutzbeauftragten.&nbsp; Das ist eine Person von extern und/oder intern, die sich um die Umsetzung des Datenschutzes vor Ort k\u00fcmmert. Dazu ber\u00e4t sie auch die Mitarbeitenden oder im Falle einer Universit\u00e4t die Studierenden.</p><p style=\"text-align:justify\">Die Datenschutzbeh\u00f6rden sind ebenfalls zentral damit beauftragt, zu informieren, beraten, schulen. \u00dcber ihre Seiten stellen sie zuverl\u00e4ssige Informationen zur Verf\u00fcgung und helfen bei der Umsetzung.</p><p style=\"text-align:justify\">Auch Institutionen wie die <a href=\"https://stiftungdatenschutz.org/startseite\" target=\"_blank\">Stiftung Datenschutz</a> oder&nbsp;das Bundesministeriums f\u00fcr Justiz und Verbraucherschutz ( \"<a href=\"https://deinedatendeinerechte.de/lesen/\" target=\"_blank\">Deine Daten, deine Rechte</a>\" ) verf\u00fcgen \u00fcber st\u00e4ndig erweiterte gute Informationen.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Die Grundprinzipien",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "TOM",
+                "entries": [
+                    "<p>Unter dem Begriff technisch-organisatorische Ma\u00dfnahmen TOM verstecken sich alle Ma\u00dfnahmen, die zu ergreifen sind, um die personenbezogenen Daten zu sch\u00fctzen. Wo der Datenschutz aus juristischer Sicht Regeln und Vorschriften&nbsp;in der DSGVO aufstellt, betrachtet die Datensicherheit die technischen Aspekte, um die Sicherheit zu gew\u00e4hrleisten.</p><p>Zu ber\u00fccksichtigen sind dabei:</p><ul><li>Stand der Technik</li><li>Kosten f\u00fcr die Implementierung</li><li>Eintrittswahrscheinlichkeit und Schwere des Risikos f\u00fcr die pers\u00f6nlichen Rechte</li><li>und Freiheiten.</li></ul><p>Das Sicherheitslevel muss im Verh\u00e4ltnis zum Risiko angemessen sein.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Rechtsgrundlagen im Detail ",
+                "entries": [
+                    "<p style=\"text-align:justify\">Es ist verboten, personenbezogene Daten ohne eine Rechtsgrundlage zu verarbeiten. Die DSGVO nennt sechs. Die wichtigsten Rechtsgrundlagen in Ihrer Praxis sind:&nbsp;</p><ol><li style=\"text-align:justify\"><strong>Einwilligung</strong>: Die betroffene Person hat ihre Einwilligung zur Verarbeitung ihrer personenbezogenen Daten f\u00fcr einen oder mehrere bestimmte Zwecke gegeben. Es ist wichtig, das diese Einwilligung vorher und aktiv erfolgt. Eine reine Information nach dem Motto \"Hat nicht widersprochen\", ist ung\u00fcltig. Die Einwilligung muss nachvollziehbar dokumentiert werden.&nbsp;<br />Beispiel f\u00fcr einen Anlass: Newsletter oder Interview.&nbsp;</li><li style=\"text-align:justify\"><strong>Vertrag</strong>: Alles, was gebraucht wird, um einen Vertrag zu erf\u00fcllen, ist rechtm\u00e4\u00dfig. Auch um den Vertrag anzubahnen.&nbsp;<br />Beispiel: Kontodaten, um Lohn zu \u00fcberweisen.</li><li style=\"text-align:justify\"><strong>Rechtliche Verpflichtung</strong>: Hier muss die Verantwortliche eine gesetzliche Pflicht erf\u00fcllen.<br />Beispiel: das \u00dcbermitteln von&nbsp;Sozialversicherungsnummer an die Rentenkasse.</li></ol>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Organisatorische Ma\u00dfnahmen",
+                "entries": [
+                    "<ul><li>Die Ernennung eines Datenschutzbeauftragten</li><li>Datenschutzschulungen</li><li>Rechte-Rollen-Konzepte: Sehen, bearbeiten, l\u00f6schen. Was d\u00fcrfen Projektmitarbeitende machen, was die Leitung.</li><li>L\u00f6schkonzepte, d.h. wie lange d\u00fcrfen Daten aufbewahrt werden und wann m\u00fcssen sie gel\u00f6scht werden.&nbsp;</li><li>...</li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Technische Ma\u00dfnahmen",
+                "entries": [
+                    "<ul><li>Verschl\u00fcsselung von personenbezogenen Daten bei der \u00dcbertragung und Speicherung</li><li>Verwendung von sicheren Passw\u00f6rtern und Passwortmanagern</li><li>Einsatz von Firewalls und Virenschutzprogrammen</li><li>Regelm\u00e4\u00dfige Sicherheitsupdates f\u00fcr Betriebssysteme und Anwendungen</li><li>Sicherung von Daten durch regelm\u00e4\u00dfige Backups</li><li>Zugangskontrollen f\u00fcr IT-Systeme, um sicherzustellen, dass nur autorisierte Personen Zugriff haben.</li></ul>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Fazit",
+                "entries": [
+                    "<p style=\"text-align:justify\"><span>Sie haben den Datenschutz aus verschiedenen Perspektiven kennengelernt, aus der Sicht als Betroffene, aber auch aus beruflicher Sicht.</span></p><p style=\"text-align:justify\"><span>Der Datenschutz z\u00e4hlt zu den wichtigen Herausforderungen der digitalen Transformation. </span></p><p style=\"text-align:justify\"><span>Prof. Ulrich Kelber, oberster Datensch\u00fctzer Deutschlands, hat einmal auf einer Veranstaltung der Stiftung Datenschutz gesagt: \u201eStellen Sie sich vor, Sie gehen einkaufen und die ganze Zeit l\u00e4uft jemand hinter Ihnen her und schreibt auf, was sie gerade tun. Wie f\u00fchlen Sie sich dann?\u201c Die DSGVO hat es sich zum Ziel gesetzt, Sie zu sch\u00fctzen in einer Welt, in der wir noch weniger als fr\u00fcher uns selbst sch\u00fctzen k\u00f6nnen. </span></p><p style=\"text-align:justify\"><span>Allerdings geh\u00f6ren auch Sie zum Schutzsystem dazu. \u201eAngesichts der erheblichen datenschutzrechtlichen Risiken, die mit fortschreitender Digitalisierung einhergehen k\u00f6nnen, sind auch alle selbst gehalten, Ma\u00dfnahmen zum Schutz der digitalen Identit\u00e4t zu ergreifen. Diese Herausforderung durchdringt alle Lebensbereiche und betrifft alle Altersgruppen.\u201c (vgl. Der Bundesbeauftragte f\u00fcr den Datenschutz und die Informationsfreiheit\u201c , Mai 2022, Bonn)</span></p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Betroffene und ihre Rechte",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Nicht mehr wegzudenken",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Ironisch: digital Detox per App",
+                "entries": [
+                    "<p><span><span>Die Ambivalenz in unserer Einstellung zu digitalen Medien zeigt die Existenz (und massenhafte Nutzung \u2013 Link) zu Apps, die beim sogenannten digital detox, also digitaler Entgiftung helfen. Dabei wird Nutzung von digitalen Ger\u00e4ten bewusst stark reduziert oder gar tempor\u00e4r g\u00e4nzlich eingestellt.<br />In einer Welt, die von st\u00e4ndiger Konnektivit\u00e4t und digitaler \u00dcberreizung gepr\u00e4gt ist, scheint es paradox, dass wir uns auf unsere Smartphones verlassen, um uns von ihnen zu befreien. Diese Apps bieten verschiedene Funktionen wie Zeitlimits f\u00fcr die Nutzung von bestimmten Apps, Benachrichtigungssteuerung und Bildschirmzeitverfolgung.</span></span></p><p><span><span>Die Idee hinter diesen Apps ist es, uns dabei zu helfen, bewusster mit unserer digitalen Nutzung umzugehen und unsere Zeit besser zu managen. Sie sollen uns anregen, weniger Zeit online zu verbringen, unsere Aufmerksamkeit auf das Hier und Jetzt zu lenken und unser Wohlbefinden zu verbessern. Es ist interessant zu beobachten, wie die Technologie, die uns oft in den Bann zieht, nun als Werkzeug zur Selbstregulierung genutzt wird.</span></span></p><p><span><span>Obwohl digitale Technologien viele positive Aspekte haben, wie Effizienz und Kommunikation, k\u00f6nnen sie auch negative Auswirkungen auf unsere Gesundheit und unser Wohlbefinden haben. </span></span></p><p>&nbsp;</p><p><span><span><span>Manchmal reicht auch ein Stift und Papier</span></span></span></p><p><span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Brauch ich wirklich den 10. Terminkalender, das 15. Teamtool?</span></span></span></p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Langeweile",
+                "entries": [
+                    "<p>Langeweile f\u00f6rdert die Kreativit\u00e4t und Selbstreflexion</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Kompetenzen fr\u00fcher und heute",
+                "entries": [
+                    "<p><span><span><span>Ist immer schwieriger geworden. Wir sind umgeben von digitalen Sachen</span></span></span></p><p><span><span><span>(Von der Industrie 1.0 bis zur Industrie 4.0</span></span></span><br />https://kompetenzwerk-digital.de/vierfach-revolutionaer/#industrie-0-2b<br />https://sustainability-success.com/de/industrie-1-0-bis-4-0-2-3-umdrehung/</p><p>&nbsp;</p><p><span><span><span>Stellenangebote von fr\u00fcher \u2013 Kompetenzen ermitteln und vergleichen</span></span></span></p><p><span><span><span>Spiel: Aussagen von fr\u00fcher den jeweiligen Dekaden zuordnen. </span></span></span></p><p><span><span><span>Boris Becker AOL von 1999: Ich bin drin.</span></span></span></p><p><span><span><span>Ziel: niedrigschwelliger Einstieg ins Thema und Bewusstsein daf\u00fcr schaffen, dass verschiedene Epochen unterschiedliche Anforderungen an die Gesellschaft mit sich bringen.</span></span></span></p><p><span><span><span>Dann \u00dcbergang zu heute, etwa: \u201eDie gr\u00f6\u00dfte (vehementeste, am meisten vorgetragene) Anforderung an die heutige Gesellschaft ist, sich im Digitalen zurechtzufinden. </span></span></span></p><p>https://www.dji.de/fileadmin/user_upload/5_kompetenznachweis/KB_Kompetenzliste_281206.pdf</p><p>https://www.oecd.org/education/2030-project/contact/OECD_Lernkompass_2030.pdf</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "New Component Title",
+                "entries": [
+                    "<p>Aus diesem Grund ist es v\u00f6llig klar, dass aus allen Bereichen, sei es Wirtschaft, Industrie, Wissenschaft, Politik, Schule, etc. der Ruf nach digitalen Kompetenzen t\u00f6nt. Ohne geht es nicht mehr.</p><p>Dies kann zu dem Gef\u00fchl f\u00fchren, sich immer weiter fortbilden und weiterbilden zu m\u00fcssen: neue Programme beherrschen, neue \"skills\" lernen, immer auf dem Laufenden sein etc.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Quellen",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Trennung von privaten und beruflichen Daten",
+                "entries": [
+                    "<p>Privaten Daten sollten aus Gr\u00fcnden der Privatsph\u00e4re und des Selbstdatenschutzes nur auf privaten Ger\u00e4ten verarbeitet werden.&nbsp;</p><p>Berufliche Daten sollten nicht vermischt werden und wom\u00f6glich auf privaten Ger\u00e4ten verloren gehen. Sobald Sie mit personenbezogenen Daten aus beruflichem Kontext umgehen, tragen Sie auch eine Verantwortung m\u00fcssen&nbsp; die unterschiedlichen Sicherheitsanforderungen erm\u00f6glichen. Zum Beispiel leichtes Auffinden von Datens\u00e4tzen in Bezug auf L\u00f6schfristen.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Was k\u00f6nnen Sie tun?",
+                "entries": [
+                    "<p>Die beste M\u00f6glichkeit ist, jeweils ein eigenes Ger\u00e4t f\u00fcr Privat und Arbeit.</p><p>Eine weitere M\u00f6glichkeit ist die Verwendung von separaten Benutzerkonten auf Ihrem Laptop und Smartphone. So k\u00f6nnen Sie beispielsweise ein Benutzerkonto nur f\u00fcr Privates und ein anderes nur f\u00fcr die Arbeit verwenden. Auch die Verwendung von mehreren unterschiedlichen Telefonnummern kann helfen, Berufliches von Privatem zu trennen.</p><p>Es ist wichtig, dass Sie sich \u00fcber die verschiedenen M\u00f6glichkeiten informieren und eine L\u00f6sung w\u00e4hlen, die f\u00fcr Sie am besten geeignet ist.</p>"
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            },
+            {
+                "panelTitle": "Anonymisierung und Pseudonoymisierung",
+                "entries": [
+                    ""
+                ],
+                "keywords": [
+                    [],
+                    []
+                ]
+            }
+        ],
+        "behaviour": {
+            "useFallbackImage": false,
+            "fallbackImage": {
+                "params": {
+                    "decorative": false,
+                    "contentName": "Image"
+                },
+                "library": "H5P.Image 1.1",
+                "subContentId": "c975eb3a-94f6-431f-98e6-31189c024b8b",
+                "metadata": {
+                    "contentType": "Image",
+                    "license": "U",
+                    "title": "Untitled Image"
+                }
+            },
+            "imageWidth": 150,
+            "imageHeight": 150,
+            "alternateBackground": true,
+            "offerFilterField": true,
+            "modeFilterField": "and"
+        },
+        "l10n": {
+            "noEntriesError": "The author did not enter anything.",
+            "noMatchesForFilter": "There are not matches for @query.",
+            "enterToFilter": "Enter a query to filter the content for relevant entries.",
+            "listChanged": "List changed. Showing @visible of @total items."
+        },
+        "header": ""
+    }
+}

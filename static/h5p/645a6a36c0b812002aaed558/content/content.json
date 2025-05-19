@@ -1,0 +1,174 @@
+{
+    "solution": {
+        "introduction": "",
+        "sample": "GPT-4: <b>K\u00fcnstliche Intelligenz (KI; AI)</b>; <b>Quantencomputing (QC)</b>; <b>5G und nachfolgende Generationen von Mobilfunknetzwerken (6G, 7G)</b>; <b>Internet der Dinge (IoT; Internet of Things)</b>; <b>Blockchain-Technologie und dezentralisierte Finanzen (DeFi; Decentralized Finance)</b>; <b>Erweiterte Realit\u00e4t (AR; Augmented Reality), Virtuelle Realit\u00e4t (VR; Virtual Reality) und Gemischte Realit\u00e4t (MR; Mixed Reality)</b>; <b>Biotechnologie und Genom-Editierung (CRISPR)</b>; <b>Nachhaltige Technologien (Erneuerbare Energien; Recycling- und Wiederverwertungstechnologien)</b>; <b>Automatisiertes und autonomes Fahren (AV; Autonomous Vehicles)</b>; <b>Digitaler Zwilling (Digital Twin)</b>.\n\nPrompt:\nWas werden Ihrer Meinung nach die wichtigsten technologischen und digitalen Ver\u00e4nderungen in den n\u00e4chsten Jahren und Jahrzehnten sein? (500 Zeichen, Stichw\u00f6rter mit fett markieren, alternative Begriffe und Abk\u00fcrzungen in Klammern und durch Semikolon getrennt schreiben, Format: HTML)"
+    },
+    "keywords": [
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 K\u00fcnstliche Intelligenz (KI; AI)"
+            },
+            "keyword": "K\u00fcnstliche Intelligenz",
+            "alternatives": [
+                "KI",
+                " AI"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Quantencomputing (QC)"
+            },
+            "keyword": "Quantencomputing",
+            "alternatives": [
+                "QC"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 5G und nachfolgende Generationen von Mobilfunknetzwerken (6G, 7G)"
+            },
+            "keyword": "5G und nachfolgende Generationen von Mobilfunknetzwerken",
+            "alternatives": [
+                "6G, 7G"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Internet der Dinge (IoT; Internet of Things)"
+            },
+            "keyword": "Internet der Dinge",
+            "alternatives": [
+                "IoT",
+                " Internet of Things"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Blockchain-Technologie und dezentralisierte Finanzen (DeFi; Decentralized Finance)"
+            },
+            "keyword": "Blockchain-Technologie und dezentralisierte Finanzen",
+            "alternatives": [
+                "DeFi",
+                " Decentralized Finance"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Erweiterte Realit\u00e4t (AR; Augmented Reality)"
+            },
+            "keyword": "Erweiterte Realit\u00e4t",
+            "alternatives": [
+                "AR",
+                " Augmented Reality"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Biotechnologie und Genom-Editierung (CRISPR)"
+            },
+            "keyword": "Biotechnologie und Genom-Editierung",
+            "alternatives": [
+                "CRISPR"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Nachhaltige Technologien (Erneuerbare Energien; Recycling- und Wiederverwertungstechnologien)"
+            },
+            "keyword": "Nachhaltige Technologien",
+            "alternatives": [
+                "Erneuerbare Energien",
+                " Recycling- und Wiederverwertungstechnologien"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Automatisiertes und autonomes Fahren (AV; Autonomous Vehicles)"
+            },
+            "keyword": "Automatisiertes und autonomes Fahren",
+            "alternatives": [
+                "AV",
+                " Autonomous Vehicles"
+            ]
+        },
+        {
+            "options": {
+                "points": 1,
+                "occurrences": 1,
+                "caseSensitive": false,
+                "forgiveMistakes": true,
+                "feedbackIncluded": "\u2713 Digitaler Zwilling (Digital Twin)"
+            },
+            "keyword": "Digitaler Zwilling",
+            "alternatives": [
+                "Digital Twin"
+            ]
+        }
+    ],
+    "overallFeedback": [
+        {
+            "from": 0,
+            "to": 100,
+            "feedback": "Vielen Dank f\u00fcr Ihren Beitrag!"
+        }
+    ],
+    "behaviour": {
+        "inputFieldSize": "10",
+        "enableRetry": true,
+        "ignoreScoring": false,
+        "minimumLength": 100,
+        "maximumLength": 500,
+        "percentagePassing": 50,
+        "percentageMastering": 80,
+        "pointsHost": 1
+    },
+    "checkAnswer": "\u00dcberpr\u00fcfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "L\u00f6sung anzeigen",
+    "feedbackHeader": "Feedback",
+    "solutionTitle": "Beispiell\u00f6sung",
+    "remainingChars": "Verbleibende Zeichen: @chars",
+    "notEnoughChars": "Sie m\u00fcssen mindestens @chars-Zeichen eingeben!",
+    "messageSave": "gespeichert",
+    "taskDescription": "Was glauben Sie, werden gro\u00dfe technisch-digitale Ver\u00e4nderungen in den n\u00e4chsten Jahren und Jahrzehnten sein?",
+    "placeholderText": "",
+    "media": {},
+    "ariaYourResult": "",
+    "ariaNavigatedToSolution": ""
+}

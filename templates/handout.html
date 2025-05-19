@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ handout_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/handout.css') }}">
+</head>
+<body>
+
+{% for panel in panels %}
+    <div class="panel">
+        <div class="panel-title">{{ panel.title }}</div>
+        {{ panel.body }}
+</div>
+{% endfor %}
+
+<script src="{{ url_for('static', filename='js/equal_height_matching.js') }}"></script>
+</body>
+</html>

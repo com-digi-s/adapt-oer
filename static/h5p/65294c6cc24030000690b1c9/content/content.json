@@ -1,0 +1,37 @@
+{
+    "solution": {
+        "introduction": "",
+        "sample": "<p>&lt;3</p>"
+    },
+    "keywords": [],
+    "overallFeedback": [
+        {
+            "from": 0,
+            "to": 100,
+            "feedback": "Vielen Dank f\u00fcr Ihren Beitrag!"
+        }
+    ],
+    "behaviour": {
+        "inputFieldSize": "10",
+        "enableRetry": true,
+        "ignoreScoring": false,
+        "minimumLength": 100,
+        "maximumLength": 500,
+        "percentagePassing": 50,
+        "percentageMastering": 80,
+        "pointsHost": 1
+    },
+    "checkAnswer": "\u00dcberpr\u00fcfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "L\u00f6sung anzeigen",
+    "feedbackHeader": "Feedback",
+    "solutionTitle": "Beispiell\u00f6sung",
+    "remainingChars": "Verbleibende Zeichen: @chars",
+    "notEnoughChars": "Sie m\u00fcssen mindestens @chars-Zeichen eingeben!",
+    "messageSave": "gespeichert",
+    "taskDescription": "",
+    "placeholderText": "",
+    "media": {},
+    "ariaYourResult": "",
+    "ariaNavigatedToSolution": ""
+}

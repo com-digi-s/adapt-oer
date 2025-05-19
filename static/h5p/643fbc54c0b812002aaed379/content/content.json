@@ -1,0 +1,369 @@
+{
+    "progressType": "dots",
+    "passPercentage": 50,
+    "questions": [
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Fake News</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Desinformation</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Fehlinformation</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Eine Nachrichten-Website, berichtet, dass ein bekannter Internationaler Fu\u00dfballer wegen Dopings suspendiert wurde. Sp\u00e4ter stellt sich jedoch heraus, dass die Website eine \u00dcbersetzung des Teams falsch interpretiert hat und der Sportler tats\u00e4chlich nicht in einen Dopingskandal verwickelt war.</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        },
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Fake News</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Desinformation</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Fehlinformation</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Eine politische Partei bringt ein Video in Umlauf, in dem ein Oppositionsf\u00fchrer scheinbar kontroverse \u00c4u\u00dferungen macht, aber das Video wurde eindeutig geschnitten und bearbeitet.</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        },
+        {
+            "params": {
+                "answers": [
+                    {
+                        "text": "<div>Fake News</div>\n",
+                        "correct": true,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Desinformation</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    },
+                    {
+                        "text": "<div>Fehlinformation</div>\n",
+                        "correct": false,
+                        "tipsAndFeedback": {
+                            "tip": "",
+                            "chosenFeedback": "",
+                            "notChosenFeedback": ""
+                        }
+                    }
+                ],
+                "UI": {
+                    "showSolutionButton": "L\u00f6sung anzeigen",
+                    "tryAgainButton": "Erneut versuchen",
+                    "checkAnswerButton": "Pr\u00fcfen",
+                    "tipsLabel": "Tipp anzeigen",
+                    "scoreBarLabel": "Sie haben :num von :total Punkten",
+                    "tipAvailable": "Tipp verf\u00fcgbar",
+                    "feedbackAvailable": "Feedback verf\u00fcgbar",
+                    "readFeedback": "R\u00fcckmeldung lesen",
+                    "wrongAnswer": "Falsche Antwort",
+                    "rightAnswer": "Richtige Antwort",
+                    "shouldCheck": "Sollte gepr\u00fcft worden sein",
+                    "shouldNotCheck": "Sollte nicht gepr\u00fcft worden sein",
+                    "noInput": "Bitte antworten Sie, bevor Sie die L\u00f6sung anzeigen",
+                    "submitAnswerButton": "Absenden",
+                    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+                    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+                    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+                },
+                "question": "<p>Auf Facebook postet ein Nutzer, dass eine bestimmte Zahnpasta sch\u00e4dliche Chemikalien enth\u00e4lt, aber der Post basiert auf Ger\u00fcchten und hat keine wissenschaftlichen Beweise zur Untermauerung.</p>\n",
+                "behaviour": {
+                    "enableRetry": true,
+                    "enableSolutionsButton": true,
+                    "singlePoint": false,
+                    "randomAnswers": true,
+                    "showSolutionsRequiresInput": true,
+                    "type": "auto",
+                    "confirmCheckDialog": false,
+                    "confirmRetryDialog": false,
+                    "autoCheck": false,
+                    "passPercentage": 100,
+                    "showScorePoints": true,
+                    "enableCheckButton": true
+                },
+                "confirmCheck": {
+                    "header": "Fertig?",
+                    "body": "Sind Sie sicher, dass Sie abgeben m\u00f6chten?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Beenden"
+                },
+                "confirmRetry": {
+                    "header": "Wiederholung?",
+                    "body": "Sie wollen es erneut versuchen?",
+                    "cancelLabel": "Abbrechen",
+                    "confirmLabel": "Best\u00e4tigen"
+                },
+                "overallFeedback": [
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "feedback": "Falsch!"
+                    },
+                    {
+                        "from": 1,
+                        "to": 99,
+                        "feedback": "Fast!"
+                    },
+                    {
+                        "from": 100,
+                        "to": 100,
+                        "feedback": "Korrekt!"
+                    }
+                ]
+            },
+            "library": "H5P.MultiChoice 1.16",
+            "subContentId": "",
+            "metadata": {
+                "title": "",
+                "license": "U",
+                "contentType": "Multiple Choice"
+            }
+        }
+    ],
+    "introPage": {
+        "showIntroPage": false,
+        "startButtonText": "Quiz starten",
+        "introduction": ""
+    },
+    "texts": {
+        "prevButton": "Vorherige Frage",
+        "nextButton": "N\u00e4chste Frage",
+        "finishButton": "Beenden",
+        "textualProgress": "Frage: @current von @totals",
+        "questionLabel": "Frage",
+        "jumpToQuestion": "Springe zu Frage %d",
+        "readSpeakerProgress": "Frage @current von @totals",
+        "unansweredText": "Unanswered",
+        "answeredText": "Beantwortet",
+        "currentQuestionText": "Aktuelle Frage",
+        "submitButton": "Absenden",
+        "navigationLabel": "Fragen"
+    },
+    "endGame": {
+        "showResultPage": true,
+        "solutionButtonText": "L\u00f6sung anzeigen",
+        "finishButtonText": "Beenden",
+        "showAnimations": false,
+        "\u00fcberspringbar": false,
+        "skipButtonText": "Video \u00fcberspringen",
+        "message": "Ihr Ergebnis:",
+        "retryButtonText": "Wiederholen",
+        "noResultMessage": "Beendet",
+        "overallFeedback": [
+            {
+                "from": 0,
+                "to": 100,
+                "feedback": "Du hast @finals von @totals Punkten erreicht."
+            }
+        ],
+        "oldFeedback": {
+            "successGreeting": "Herzlichen Gl\u00fcckwunsch!",
+            "successComment": "Das hast du sehr gut gemacht!",
+            "failGreeting": "Oh, nein!",
+            "failComment": "Das hat nicht so gut geklappt."
+        },
+        "showSolutionButton": true,
+        "showRetryButton": true,
+        "scoreBarLabel": "Du hast @finals von @totals Punkten erreicht.",
+        "submitButtonText": "Abgeben"
+    },
+    "override": {
+        "showSolutionButton": "off",
+        "retryButton": "off",
+        "checkButton": true
+    },
+    "disableBackwardsNavigation": false,
+    "randomQuestions": false
+}

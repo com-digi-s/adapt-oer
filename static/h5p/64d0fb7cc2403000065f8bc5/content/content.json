@@ -1,0 +1,41 @@
+{
+    "taskDescription": "Ordne die richtigen Element zu ",
+    "checkAnswer": "Pr\u00fcfen",
+    "tryAgain": "Wiederholen",
+    "showSolution": "L\u00f6sung anzeigen",
+    "behaviour": {
+        "enableRetry": true,
+        "enableSolutionsButton": true,
+        "instantFeedback": false,
+        "enableCheckButton": true
+    },
+    "textField": "Korrekte Einwilligung: *Aktive Handlung *; *Vor der Verarbeitung *; *Zwecke werden genannt*\n",
+    "overallFeedback": [
+        {
+            "from": 0,
+            "to": 100,
+            "feedback": "Ergebnis: @score von @total."
+        }
+    ],
+    "dropZoneIndex": "Drop Zone @index",
+    "empty": "Drop Zone @index ist leer.",
+    "contains": "Drop Zone @index enth\u00e4lt draggable @draggable.",
+    "tipLabel": "Tipp anzeigen",
+    "correctText": "Korrekt!",
+    "incorrectText": "Falsch!",
+    "resetDropTitle": "Abwurf zur\u00fccksetzen",
+    "resetDropDescription": "Sind Sie sicher, dass Sie diesen Abwurfbereich zur\u00fccksetzen wollen?",
+    "grabbed": "Draggable ist gegrabbt.",
+    "cancelledDragging": "Das Ziehen wurde abgebrochen.",
+    "correctAnswer": "Richtige Antwort:",
+    "feedbackHeader": "Feedback",
+    "scoreBarLabel": "Sie haben :num von :total Punkten",
+    "media": {
+        "disableImageZooming": false
+    },
+    "submitAnswer": "Einreichen",
+    "ariaDraggableIndex": "@index von @count draggables.",
+    "a11yCheck": "\u00dcberpr\u00fcfen Sie die Antworten. Die Antworten werden als richtig, falsch oder unbeantwortet markiert.",
+    "a11yShowSolution": "Zeigen Sie die L\u00f6sung an. Die Aufgabe wird mit der richtigen L\u00f6sung markiert.",
+    "a11yRetry": "Wiederholen Sie die Aufgabe. Setze alle Antworten zur\u00fcck und beginne die Aufgabe erneut."
+}
