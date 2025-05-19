@@ -503,7 +503,7 @@ class CourseView(MyModelView, metaclass=Meta):
 
 		def find_and_delete_root_object(data):
 			for obj in data.get('contentObjects', []):
-				if obj["title"] == "Edit|OER Komponenten":
+				if obj["title"] == "Adapt|OER Komponenten":
 					root_id = obj["_id"]
 					data['contentObjects'] = [o for o in data['contentObjects'] if o["_id"] != root_id]
 					hierarchy = ['articles', 'blocks', 'components']

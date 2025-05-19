@@ -11,3 +11,4 @@ BUILDS_DIR = os.path.expanduser("/courses/61eacc691f4b290008b1bf46")
 GLOSSARY_JSON = "/app/static/glossary.json"
 ADDITIONAL_COMPONENTS = "/app/static/additional_components.json"
 WTF_CSRF_ENABLED = True  # enables CSRF protection globally
+AUTHORING_DOMAIN = "https://authoring.creativeartefact.org"
