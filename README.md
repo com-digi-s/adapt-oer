@@ -4,6 +4,25 @@
 
 ---
 
+## **Environment Variables**
+
+You need to set the following environment variables to run Adapt|OER.
+Therefor copy the given [credentials.env.dist](credentials.env.dist) and apply the variables on your host.
+
+```
+USER=your-account
+PASS=your-password
+GITLAB_ACCESS_TOKEN=...
+# mongodb
+MONGODB_PORT=27017
+DB_HOST=127.0.0.1
+DB_NAME=adapt
+SECRET_KEY=123456790
+# adapt authoring
+BUILDS_DIR=/path/to/adapt_authoring/temp/tenantId/adapt_framework/courses
+AUTHORING_DOMAIN=https://your.auhtoring.url
+```
+
 ## **Architecture Overview**
 
 ### **Tech Stack**
