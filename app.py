@@ -285,7 +285,6 @@ class MyModelView(ModelView):
 	def get_query(self):
 		# Fetch IDs of shared courses
 		shared_course_ids = [ObjectId(str(course['_id'])) for course in db.courses.find({'_isShared': True})]
-		
 		if hasattr(self, 'get_init_query') and self.get_init_query:
 			self.init_query = self.get_init_query()
 			self.init_query["_courseId"] = {"$in": shared_course_ids}
@@ -678,6 +677,60 @@ class ContentsView(MyModelView, metaclass=Meta):
 		else:
 			return {"_courseId": {"$in": shared_course_ids}}
 
+	def get_taxonomy_for_id(self, model):
+		"""
+		This method will execute tasks the taxonomy_formatter did before.
+		:param model:
+		:return: (taxonomy, is_abbrev_valid)
+		"""
+		is_abbrev_valid = False
+
+		# Check if parent content object exists
+		raw_index = get_related_content_index(model, 'contentobjects')
+
+		if type(raw_index) == int:
+			learning_unit = str(math.ceil(raw_index / 2) + 1)
+			course_id = model['_courseId']
+
+			# Fetch the domain information
+			domain_title = str(db.contentobjects.find_one({'_id': model['_parentId']}).get("title"))
+			domain_abbrev_str = domain_title[0]
+
+			# If domain abbreviation is not A, B, or C, color it red
+			if domain_abbrev_str in ['A', 'B', 'C']:
+				is_abbrev_valid = True
+
+			# Construct taxonomy with course title, domain abbreviation, and learning unit
+			taxonomy = db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev_str + '.' + learning_unit
+			return taxonomy, is_abbrev_valid
+		else:
+			return raw_index, is_abbrev_valid
+
+
+	def get_list(self, *args, **kwargs):
+		"""
+		Overwrite method to handele sorting over taxonomies.
+		:param args:
+		:param kwargs:
+		:return: (count, results)
+		"""
+		count, results = super(ContentsView, self).get_list(*args, **kwargs)
+
+		sort_dict = {} # helper dictionary
+
+		for r in results: # cursor
+			taxonomy, abbrev_valid = self.get_taxonomy_for_id(r)
+			r['taxonomy_string'] = taxonomy
+			r['abbrev_valid'] = abbrev_valid
+			sort_dict[taxonomy] = r
+
+		ret_val = [sort_dict[k] for k in sorted(sort_dict.keys())]
+
+		if args[2] is False: # args[2] contains sort_desc variable value
+			return count, ret_val
+		else:
+			return count, reversed(ret_val)
+
 	@action('export_unit_in_course', 'Lerneinheit mit Kurs exportieren', 'Der Kurs wird mit Startpunkt auf die ausgewählte Lerneinheit exportiert.')
 	def export_unit_with_course_context(self, ids):
 		def get_zip_for_contentobject(id):
@@ -827,21 +880,37 @@ class ContentsView(MyModelView, metaclass=Meta):
 		return render_template("handout.html", panels=panels, handout_title=learning_unit["displayTitle"])
 
 	def taxonomy_formatter(view, context, model, name):
-			# Fetch the block that the model belongs to
-			model_parent_id = model['_parentId']
-			
-			parent_content_objects = list(db.contentobjects.find({"_id": model_parent_id}))
-			
+			"""
+			Adds HTML to the taxonomy column.
+			Can use model information of get_list() method from now on
+			TODO: Make use of model information, remove unneeded handlings and check which fallbacks should remain
+			TODO: Handle markup handling of abbrevation
+			:param context:
+			:param model:
+			:param name:
+			:return:
+			"""
+			# use string set in get_list() if given
+			if 'taxonomy_string' in model:
+				if model['abbrev_valid']:
+					taxonomy = Markup(f"<a href='{get_editor_url(model['_courseId'], model['_id'])}'>{model['taxonomy_string']}</a>")
+				else:
+					colored = f"<span style=\"color: red\">{model['taxonomy_string']}</span>"
+					taxonomy = Markup(
+						f"<a href='{get_editor_url(model['_courseId'], model['_id'])}'>{colored}</a>")
+				model['taxonomy'] = taxonomy
+				return taxonomy
+
 			# Check if parent content object exists
 			raw_index = get_related_content_index(model, 'contentobjects')
-			if type(raw_index) == int:
+			if isinstance(raw_index, int):
 					learning_unit = str(math.ceil(raw_index / 2) + 1)
 					course_id = model['_courseId']
-					
+
 					# Fetch the domain information
 					domain_title = str(db.contentobjects.find_one({'_id': model['_parentId']}).get("title"))
 					domain_abbrev = domain_title[0]
-					
+
 					# If domain abbreviation is not A, B, or C, color it red
 					if domain_abbrev not in ['A', 'B', 'C']:
 							domain_abbrev = f'<span style="color: red">{domain_abbrev}</span>'
@@ -958,7 +1027,7 @@ class ComponentView(MyModelView, metaclass=Meta):
 						if domain_abbrev not in ['A', 'B', 'C']:
 							domain_abbrev = f'<span style="color: red">{domain_abbrev}</span>'
 							domain_title = Markup(f'<span style="color: red">{domain_title}</span>')
-						component['taxonomy'] = Markup(db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev + '.' + learning_unit)
+						component['taxonomy'] = db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev + '.' + learning_unit
 						component['taxonomy'] = Markup(f"<a href='{get_editor_url(course_id, article_parent_id)}'>{component['taxonomy']}</a>")
 						component['domain'] = domain_title
 					else:
