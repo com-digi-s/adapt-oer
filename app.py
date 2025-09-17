@@ -799,7 +799,7 @@ class ContentsView(MyModelView, metaclass=Meta):
 				zip_buffer.seek(0)
 				shutil.rmtree(dir_of_zips)
 
-				return send_file(zip_buffer, as_attachment=True, download_name='lerneineiten.zip')
+				return send_file(zip_buffer, as_attachment=True, download_name='lerneinheiten.zip')
 
 		except Exception as e:
 				flash(f"Export fehlgeschlagen: {e}", "error")
