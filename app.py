@@ -15,6 +15,8 @@ import tempfile
 import random
 import copy
 import zipfile
+import pathlib
+import hashlib
 
 from collections import defaultdict
 from config import ADDITIONAL_COMPONENTS
@@ -43,11 +45,13 @@ from transpile_bson import *
 
 import config
 
+ADAPT_COURSE_TEMPLATE = "./static/adapt-course-template.zip"
+
 app = Flask(__name__, template_folder="templates")
 app.config.from_object(config)
 babel = Babel(app)
 conn = pymongo.MongoClient(app.config['MONGO_URI'])
-db = conn.adapt
+db = conn.get_default_database()
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
@@ -261,6 +265,416 @@ def compose_quiz(ids):
         flash(f"An error occurred: {e}")
 
     return tmpdirname
+
+
+def parse_taxonomy_string(taxonomy):
+    """
+    Erwartet z.B. '1.2.A.3' und liefert einen stabil sortierbaren Schlüssel.
+    Nicht passende Werte werden ans Ende sortiert.
+    """
+    match = re.match(r"^(\d+)\.(\d+)\.([A-Z])\.(\d+)$", str(taxonomy))
+    if not match:
+        return (999, 999, 'Z', 999)
+    return (int(match.group(1)), int(match.group(2)), match.group(3), int(match.group(4)))
+
+
+def get_learning_unit_taxonomy(unit):
+    """
+    Erzeugt die bestehende Taxonomie einer Lerneinheit im Format X.Y.A.N
+    auf Basis der vorhandenen Logik in app.py.
+    """
+    raw_index = get_related_content_index(unit, 'contentobjects')
+    if not isinstance(raw_index, int):
+        return None
+
+    learning_unit = str(math.ceil(raw_index / 2) + 1)
+    course = db.courses.find_one({'_id': unit['_courseId']})
+    domain = db.contentobjects.find_one({'_id': unit['_parentId']})
+
+    if not course or not domain:
+        return None
+
+    course_prefix_match = re.match(r"^(\d+)\.(\d+)", str(course.get('title', '')))
+    if not course_prefix_match:
+        return None
+
+    course_prefix = f"{course_prefix_match.group(1)}.{course_prefix_match.group(2)}"
+    domain_abbrev = str(domain.get('title', '')).strip()[:1].upper()
+
+    return f"{course_prefix}.{domain_abbrev}.{learning_unit}"
+
+
+def get_domain_letter_for_unit(unit):
+    domain = db.contentobjects.find_one({'_id': unit['_parentId']})
+    if not domain:
+        return None
+    return str(domain.get('title', '')).strip()[:1].upper()
+
+
+def make_24hex(prefix, old_id):
+    h = hashlib.sha1(f"{prefix}:{old_id}".encode("utf-8")).hexdigest()
+    return h[:24]
+
+
+def replace_refs(node, mapping):
+    if isinstance(node, str):
+        return mapping.get(node, node)
+    if isinstance(node, list):
+        return [replace_refs(x, mapping) for x in node]
+    if isinstance(node, dict):
+        return {k: replace_refs(v, mapping) for k, v in node.items()}
+    return node
+
+
+def add_project_files_to_zip(zip_file, base_dir):
+    """
+    Packt ein Adapt-Projekt für den Authoring-Import.
+    build/, dist/, node_modules/ usw. werden ausgeschlossen.
+    """
+    excluded_prefixes = [
+        'build/',
+        'dist/',
+        'node_modules/',
+        '.git/',
+        '.cache/',
+        '.grunt/',
+        'tmp/'
+    ]
+    excluded_names = {'.DS_Store'}
+
+    for foldername, _, filenames in os.walk(base_dir):
+        for filename in filenames:
+            file_path = os.path.join(foldername, filename)
+            arcname = os.path.relpath(file_path, base_dir).replace("\\", "/")
+
+            if filename in excluded_names:
+                continue
+
+            if any(arcname.startswith(prefix) for prefix in excluded_prefixes):
+                continue
+
+            zip_file.write(file_path, arcname, ZIP_DEFLATED)
+
+
+def load_built_course_structure(course_id):
+    """
+    Lädt die vorhandenen Kurs-JSONs eines veröffentlichten Kurses aus:
+    <BUILDS_DIR>/<course_id>/build/course/en/
+    """
+    build_root = os.path.join(app.config['BUILDS_DIR'], str(course_id), 'build')
+    base_dir = os.path.join(build_root, 'course', 'en')
+
+    if not os.path.exists(base_dir):
+        raise ValueError(f"Build-Struktur nicht gefunden: {base_dir}")
+
+    data = {
+        'build_root': build_root,
+        'base_dir': base_dir,
+        'course': read_json_file(os.path.join(base_dir, 'course.json')) or {},
+        'contentObjects': read_json_file(os.path.join(base_dir, 'contentObjects.json')) or [],
+        'articles': read_json_file(os.path.join(base_dir, 'articles.json')) or [],
+        'blocks': read_json_file(os.path.join(base_dir, 'blocks.json')) or [],
+        'components': read_json_file(os.path.join(base_dir, 'components.json')) or [],
+    }
+
+    return data
+
+
+def build_index(items):
+    return {item['_id']: item for item in items}
+
+
+def extract_learning_unit_subtree(course_data, unit_id):
+    """
+    Schneidet aus den Build-JSONs den vollständigen Unterbaum einer Lerneinheit heraus:
+    contentObject (unit) -> articles -> blocks -> components
+    """
+    contentobjects = course_data['contentObjects']
+    articles = course_data['articles']
+    blocks = course_data['blocks']
+    components = course_data['components']
+
+    unit = next((obj for obj in contentobjects if obj['_id'] == str(unit_id)), None)
+    if not unit:
+        raise ValueError(f"Lerneinheit {unit_id} nicht in contentObjects.json gefunden.")
+
+    unit_articles = [a for a in articles if a.get('_parentId') == unit['_id']]
+    article_ids = {a['_id'] for a in unit_articles}
+
+    unit_blocks = [b for b in blocks if b.get('_parentId') in article_ids]
+    block_ids = {b['_id'] for b in unit_blocks}
+
+    unit_components = [c for c in components if c.get('_parentId') in block_ids]
+
+    return {
+        'unit': copy.deepcopy(unit),
+        'articles': copy.deepcopy(unit_articles),
+        'blocks': copy.deepcopy(unit_blocks),
+        'components': copy.deepcopy(unit_components),
+    }
+
+
+def remap_subtree_ids(subtree, new_menu_id, new_unit_title, prefix, base_course_id):
+    """
+    Nimmt einen Teilbaum aus den Build-/JSON-Dateien:
+    page -> articles -> blocks -> components
+    und hängt ihn unter ein Ziel-menu.
+    """
+    id_map = {}
+
+    old_page_id = subtree['unit']['_id']
+    new_page_id = make_24hex(prefix, old_page_id)
+    id_map[old_page_id] = new_page_id
+
+    for article in subtree['articles']:
+        id_map[article['_id']] = make_24hex(prefix, article['_id'])
+
+    for block in subtree['blocks']:
+        id_map[block['_id']] = make_24hex(prefix, block['_id'])
+
+    for component in subtree['components']:
+        id_map[component['_id']] = make_24hex(prefix, component['_id'])
+
+    new_page = replace_refs(copy.deepcopy(subtree['unit']), id_map)
+    new_page['_type'] = 'page'
+    new_page['_id'] = new_page_id
+    new_page['_parentId'] = new_menu_id
+    new_page['title'] = new_unit_title
+    new_page['displayTitle'] = new_unit_title
+
+    new_articles = []
+    for article in subtree['articles']:
+        new_article = replace_refs(copy.deepcopy(article), id_map)
+        new_article['_id'] = id_map[article['_id']]
+        new_article['_parentId'] = new_page_id
+        if '_courseId' in new_article:
+            new_article['_courseId'] = base_course_id
+        new_articles.append(new_article)
+
+    new_blocks = []
+    for block in subtree['blocks']:
+        new_block = replace_refs(copy.deepcopy(block), id_map)
+        new_block['_id'] = id_map[block['_id']]
+        if '_courseId' in new_block:
+            new_block['_courseId'] = base_course_id
+        new_blocks.append(new_block)
+
+    new_components = []
+    for component in subtree['components']:
+        new_component = replace_refs(copy.deepcopy(component), id_map)
+        new_component['_id'] = id_map[component['_id']]
+        if '_courseId' in new_component:
+            new_component['_courseId'] = base_course_id
+        new_components.append(new_component)
+
+    return new_page, new_articles, new_blocks, new_components
+
+
+def create_domain_contentobject(domain_letter, sort_order=0):
+    domain_titles = {
+        'A': 'A - Verstehen',
+        'B': 'B - Anwenden',
+        'C': 'C - Bewerten'
+    }
+
+    return {
+        "_type": "menu",
+        "_id": make_24hex("menu", domain_letter),
+        "_parentId": "course",
+        "title": domain_titles[domain_letter],
+        "displayTitle": domain_titles[domain_letter]
+    }
+
+
+def write_assembled_course_jsons(tmp_project_dir, contentobjects, articles, blocks, components):
+    course_en_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en')
+    os.makedirs(course_en_dir, exist_ok=True)
+
+    with open(os.path.join(course_en_dir, 'contentObjects.json'), 'w', encoding='utf-8') as f:
+        json.dump(contentobjects, f, ensure_ascii=False, indent=2)
+
+    with open(os.path.join(course_en_dir, 'articles.json'), 'w', encoding='utf-8') as f:
+        json.dump(articles, f, ensure_ascii=False, indent=2)
+
+    with open(os.path.join(course_en_dir, 'blocks.json'), 'w', encoding='utf-8') as f:
+        json.dump(blocks, f, ensure_ascii=False, indent=2)
+
+    with open(os.path.join(course_en_dir, 'components.json'), 'w', encoding='utf-8') as f:
+        json.dump(components, f, ensure_ascii=False, indent=2)
+
+
+def extract_adapt_course_template():
+    """
+    Entpackt die statische Adapt-Projektvorlage aus static/adapt-course-template.zip
+    und liefert das Temp-Verzeichnis zurück.
+    """
+    template_zip = ADAPT_COURSE_TEMPLATE
+
+    if not os.path.exists(template_zip):
+        raise ValueError(f"Adapt-Kursvorlage nicht gefunden: {template_zip}")
+
+    tmp_project_dir = tempfile.mkdtemp()
+
+    with ZipFile(template_zip, 'r') as zip_ref:
+        zip_ref.extractall(tmp_project_dir)
+
+    expected_course_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en')
+    if not os.path.exists(expected_course_dir):
+        raise ValueError(
+            f"Adapt-Kursvorlage enthält kein src/course/en: {expected_course_dir}"
+        )
+
+    return tmp_project_dir
+
+
+def load_template_course_json(tmp_project_dir):
+    course_json_path = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'course.json')
+    course_json = read_json_file(course_json_path)
+    if not course_json:
+        raise ValueError(f"Vorlagen-course.json nicht gefunden oder leer: {course_json_path}")
+    return course_json
+
+
+def load_template_content_objects(tmp_project_dir):
+    path = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'contentObjects.json')
+    data = read_json_file(path)
+    if data is None:
+        raise ValueError(f"Vorlagen-contentObjects.json nicht gefunden: {path}")
+    return data
+
+
+def find_template_menu_id(contentobjects, domain_letter):
+    domain_titles = {
+        'A': 'A - Verstehen',
+        'B': 'B - Anwenden',
+        'C': 'C - Bewerten'
+    }
+    wanted_title = domain_titles[domain_letter]
+
+    for obj in contentobjects:
+        if obj.get('_type') == 'menu' and obj.get('title') == wanted_title:
+            return obj.get('_id')
+
+    raise ValueError(f"Menü '{wanted_title}' in der Vorlage nicht gefunden.")
+
+
+def get_course_id_from_template_course_json(course_json):
+    if isinstance(course_json, dict):
+        return course_json.get('_id')
+
+    if isinstance(course_json, list) and course_json and isinstance(course_json[0], dict):
+        return course_json[0].get('_id')
+
+    raise ValueError("Vorlagen-course.json hat ein unerwartetes Format.")
+
+
+def build_assembled_course_zip(selected_unit_ids):
+    units = list(db.contentobjects.find({'_id': {'$in': [ObjectId(i) for i in selected_unit_ids]}}))
+    if not units:
+        raise ValueError("Keine Lerneinheiten gefunden.")
+
+    enriched_units = []
+    for unit in units:
+        taxonomy = get_learning_unit_taxonomy(unit)
+        domain_letter = get_domain_letter_for_unit(unit)
+
+        if not taxonomy or domain_letter not in ['A', 'B', 'C']:
+            continue
+
+        enriched_units.append({
+            'unit': unit,
+            'taxonomy': taxonomy,
+            'domain_letter': domain_letter,
+            'sort_key': parse_taxonomy_string(taxonomy),
+            'course_id': str(unit['_courseId']),
+            'unit_id': str(unit['_id'])
+        })
+
+    if not enriched_units:
+        raise ValueError("Keine gültigen Lerneinheiten mit A/B/C-Taxonomie gefunden.")
+
+    enriched_units = sorted(enriched_units, key=lambda x: x['sort_key'])
+
+    tmp_project_dir = extract_adapt_course_template()
+
+    images_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'images')
+    video_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'video')
+
+    if os.path.exists(images_dir):
+        shutil.rmtree(images_dir)
+    if os.path.exists(video_dir):
+        shutil.rmtree(video_dir)
+
+    os.makedirs(images_dir, exist_ok=True)
+    os.makedirs(video_dir, exist_ok=True)
+
+    course_json = copy.deepcopy(load_template_course_json(tmp_project_dir))
+    base_course_id = get_course_id_from_template_course_json(course_json)
+    if not base_course_id:
+        raise ValueError("Kurs-ID in der Adapt-Kursvorlage nicht gefunden.")
+
+    template_contentobjects = copy.deepcopy(load_template_content_objects(tmp_project_dir))
+
+    # Nur Menüs aus der Vorlage behalten, bestehende Pages entfernen
+    new_contentobjects = [
+        obj for obj in template_contentobjects
+        if obj.get('_type') == 'menu'
+    ]
+
+    grouped = defaultdict(list)
+    for entry in enriched_units:
+        grouped[entry['domain_letter']].append(entry)
+
+    new_articles = []
+    new_blocks = []
+    new_components = []
+
+    for domain_letter in ['A', 'B', 'C']:
+        domain_entries = grouped.get(domain_letter, [])
+        if not domain_entries:
+            continue
+
+        template_menu_id = find_template_menu_id(template_contentobjects, domain_letter)
+
+        for idx, entry in enumerate(domain_entries, start=1):
+            source_course_data = load_built_course_structure(entry['course_id'])
+            subtree = extract_learning_unit_subtree(source_course_data, entry['unit_id'])
+
+            old_title = subtree['unit'].get('displayTitle') or subtree['unit'].get('title') or 'Ohne Titel'
+            new_taxonomy = f"9.9.{domain_letter}.{idx}"
+            new_unit_title = f"{new_taxonomy} {old_title}"
+
+            prefix = f"{domain_letter}-{idx}-{entry['unit_id']}"
+
+            new_page, unit_articles, unit_blocks, unit_components = remap_subtree_ids(
+                subtree=subtree,
+                new_menu_id=template_menu_id,
+                new_unit_title=new_unit_title,
+                prefix=prefix,
+                base_course_id=base_course_id
+            )
+
+            new_contentobjects.append(new_page)
+            new_articles.extend(unit_articles)
+            new_blocks.extend(unit_blocks)
+            new_components.extend(unit_components)
+
+    write_assembled_course_jsons(
+        tmp_project_dir=tmp_project_dir,
+        contentobjects=new_contentobjects,
+        articles=new_articles,
+        blocks=new_blocks,
+        components=new_components
+    )
+
+    zip_buffer = BytesIO()
+    with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
+        add_project_files_to_zip(zip_file, tmp_project_dir)
+
+    zip_buffer.seek(0)
+    shutil.rmtree(tmp_project_dir)
+
+    return zip_buffer
 
 
 class BasicForm(form.Form):
@@ -803,6 +1217,23 @@ class ContentsView(MyModelView, metaclass=Meta):
 
         except Exception as e:
                 flash(f"Export fehlgeschlagen: {e}", "error")
+
+    @action('assemble_new_course', 'Als neuen Kurs zusammenstellen', 'Die ausgewählten Lerneinheiten werden zu einem neuen Kurs zusammengeführt und als ZIP exportiert.')
+    def assemble_new_course(self, ids):
+        try:
+            if not ids:
+                flash("Bitte mindestens eine Lerneinheit auswählen.", "error")
+                return
+
+            zip_buffer = build_assembled_course_zip(ids)
+            return send_file(
+                zip_buffer,
+                as_attachment=True,
+                download_name='9.9_zusammengestellter_kurs.zip'
+            )
+
+        except Exception as e:
+            flash(f"Zusammenstellen fehlgeschlagen: {e}", "error")
 
     @expose("/preview", methods=("GET",))
     def preview(*args, **kwargs):
