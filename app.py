@@ -287,7 +287,7 @@ def get_learning_unit_taxonomy(unit):
     if not isinstance(raw_index, int):
         return None
 
-    learning_unit = str(math.ceil(raw_index / 2) + 1)
+    learning_unit = str(raw_index + 1)
     course = db.courses.find_one({'_id': unit['_courseId']})
     domain = db.contentobjects.find_one({'_id': unit['_parentId']})
 
@@ -1103,7 +1103,7 @@ class ContentsView(MyModelView, metaclass=Meta):
         raw_index = get_related_content_index(model, 'contentobjects')
 
         if type(raw_index) == int:
-            learning_unit = str(math.ceil(raw_index / 2) + 1)
+            learning_unit = str(raw_index + 1)
             course_id = model['_courseId']
 
             # Fetch the domain information
@@ -1335,7 +1335,7 @@ class ContentsView(MyModelView, metaclass=Meta):
         # Check if parent content object exists
         raw_index = get_related_content_index(model, 'contentobjects')
         if isinstance(raw_index, int):
-            learning_unit = str(math.ceil(raw_index / 2) + 1)
+            learning_unit = str(raw_index + 1)
             course_id = model['_courseId']
 
             # Fetch the domain information
@@ -1451,7 +1451,7 @@ class ComponentView(MyModelView, metaclass=Meta):
                 if len(parent_content_objects) > 0:
                     raw_index = get_related_content_index(parent_content_objects[0], 'contentobjects')
                     if type(raw_index) == int:
-                        learning_unit = str(math.ceil(raw_index / 2) + 1)
+                        learning_unit = str(raw_index + 1)
                         course_id = article['_courseId']
                         domain_title = str(db.contentobjects.find_one({'_id': parent_content_objects[0]['_parentId']}).get("title"))
                         domain_abbrev = domain_title[0]
