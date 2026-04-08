@@ -1069,27 +1069,21 @@ class ContentsView(MyModelView, metaclass=Meta):
         template.EndpointLinkRowAction("fa fa-print", ".preview")
     ]
 
-    def get_init_query(self=None):
+    def get_init_query(self):
         all_ids = [doc['_id'] for doc in db.contentobjects.find({}, {"_id": 1})]
         return {"_parentId": {"$in": all_ids}}
 
-    init_query = get_init_query()
+    def get_query(self):
+        shared_course_ids = [course['_id'] for course in db.courses.find({'_isShared': True}, {"_id": 1})]
+        query = self.get_init_query()
+        query["_courseId"] = {"$in": shared_course_ids}
+        return query
 
     def get_course(self, _id):
         query = {"_id": _id}
         course = db.courses.find(query)[0]['displayTitle']
 
         return course
-
-    def get_query(self):
-        # Fetch IDs of shared courses
-        shared_course_ids = [ObjectId(str(course['_id'])) for course in db.courses.find({'_isShared': True})]
-
-        if hasattr(self, 'init_query') and self.init_query:
-            self.init_query["_courseId"] = {"$in": shared_course_ids}
-            return self.init_query
-        else:
-            return {"_courseId": {"$in": shared_course_ids}}
 
     def get_taxonomy_for_id(self, model):
         """
