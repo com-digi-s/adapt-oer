@@ -772,32 +772,29 @@ class MyModelView(ModelView):
     @expose("/download", methods=("GET",))
     def download_view(self):
         course_id = request.args.get('id')
-        course_dir = os.path.join(app.config['BUILDS_DIR'], course_id)
+        if not course_id:
+            flash("Keine Kurs-ID übergeben.", "error")
+            return redirect(url_for('coursesview.index_view'))
 
-        # Create the ZIP file path (this is where the original zip is located)
-        with zipfile.ZipFile(course_dir + '.zip', 'r') as zip_ref:
-            # Create a temporary directory to extract the contents of 'build'
-            temp_dir = tempfile.mkdtemp()
+        build_dir = os.path.join(app.config['BUILDS_DIR'], course_id, 'build')
 
-            # Extract only the 'build' folder contents (not the folder itself)
-            for file in zip_ref.namelist():
-                if file.startswith('build/'):
-                    zip_ref.extract(file, temp_dir)
+        if not os.path.isdir(build_dir):
+            flash("Für diesen Kurs wurde noch kein veröffentlichter Build gefunden.", "warning")
+            return redirect(url_for('coursesview.index_view'))
 
-            # Create a new temporary zip file to store only the contents of 'build'
-            temp_zip = tempfile.mktemp(suffix='.zip')
+        zip_buffer = BytesIO()
 
-            with zipfile.ZipFile(temp_zip, 'w', zipfile.ZIP_DEFLATED) as temp_zip_ref:
-                # Walk through the extracted files and add them to the new zip
-                for root, dirs, files in os.walk(temp_dir):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        arcname = os.path.relpath(file_path, temp_dir)
-                        arcname = arcname.replace("build/", "")  # Strip the 'build/' prefix
-                        temp_zip_ref.write(file_path, arcname)
+        try:
+            with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
+                add_files_to_zip(zip_file, build_dir)
 
-            # Send the new zip file containing only the contents of 'build'
-            return send_file(temp_zip, as_attachment=True, download_name=f"{course_id}.zip")
+            zip_buffer.seek(0)
+            return send_file(zip_buffer, as_attachment=True, download_name=f"{course_id}.zip")
+
+        except Exception as e:
+            flash(f"Download fehlgeschlagen: {e}", "error")
+            return redirect(url_for('courseview.index_view'))
+
 
 class Meta(MyModelView.__class__, type):
     def __init__(cls, name, bases, attrs):
@@ -812,16 +809,24 @@ class Meta(MyModelView.__class__, type):
         super().__init__(name, bases, attrs)
 
 class CourseView(MyModelView, metaclass=Meta):
-    column_extra_row_actions = [
-        template.EndpointLinkRowAction("fa fa-download", ".download_view", "{row_id}")
-#        template.EndpointLinkRowAction("fa fa-print", ".print_view", "{row_id}"),
-#        template.EndpointLinkRowAction("fa fa-circle-info", ".info_view", "{row_id}")
-    ]
-
     column_filters = [
         CustomFilter(column="tags", name="Tags",
             options=lambda: [(str(tag['_id']), tag['title']) for tag in db.tags.find()])
     ]
+
+    def download_formatter(view, context, model, name):
+        course_id = str(model['_id'])
+        build_dir = os.path.join(app.config['BUILDS_DIR'], course_id, 'build')
+
+        if os.path.isdir(build_dir):
+            url = url_for('.download_view', id=course_id)
+            return Markup(f'<a href="{url}" title="Download"><i class="fa fa-download"></i></a>')
+
+        return Markup('<span style="color:#999;" title="Noch nicht veröffentlicht">—</span>')
+
+    column_formatters = {
+        'download': download_formatter
+    }
 
     @action('batch_download', 'Kurse herunterladen', 'Ihr Download beginnt nach der Bestätigung. Laden Sie die Kurse in den Kurskonfigurator und schnüren Sie ein individuelles Lernpaket!')
     def action_batch_download(self, ids):
