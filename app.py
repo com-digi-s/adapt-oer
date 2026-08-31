@@ -456,10 +456,6 @@ def load_built_course_structure(course_id):
     return data
 
 
-def build_index(items):
-    return {item['_id']: item for item in items}
-
-
 def extract_learning_unit_subtree(course_data, unit_id):
     """
     Schneidet aus den Build-JSONs den vollständigen Unterbaum einer Lerneinheit heraus:
@@ -544,22 +540,6 @@ def remap_subtree_ids(subtree, new_menu_id, new_unit_title, prefix, base_course_
         new_components.append(new_component)
 
     return new_page, new_articles, new_blocks, new_components
-
-
-def create_domain_contentobject(domain_letter, sort_order=0):
-    domain_titles = {
-        'A': 'A - Verstehen',
-        'B': 'B - Anwenden',
-        'C': 'C - Bewerten'
-    }
-
-    return {
-        "_type": "menu",
-        "_id": make_24hex("menu", domain_letter),
-        "_parentId": "course",
-        "title": domain_titles[domain_letter],
-        "displayTitle": domain_titles[domain_letter]
-    }
 
 
 def write_assembled_course_jsons(tmp_project_dir, contentobjects, articles, blocks, components):
