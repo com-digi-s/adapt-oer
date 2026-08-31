@@ -328,9 +328,7 @@ def replace_refs(node, mapping):
 
 def collect_asset_paths_from_node(node, collected=None):
     """
-    Sammelt rekursiv Asset-Pfade wie:
-    course/en/images/...
-    course/en/video/...
+    Sammelt rekursiv referenzierte Adapt-Assets unter course/en/assets/.
     """
     if collected is None:
         collected = set()
@@ -350,6 +348,18 @@ def collect_asset_paths_from_node(node, collected=None):
             collected.add(normalized)
 
     return collected
+
+
+def collect_course_asset_paths(*roots):
+    """
+    Sammelt alle referenzierten Adapt-Assets aus beliebig vielen JSON-Strukturen.
+    """
+    asset_paths = set()
+
+    for root in roots:
+        collect_asset_paths_from_node(root, asset_paths)
+
+    return asset_paths
 
 
 def copy_used_assets_to_template(asset_paths, source_course_ids, tmp_project_dir):
@@ -676,7 +686,6 @@ def build_assembled_course_zip(selected_unit_ids):
     new_articles = []
     new_blocks = []
     new_components = []
-    used_asset_paths = set()
     source_course_ids = sorted({entry['course_id'] for entry in enriched_units})
 
     for domain_letter in ['A', 'B', 'C']:
@@ -709,10 +718,13 @@ def build_assembled_course_zip(selected_unit_ids):
             new_blocks.extend(unit_blocks)
             new_components.extend(unit_components)
 
-            collect_asset_paths_from_node(new_page, used_asset_paths)
-            collect_asset_paths_from_node(unit_articles, used_asset_paths)
-            collect_asset_paths_from_node(unit_blocks, used_asset_paths)
-            collect_asset_paths_from_node(unit_components, used_asset_paths)
+    used_asset_paths = collect_course_asset_paths(
+        course_json,
+        new_contentobjects,
+        new_articles,
+        new_blocks,
+        new_components
+    )
 
     write_assembled_course_jsons(
         tmp_project_dir=tmp_project_dir,
