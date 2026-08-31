@@ -326,6 +326,62 @@ def replace_refs(node, mapping):
     return node
 
 
+def collect_asset_paths_from_node(node, collected=None):
+    """
+    Sammelt rekursiv Asset-Pfade wie:
+    course/en/images/...
+    course/en/video/...
+    """
+    if collected is None:
+        collected = set()
+
+    if isinstance(node, dict):
+        for value in node.values():
+            collect_asset_paths_from_node(value, collected)
+
+    elif isinstance(node, list):
+        for item in node:
+            collect_asset_paths_from_node(item, collected)
+
+    elif isinstance(node, str):
+        normalized = node.replace("\\", "/").strip()
+
+        if normalized.startswith("course/en/assets/"):
+            collected.add(normalized)
+
+    return collected
+
+
+def copy_used_assets_to_template(asset_paths, source_course_ids, tmp_project_dir):
+    """
+    Kopiert referenzierte Assets aus den Quellkursen in die Zielvorlage.
+    Erwartet Asset-Pfade relativ zu build/, z.B.:
+    course/en/assets/foo.png
+    course/en/assets/bar.mp4
+    """
+    if not asset_paths:
+        return
+
+    target_root = os.path.join(tmp_project_dir, 'src')
+
+    for asset_path in sorted(asset_paths):
+        copied = False
+
+        for course_id in source_course_ids:
+            source_root = os.path.join(app.config['BUILDS_DIR'], str(course_id), 'build')
+            source_file = os.path.join(source_root, asset_path)
+
+            if os.path.exists(source_file):
+                target_file = os.path.join(target_root, asset_path)
+                os.makedirs(os.path.dirname(target_file), exist_ok=True)
+                shutil.copy2(source_file, target_file)
+                copied = True
+                break
+
+        if not copied:
+            app.logger.warning(f"Asset nicht gefunden und daher nicht kopiert: {asset_path}")
+
+
 def add_project_files_to_zip(zip_file, base_dir):
     """
     Packt ein Adapt-Projekt für den Authoring-Import.
@@ -597,16 +653,8 @@ def build_assembled_course_zip(selected_unit_ids):
 
     tmp_project_dir = extract_adapt_course_template()
 
-    images_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'images')
-    video_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'video')
-
-    if os.path.exists(images_dir):
-        shutil.rmtree(images_dir)
-    if os.path.exists(video_dir):
-        shutil.rmtree(video_dir)
-
-    os.makedirs(images_dir, exist_ok=True)
-    os.makedirs(video_dir, exist_ok=True)
+    assets_dir = os.path.join(tmp_project_dir, 'src', 'course', 'en', 'assets')
+    os.makedirs(assets_dir, exist_ok=True)
 
     course_json = copy.deepcopy(load_template_course_json(tmp_project_dir))
     base_course_id = get_course_id_from_template_course_json(course_json)
@@ -628,6 +676,8 @@ def build_assembled_course_zip(selected_unit_ids):
     new_articles = []
     new_blocks = []
     new_components = []
+    used_asset_paths = set()
+    source_course_ids = sorted({entry['course_id'] for entry in enriched_units})
 
     for domain_letter in ['A', 'B', 'C']:
         domain_entries = grouped.get(domain_letter, [])
@@ -659,12 +709,23 @@ def build_assembled_course_zip(selected_unit_ids):
             new_blocks.extend(unit_blocks)
             new_components.extend(unit_components)
 
+            collect_asset_paths_from_node(new_page, used_asset_paths)
+            collect_asset_paths_from_node(unit_articles, used_asset_paths)
+            collect_asset_paths_from_node(unit_blocks, used_asset_paths)
+            collect_asset_paths_from_node(unit_components, used_asset_paths)
+
     write_assembled_course_jsons(
         tmp_project_dir=tmp_project_dir,
         contentobjects=new_contentobjects,
         articles=new_articles,
         blocks=new_blocks,
         components=new_components
+    )
+
+    copy_used_assets_to_template(
+        asset_paths=used_asset_paths,
+        source_course_ids=source_course_ids,
+        tmp_project_dir=tmp_project_dir
     )
 
     zip_buffer = BytesIO()
