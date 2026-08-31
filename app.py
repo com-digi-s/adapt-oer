@@ -362,6 +362,16 @@ def collect_course_asset_paths(*roots):
     return asset_paths
 
 
+def copy_graphic_to_menu(menu, page):
+    """
+    Übernimmt die Grafik einer Lerneinheit für das übergeordnete Menü.
+    """
+    graphic = page.get('_graphic')
+
+    if graphic:
+        menu['_graphic'] = copy.deepcopy(graphic)
+
+
 def copy_used_assets_to_template(asset_paths, source_course_ids, tmp_project_dir):
     """
     Kopiert referenzierte Assets aus den Quellkursen in die Zielvorlage.
@@ -609,17 +619,18 @@ def load_template_content_objects(tmp_project_dir):
     return data
 
 
-def find_template_menu_id(contentobjects, domain_letter):
+def find_template_menu(contentobjects, domain_letter):
     domain_titles = {
         'A': 'A - Verstehen',
         'B': 'B - Anwenden',
         'C': 'C - Bewerten'
     }
+
     wanted_title = domain_titles[domain_letter]
 
     for obj in contentobjects:
         if obj.get('_type') == 'menu' and obj.get('title') == wanted_title:
-            return obj.get('_id')
+            return obj
 
     raise ValueError(f"Menü '{wanted_title}' in der Vorlage nicht gefunden.")
 
@@ -693,7 +704,8 @@ def build_assembled_course_zip(selected_unit_ids):
         if not domain_entries:
             continue
 
-        template_menu_id = find_template_menu_id(template_contentobjects, domain_letter)
+        template_menu = find_template_menu(new_contentobjects, domain_letter)
+        template_menu_id = template_menu['_id']
 
         for idx, entry in enumerate(domain_entries, start=1):
             source_course_data = load_built_course_structure(entry['course_id'])
@@ -712,6 +724,9 @@ def build_assembled_course_zip(selected_unit_ids):
                 prefix=prefix,
                 base_course_id=base_course_id
             )
+
+            if idx == 1:
+                copy_graphic_to_menu(template_menu, new_page)
 
             new_contentobjects.append(new_page)
             new_articles.extend(unit_articles)
