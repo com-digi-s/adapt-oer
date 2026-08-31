@@ -684,15 +684,21 @@ def build_assembled_course_zip(selected_unit_ids):
 
     template_contentobjects = copy.deepcopy(load_template_content_objects(tmp_project_dir))
 
-    # Nur Menüs aus der Vorlage behalten, bestehende Pages entfernen
-    new_contentobjects = [
-        obj for obj in template_contentobjects
-        if obj.get('_type') == 'menu'
-    ]
-
     grouped = defaultdict(list)
     for entry in enriched_units:
         grouped[entry['domain_letter']].append(entry)
+
+    used_domain_letters = set(grouped.keys())
+
+    # Nur tatsächlich verwendete Menüs aus der Vorlage übernehmen,
+    # bestehende Pages vollständig entfernen.
+    new_contentobjects = [
+        obj for obj in template_contentobjects
+        if (
+            obj.get('_type') == 'menu'
+            and str(obj.get('title', '')).strip()[:1].upper() in used_domain_letters
+        )
+    ]
 
     new_articles = []
     new_blocks = []
