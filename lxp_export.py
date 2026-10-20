@@ -224,6 +224,8 @@ def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256
                 tags = classes & {'et', 'at'}
                 if not tags or 'self-assessment' in classes:
                     continue
+                if question.get('_isAvailable') is False:
+                    raise PackageValidationError('Tagged question is individually unavailable: ' + question['_id'] + '. Keep question components available; hide only the supplementary article if required.')
                 if question.get('_component') not in QUESTION_TYPES:
                     raise PackageValidationError('Unsupported diagnostic component: ' + question.get('_component', '?') + ' (' + question['_id'] + ')')
                 domain, reason = question_domain(question, source)
@@ -254,6 +256,17 @@ def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256
                 course['enabled'] = not course['disabled']
                 if mapping in selections:
                     course['label'] = next(item['title'] for item in report['courses'] if item['id'] == mapping)
+        if 'pathways' in config:
+            if not isinstance(config['pathways'], list):
+                raise PackageValidationError('Unsupported LXP pathways configuration')
+            pathways = []
+            for pathway in config['pathways']:
+                if not isinstance(pathway, dict) or not isinstance(pathway.get('courses'), list) or not all(isinstance(course, str) for course in pathway['courses']):
+                    raise PackageValidationError('Unsupported LXP pathway course mapping')
+                pathway['courses'] = [course for course in pathway['courses'] if course.replace('.', '/', 1) in selections]
+                if pathway['courses']:
+                    pathways.append(pathway)
+            config['pathways'] = pathways
         write_json(root / 'config.json', config)
         write_json(root / 'package-provenance.json', report)
         with ZipFile(output, 'w', ZIP_DEFLATED) as archive:

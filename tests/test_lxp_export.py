@@ -118,6 +118,33 @@ class PublishedPackageTest(unittest.TestCase):
         with self.assertRaisesRegex(PackageValidationError, 'Unsupported diagnostic component'):
             self.export()
 
+    def test_individually_disabled_questions_rejected_but_hidden_parent_article_allowed(self):
+        self.data['components'][0]['_isAvailable'] = False
+        self.write_data()
+        with self.assertRaisesRegex(PackageValidationError, 'individually unavailable'):
+            self.export()
+        self.data['components'][0]['_isAvailable'] = True
+        self.data['articles'][0]['_isAvailable'] = False
+        self.write_data()
+        with self.export() as archive:
+            question = json.loads(archive.read('scos/M0/course/en/components.json'))[0]
+            self.assertTrue(question['_isAvailable'])
+
+    def test_pathways_contain_only_selected_courses_and_drop_empty_paths(self):
+        self.config['pathways'] = [
+            {'id': 1, 'name': 'Other', 'courses': ['M1.1', 'M1.2']},
+            {'id': 2, 'name': 'Mixed', 'courses': ['M1.1', 'M4.2', 'M4/2']},
+        ]
+        with ZipFile(self.wrapper) as archive:
+            files = {name: archive.read(name) for name in archive.namelist()}
+        files['config.json'] = json.dumps(self.config).encode()
+        with ZipFile(self.wrapper, 'w') as archive:
+            for name, value in files.items():
+                archive.writestr(name, value)
+        with self.export() as archive:
+            config = json.loads(archive.read('config.json'))
+            self.assertEqual(config['pathways'], [{'id': 2, 'name': 'Mixed', 'courses': ['M4.2', 'M4/2']}])
+
     def test_multiple_questions_in_one_block_become_independent_question_blocks(self):
         question = deepcopy(self.data['components'][0])
         question['_id'] = 'q2'
