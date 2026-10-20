@@ -52,6 +52,32 @@ vm.runInNewContext(script, { window: { parent: {} } });
 '''.replace('SCRIPT', json.dumps(source))
         subprocess.run(['node', '-'], input=harness, text=True, check=True, capture_output=True)
 
+    @unittest.skipUnless(shutil.which('node'), 'JavaScript parser requires node')
+    def test_submit_all_rechecks_real_can_submit_after_component_render(self):
+        source = Path('assessment-template/submit-all-component-ready.js').read_text(encoding='utf-8').rstrip()
+        with ZipFile('static/assessment-template.zip') as archive:
+            self.assertIn(source, archive.read('adapt/js/adapt.min.js').decode())
+        harness = r'''
+const vm = require('node:vm'), assert = require('node:assert/strict');
+const method = vm.runInNewContext('({' + SOURCE + '})');
+const views = [], deferred = [], bindings = [];
+let answered = false, enabled = false;
+const article = { get(key) { return key === '_id' ? 'article' : undefined; } };
+const controller = { model: { get(key) { return key === '_componentViews' ? views : { model: article }; } }, onInteraction() { deferred.push(() => { enabled = views.every(view => view.canSubmit()); }); } };
+for (const type of ['mcq', 'textinput']) {
+  const binder = { on(event) { bindings.push(event); } };
+  const view = { $el: { hasClass() { return true; }, find() { return binder; }, on(event) { bindings.push(event); } }, model: { get() { return type; }, findAncestor() { return article; } }, canSubmit() { return answered; } };
+  method.onComponentViewRendered.call(controller, view);
+}
+assert.equal(deferred.length, 2);
+assert.equal(enabled, false);
+answered = true; // The genuine Core restore hook runs before deferred checks.
+for (const callback of deferred) callback();
+assert.equal(enabled, true, 'restored complete input must enable SubmitAll without a fake DOM click');
+assert.deepEqual(bindings.sort(), ['change.submitAll', 'click.submitAll']);
+'''.replace('SOURCE', json.dumps(source))
+        subprocess.run(['node', '-'], input=harness, text=True, check=True, capture_output=True)
+
 
 if __name__ == '__main__':
     unittest.main()

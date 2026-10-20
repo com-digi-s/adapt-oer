@@ -31,6 +31,12 @@ def rebuild(path):
     components = json.loads(entries['course/en/components.json'])
     components[0]['instruction'] = (Path(__file__).resolve().parent.parent / 'assessment-template/results.html').read_text(encoding='utf-8')
     entries['course/en/components.json'] = (json.dumps(components, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+    runtime = entries['adapt/js/adapt.min.js'].decode('utf-8')
+    component_ready = (Path(__file__).resolve().parent.parent / 'assessment-template/submit-all-component-ready.js').read_text(encoding='utf-8').rstrip()
+    runtime, replacements = re.subn(r'        onComponentViewRendered: function\(view\) \{[\s\S]*?\n        \},(?=\n        onInteraction:)', lambda _: component_ready, runtime)
+    if replacements != 1:
+        raise ValueError('Expected exactly one known SubmitAll component-ready lifecycle method')
+    entries['adapt/js/adapt.min.js'] = runtime.encode('utf-8')
     entries['adapt/js/adapt.min.js'], _ = bootstrap_runtime(entries['adapt/js/adapt.min.js'])
     with ZipFile(path, 'w', compression=ZIP_DEFLATED) as archive:
         for name, data in sorted(entries.items()):
