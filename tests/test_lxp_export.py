@@ -97,6 +97,12 @@ class PublishedPackageTest(unittest.TestCase):
             report = json.loads(archive.read('package-provenance.json'))
             self.assertEqual(report['tests']['M0']['banks'], [422])
 
+    def test_missing_parent_menu_is_not_mistaken_for_supported_flat_course(self):
+        self.data['contentObjects'][0]['_parentId'] = 'missing-menu'
+        self.write_data()
+        with self.assertRaisesRegex(PackageValidationError, 'missing parent menu'):
+            self.export()
+
     def test_missing_tests_unknown_domains_and_unknown_framework_fail_closed(self):
         self.data['components'][0]['_classes'] = 'et'
         self.write_data()

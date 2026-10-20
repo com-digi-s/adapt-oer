@@ -76,6 +76,8 @@ def question_domain(question, source):
         raise PackageValidationError('Question has a broken page/article/block hierarchy: ' + question['_id']) from error
     parent = objects.get(page.get('_parentId'))
     if parent is None:
+        if page.get('_parentId') not in {'course', source['course'].get('_id')}:
+            raise PackageValidationError('Question page has a missing parent menu: ' + question['_id'])
         # Flat Course > Page is a normal AAT/Core-only source structure.
         # Existing LXP has no domain UI for this: explicit default is domain 1.
         return 1, 'flat-course-default:Verstehen'
