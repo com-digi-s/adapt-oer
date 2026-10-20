@@ -10,6 +10,9 @@ import re
 import sys
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from adapt_persistence_bootstrap import bootstrap_runtime
+
 
 def rebuild(path):
     with ZipFile(path) as archive:
@@ -28,6 +31,7 @@ def rebuild(path):
     components = json.loads(entries['course/en/components.json'])
     components[0]['instruction'] = (Path(__file__).resolve().parent.parent / 'assessment-template/results.html').read_text(encoding='utf-8')
     entries['course/en/components.json'] = (json.dumps(components, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+    entries['adapt/js/adapt.min.js'], _ = bootstrap_runtime(entries['adapt/js/adapt.min.js'])
     with ZipFile(path, 'w', compression=ZIP_DEFLATED) as archive:
         for name, data in sorted(entries.items()):
             info = ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))

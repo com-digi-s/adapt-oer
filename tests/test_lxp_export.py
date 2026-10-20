@@ -26,7 +26,13 @@ class PublishedPackageTest(unittest.TestCase):
         with ZipFile(self.wrapper, 'w') as archive:
             archive.writestr('index.html', '<html></html>')
             archive.writestr('config.json', json.dumps(self.config))
+            archive.writestr('adapt-persistence-contract.json', json.dumps({'version': 1, 'bootstrap': 'parent.App.attachAdaptPersistence', 'adapter': 'js/corePersistence.js'}))
+            archive.writestr('js/app.js', 'class App { attachAdaptPersistence() {} }')
+            archive.writestr('js/corePersistence.js', '// Unit-fixture adapter, not an integration runtime')
         save(self.build / 'course/config.json', {'_defaultLanguage': 'de'})
+        runtime = self.build / 'adapt/js/adapt.min.js'
+        runtime.parent.mkdir(parents=True)
+        runtime.write_text('var Adapt$1=__AMD("core/js/adapt",Adapt);')
         save(self.build / 'course/de/course.json', {'_id': 'course', 'title': '4.2 Actual pilot course'})
         self.data = {
             'contentObjects': [{'_id': 'page', '_parentId': 'course', '_type': 'page', 'title': 'Page'}],
@@ -50,7 +56,8 @@ class PublishedPackageTest(unittest.TestCase):
         with self.export() as archive:
             self.assertIn('scos/M4/2/course/de/course.json', archive.namelist())
             report = json.loads(archive.read('package-provenance.json'))
-            self.assertEqual(report['tests'], {'M0': {'questions': 1, 'banks': [421]}, 'MX': {'questions': 1, 'banks': [421]}})
+            self.assertEqual({key: {field: item[field] for field in ('questions', 'banks')} for key, item in report['tests'].items()}, {'M0': {'questions': 1, 'banks': [421]}, 'MX': {'questions': 1, 'banks': [421]}})
+            self.assertEqual(report['courses'][0]['persistence_bootstrap']['version'], 1)
             self.assertEqual(report['courses'][0]['questions'][0]['domain'], 'flat-course-default:Verstehen')
             config = json.loads(archive.read('config.json'))
             self.assertEqual(config['SCOS']['M4']['courses'][1]['label'], '4.2 Actual pilot course')
@@ -144,6 +151,13 @@ class PublishedPackageTest(unittest.TestCase):
         with self.assertRaisesRegex(PackageValidationError, 'Unsafe ZIP entry'):
             self.export()
         self.assertFalse((self.root / 'escape.txt').exists())
+
+    def test_old_wrapper_without_persistence_cannot_silently_export(self):
+        with ZipFile(self.wrapper, 'w') as archive:
+            archive.writestr('index.html', '<html></html>')
+            archive.writestr('config.json', json.dumps(self.config))
+        with self.assertRaisesRegex(PackageValidationError, 'lacks persistence contract'):
+            self.export()
 
     def test_empty_correct_mcq_and_duplicate_course_mapping_fail_closed(self):
         self.data['components'][0]['_items'][0]['_shouldBeSelected'] = False

@@ -12,6 +12,7 @@ import re
 import shutil
 import tempfile
 from zipfile import ZipFile, ZIP_DEFLATED
+from adapt_persistence_bootstrap import bootstrap_runtime
 
 
 QUESTION_TYPES = {'mcq', 'gmcq', 'matching', 'slider', 'textinput', 'infai-dragndrop'}
@@ -173,6 +174,10 @@ def make_quiz(destination, template_path, candidates, title):
         values = read_json(directory / (name + '.json'))
         values[0]['title'] = title
         write_json(directory / (name + '.json'), values)
+    runtime = Path(destination) / 'adapt/js/adapt.min.js'
+    output, metadata = bootstrap_runtime(runtime.read_bytes())
+    runtime.write_bytes(output)
+    return metadata
 
 
 def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256=None):
@@ -188,12 +193,23 @@ def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256
             safe_extract(archive, root)
         if not (root / 'index.html').is_file() or not (root / 'config.json').is_file():
             raise PackageValidationError('LXP wrapper ZIP must contain index.html and config.json at its root')
+        contract_path = root / 'adapt-persistence-contract.json'
+        if not contract_path.is_file():
+            raise PackageValidationError('LXP wrapper lacks persistence contract v1. Use a tested wrapper providing App.attachAdaptPersistence; old upstream wrappers cannot restore diagnostic answers.')
+        contract = read_json(contract_path)
+        if contract.get('version') != 1 or contract.get('bootstrap') != 'parent.App.attachAdaptPersistence':
+            raise PackageValidationError('Unsupported LXP persistence contract')
+        adapter = contract.get('adapter', '')
+        if adapter != 'js/corePersistence.js' or not (root / adapter).is_file():
+            raise PackageValidationError('LXP persistence adapter missing from wrapper')
+        if not (root / 'js/app.js').is_file() or 'attachAdaptPersistence' not in (root / 'js/app.js').read_text(encoding='utf-8'):
+            raise PackageValidationError('LXP wrapper App does not expose attachAdaptPersistence')
         # Reject a wrapper carrying old courses rather than silently shipping them.
         if (root / 'scos').exists():
             raise PackageValidationError('LXP wrapper must not contain prepackaged scos')
         config = read_json(root / 'config.json')
         selections, candidates = [], {'et': [], 'at': []}
-        report = {'format': 1, 'wrapper_sha256': digest, 'courses': [], 'tests': {}}
+        report = {'format': 1, 'wrapper_sha256': digest, 'persistence_contract': contract, 'courses': [], 'tests': {}}
         for index, build in enumerate(builds):
             source = published_course(build)
             title = source['course'].get('title', '')
@@ -218,12 +234,16 @@ def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256
             report['courses'].append(course_report)
             target = root / 'scos' / course_id
             shutil.copytree(source['build'], target)
+            runtime = target / 'adapt/js/adapt.min.js'
+            output_runtime, runtime_metadata = bootstrap_runtime(runtime.read_bytes())
+            runtime.write_bytes(output_runtime)
+            course_report['persistence_bootstrap'] = runtime_metadata
             remove_oer_helper(source['data'])
             for name, values in source['data'].items():
                 write_json(target / 'course' / source['language'] / (name + '.json'), values)
         for tag, sco, title in [('et', 'M0', 'Einstiegstest'), ('at', 'MX', 'Abschlusstest')]:
-            make_quiz(root / 'scos' / sco, template_path, candidates[tag], title)
-            report['tests'][sco] = {'questions': len(candidates[tag]), 'banks': sorted({item[2] for item in candidates[tag]})}
+            metadata = make_quiz(root / 'scos' / sco, template_path, candidates[tag], title)
+            report['tests'][sco] = {'questions': len(candidates[tag]), 'banks': sorted({item[2] for item in candidates[tag]}), 'persistence_bootstrap': metadata}
         for module_id, module in config['SCOS'].items():
             selected_courses = [course for course in module.get('courses', []) if module_id + '/' + str(course['id']) in selections]
             module['disabled'] = module_id not in {'M0', 'MX'} and not selected_courses
