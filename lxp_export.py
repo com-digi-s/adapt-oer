@@ -133,7 +133,7 @@ def make_quiz(destination, template_path, candidates, title):
         question = replace_asset_paths(deepcopy(original), source, namespace)
         question_id = 'diagnostic-' + namespace + '-' + original['_id']
         block_id = 'block-' + question_id
-        question.update({'_id': question_id, '_parentId': block_id, '_layout': 'full', '_attempts': 1,
+        question.update({'_id': question_id, '_parentId': block_id, '_layout': 'full', '_attempts': 1, '_isOptional': False,
                          '_isAvailable': True, '_isHidden': False, '_isVisible': True, '_canShowFeedback': False})
         if not any(re.sub(r'<[^>]+>', '', str(question.get(key, ''))).strip() for key in ('displayTitle', 'body', 'instruction')):
             if not question.get('title', '').strip():

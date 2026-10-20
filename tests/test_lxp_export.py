@@ -136,6 +136,22 @@ class PublishedPackageTest(unittest.TestCase):
             question = json.loads(archive.read('scos/M0/course/en/components.json'))[0]
             self.assertTrue(question['_isAvailable'])
 
+    def test_diagnostic_questions_are_required_even_when_optional_in_source_course(self):
+        self.data['components'][0]['_isOptional'] = True
+        self.write_data()
+        with self.export() as archive:
+            source = json.loads(archive.read('scos/M4/2/course/de/components.json'))[0]
+            self.assertTrue(source['_isOptional'], 'do not change the original learning-course purpose')
+            for sco in ('M0', 'MX'):
+                directory = 'scos/' + sco + '/course/en/'
+                question = json.loads(archive.read(directory + 'components.json'))[0]
+                self.assertFalse(question['_isOptional'], 'a diagnostic cannot complete before its questions are submitted')
+                for name in ('contentObjects', 'articles'):
+                    self.assertFalse(json.loads(archive.read(directory + name + '.json'))[0]['_isOptional'])
+                blocks = json.loads(archive.read(directory + 'blocks.json'))
+                self.assertFalse(blocks[0]['_isOptional'])
+                self.assertTrue(blocks[-1]['_isOptional'], 'result UI must not count as a required diagnostic question')
+
     def test_pathways_contain_only_selected_courses_and_drop_empty_paths(self):
         self.config['pathways'] = [
             {'id': 1, 'name': 'Other', 'courses': ['M1.1', 'M1.2']},
