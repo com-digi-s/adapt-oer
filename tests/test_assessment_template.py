@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import tempfile
 import unittest
 from zipfile import ZipFile
@@ -29,6 +30,27 @@ class AssessmentTemplateTest(unittest.TestCase):
             before = hashlib.sha256(target.read_bytes()).hexdigest()
             rebuild(target)
             self.assertEqual(before, hashlib.sha256(target.read_bytes()).hexdigest())
+
+    @unittest.skipUnless(shutil.which('node'), 'JavaScript parser requires node')
+    def test_result_hook_subscribes_before_any_submit_click_including_restore(self):
+        with ZipFile('static/assessment-template.zip') as archive:
+            instruction = json.loads(archive.read('course/en/components.json'))[0]['instruction']
+        self.assertEqual(instruction, Path('assessment-template/results.html').read_text(encoding='utf-8'))
+        source = re.search(r'<script>([\s\S]+)</script>', instruction)[1]
+        harness = r'''
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const script = SCRIPT;
+let calls = 0, click;
+const chain = { addClass() { return this; }, text() { return this; }, attr() { return this; }, on() { return this; }, append() { return this; } };
+const context = { window: { parent: { App: { adaptHelpers: { getDiagnosticResults() { calls++; } } } }, scrollTo() {} }, document: { body: { scrollHeight: 0 } }, setTimeout() {}, $(selector) { return selector === '.submit-all button' ? { on(event, callback) { click = callback; } } : chain; } };
+vm.runInNewContext(script, context);
+assert.equal(calls, 1, 'render/restore must subscribe without a potentially disabled button click');
+click();
+assert.equal(calls, 2, 'first submission keeps the existing callback');
+vm.runInNewContext(script, { window: { parent: {} } });
+'''.replace('SCRIPT', json.dumps(source))
+        subprocess.run(['node', '-'], input=harness, text=True, check=True, capture_output=True)
 
 
 if __name__ == '__main__':

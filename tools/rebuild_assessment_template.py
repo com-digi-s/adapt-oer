@@ -25,6 +25,9 @@ def rebuild(path):
         # This block only hosts the result UI, not a diagnostic question bank.
         block.pop('_assessment', None)
     entries['course/en/blocks.json'] = (json.dumps(blocks, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+    components = json.loads(entries['course/en/components.json'])
+    components[0]['instruction'] = (Path(__file__).resolve().parent.parent / 'assessment-template/results.html').read_text(encoding='utf-8')
+    entries['course/en/components.json'] = (json.dumps(components, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
     with ZipFile(path, 'w', compression=ZIP_DEFLATED) as archive:
         for name, data in sorted(entries.items()):
             info = ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
