@@ -404,7 +404,10 @@ def _validate_question(question, default_weight=1):
         raise PackageValidationError('Invalid native question item structure: ' + question['_id'])
     if component in {'mcq', 'gmcq'} and (not items or not any(i.get('_shouldBeSelected') is True for i in items)):
         raise PackageValidationError('MCQ has no correct answer: ' + question['_id'])
-    if component == 'matching' and (not items or any(not isinstance(i.get('_options'), list) or not i['_options'] or any(not isinstance(o, dict) for o in i['_options']) or sum(o.get('_isCorrect') is True for o in i['_options']) != 1 for i in items)):
+    # Native MatchingModel permits alternative correct options, but permits
+    # exactly one active option per row. Preserve every authored accepted key;
+    # alternatives do not add extra attainable points to that row.
+    if component == 'matching' and (not items or any(not isinstance(i.get('_options'), list) or not i['_options'] or any(not isinstance(o, dict) for o in i['_options']) or not any(o.get('_isCorrect') is True for o in i['_options']) for i in items)):
         raise PackageValidationError('Matching question has no valid correct options: ' + question['_id'])
     if component == 'textinput':
         def valid_answers(value):
@@ -419,14 +422,17 @@ def _validate_question(question, default_weight=1):
         answer, correct_range = question.get('_correctAnswer'), question.get('_correctRange')
         if not number(start) or not number(end) or not number(step) or start >= end or step <= 0:
             raise PackageValidationError('Slider has an invalid native scale: ' + question['_id'])
-        if answer is not None:
+        # SliderModel uses a falsy empty single-answer field to select its
+        # authored range. A range may extend beyond the visible scale; only
+        # its intersection with actual native slider values can be selected.
+        if answer is not None and answer != '':
             try:
                 parsed_answer = float(answer)
             except (TypeError, ValueError):
                 parsed_answer = float('nan')
             if isinstance(answer, bool) or not math.isfinite(parsed_answer) or not start <= parsed_answer <= end or not math.isclose((parsed_answer - start) / step, round((parsed_answer - start) / step)):
                 raise PackageValidationError('Slider correct answer is not on its native scale: ' + question['_id'])
-        elif not isinstance(correct_range, dict) or not number(correct_range.get('_bottom')) or not number(correct_range.get('_top')) or not start <= correct_range['_bottom'] <= correct_range['_top'] <= end or math.ceil((correct_range['_bottom'] - start) / step) > math.floor((correct_range['_top'] - start) / step):
+        elif not isinstance(correct_range, dict) or not number(correct_range.get('_bottom')) or not number(correct_range.get('_top')) or correct_range['_bottom'] > correct_range['_top'] or math.ceil((max(start, correct_range['_bottom']) - start) / step) > math.floor((min(end, correct_range['_top']) - start) / step):
             raise PackageValidationError('Slider question has no configured correct answer/range: ' + question['_id'])
     if component == 'infai-dragndrop' and not items:
         raise PackageValidationError('Drag-and-drop question has no items: ' + question['_id'])
@@ -436,7 +442,7 @@ def _validate_question(question, default_weight=1):
     if component in {'mcq', 'gmcq'}:
         return sum(i.get('_shouldBeSelected') is True for i in items) * points
     if component == 'matching':
-        return sum(o.get('_isCorrect') is True for i in items for o in i['_options']) * points
+        return len(items) * points
     if component == 'infai-dragndrop':
         accepted_values = [i.get('accepted') for i in items]
         if any(not value or not (isinstance(value, str) or isinstance(value, list) and all(isinstance(v, str) and v for v in value)) for value in accepted_values):
