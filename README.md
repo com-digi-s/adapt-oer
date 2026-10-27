@@ -55,6 +55,21 @@ the central assessment template supplies the supported question plugins and
 their dependencies for the generated tests. Changed course publications still
 need a compatibility check before existing learner state is reused.
 
+### Checked central assessment template
+
+`static/assessment-template.zip` contains a versioned capabilities manifest.
+Before generating a test, the exporter checks its actual bundled models,
+renderers, dependencies, navigation and file hashes against an explicitly
+approved content hash. Six input types use five native question runtimes;
+GMCQ uses the existing image-preserving MCQ adapter. Re-hashing a changed bundle
+does not approve it. Rebuild the existing template deterministically with
+`python tools/rebuild_assessment_template.py`; unknown content requires review,
+and failed validation leaves the input ZIP unchanged.
+
+This template supplies generated diagnostics only. Do not remove real course
+navigation components or plugin/build anchors before AAT publication: the test
+template does not replace the learning course's own runtime or navigation.
+
 ### Regression tests
 
 Install test dependencies separately from production requirements, then run:

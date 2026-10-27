@@ -11,13 +11,162 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
+import xml.etree.ElementTree as ET
 from zipfile import ZipFile, ZIP_DEFLATED
 from adapt_persistence_bootstrap import bootstrap_runtime
-from lxp_catalogue import PackageValidationError
+from lxp_catalogue import PackageValidationError, canonical_bytes
 
 
 QUESTION_TYPES = {'mcq', 'gmcq', 'matching', 'slider', 'textinput', 'infai-dragndrop'}
 DATA_FILES = ('contentObjects', 'articles', 'blocks', 'components')
+ASSESSMENT_CAPABILITIES_FILE = 'assessment-template-capabilities.json'
+APPROVED_ASSESSMENT_CONTENT_SHA256 = 'e1463960aad95dd8dc3afb47e98e322bee1fce2d2460f2babd07c2a59e90831e'
+ASSESSMENT_PLUGINS = {'adapt-contrib-mcq': '7.2.1', 'adapt-contrib-matching': '7.1.2',
+    'adapt-contrib-slider': '4.1.1', 'adapt-contrib-textInput': '7.1.2',
+    'adapt-dragndrop-infai-fork': '0.0.1', 'adapt-contrib-text': '6.1.1',
+    'adapt-submitAll': '3.0.2', 'adapt-contrib-spoor': '5.2.1', 'adapt-pageNav': '2.3.2'}
+ASSESSMENT_MODULES = {
+    'mcq': ('adapt-contrib-mcq/js/McqModel', 'adapt-contrib-mcq/js/McqView'),
+    'matching': ('adapt-contrib-matching/js/MatchingModel', 'adapt-contrib-matching/js/MatchingView'),
+    'slider': ('adapt-contrib-slider/js/sliderModel', 'adapt-contrib-slider/js/sliderView'),
+    'textinput': ('adapt-contrib-textInput/js/textInputModel', 'adapt-contrib-textInput/js/textInputView'),
+    'infai-dragndrop': ('adapt-dragndrop-infai-fork/js/adapt-dragndrop', 'adapt-dragndrop-infai-fork/js/dragndropView')}
+
+
+def assessment_template_capabilities(entries):
+    """Describe one template payload; only the validator approves its content.
+
+    Re-hashing altered files cannot approve a new runtime. Such a release also
+    needs an explicit review/update of APPROVED_ASSESSMENT_CONTENT_SHA256.
+    """
+    files = {name: hashlib.sha256(data).hexdigest() for name, data in sorted(entries.items())
+             if name != ASSESSMENT_CAPABILITIES_FILE and not name.endswith('/')}
+    return {'format': 'adapt-oer-assessment-template-capabilities', 'version': 1,
+        'templateId': 'adapt-oer-assessment-5.22.6-r1', 'frameworkVersion': '5.22.6',
+        'sourceQuestionTypes': sorted(QUESTION_TYPES), 'nativeQuestionTypes': sorted(ASSESSMENT_MODULES),
+        'componentAdapters': {'gmcq': {'id': 'gmcq-to-mcq-v1', 'runtimeType': 'mcq'}},
+        'navigation': {'strategy': 'single-page-submit-all-host-return', 'launch': 'index_lms.html',
+            'returnMethod': 'parent.App.renderView', 'returnView': 'views/dashboard/index.html',
+            'pageNavDummyRequired': False},
+        'plugins': dict(ASSESSMENT_PLUGINS), 'fileSha256': files,
+        'contentSha256': hashlib.sha256(canonical_bytes(files)).hexdigest()}
+
+
+def validate_assessment_template(path):
+    """Validate the actual pinned bundle, dependencies and assessment skeleton.
+
+    This is a source-template gate, not an export-time repair or a claim that
+    arbitrary plugin versions work. No authored dummy components are needed.
+    """
+    def require(condition, message):
+        if not condition:
+            raise PackageValidationError('Assessment template: ' + message)
+
+    from lxp_multi_export import validate_archive_entries
+    with ZipFile(path) as archive:
+        validate_archive_entries(archive)
+        entries = {name: archive.read(name) for name in archive.namelist() if not name.endswith('/')}
+    require(ASSESSMENT_CAPABILITIES_FILE in entries, 'versioned capabilities manifest missing')
+    try:
+        declared = json.loads(entries[ASSESSMENT_CAPABILITIES_FILE])
+    except (ValueError, UnicodeError) as error:
+        raise PackageValidationError('Assessment template: invalid capabilities JSON') from error
+    expected = assessment_template_capabilities(entries)
+    require(declared == expected, 'capabilities/file SHA-256 manifest differs from actual payload')
+    critical = ('index_lms.html', 'imsmanifest.xml', 'adapt.css', 'templates.js',
+        'adapt/js/adapt.min.js', 'adapt/js/build.min.js', 'adapt/js/scriptLoader.js',
+        'libraries/modernizr.js', 'libraries/require.min.js', 'libraries/jquery.min.js',
+        'libraries/jquery-ui.min.js', 'libraries/jquery.ui.touch-punch.js', 'libraries/rangeslider.js',
+        'libraries/SCORM_API_wrapper.js', 'course/config.json', 'course/en/course.json')
+    require(all(name in entries and entries[name] for name in critical), 'required runtime/dependency file missing')
+    try:
+        runtime, templates = (entries[name].decode('utf-8') for name in ('adapt/js/adapt.min.js', 'templates.js'))
+        build = json.loads(entries['adapt/js/build.min.js'])
+        config, course = (json.loads(entries[name]) for name in ('course/config.json', 'course/en/course.json'))
+        data = {name: json.loads(entries['course/en/' + name + '.json']) for name in DATA_FILES}
+        loader, index = (entries[name].decode('utf-8') for name in ('adapt/js/scriptLoader.js', 'index_lms.html'))
+        manifest = entries['imsmanifest.xml']
+        require(not re.search(br'<!\s*(DOCTYPE|ENTITY)', manifest, re.I), 'unsafe launch manifest XML')
+        xml = ET.fromstring(manifest)
+    except PackageValidationError:
+        raise
+    except (ValueError, KeyError, UnicodeError, ET.ParseError) as error:
+        raise PackageValidationError('Assessment template: invalid runtime/build/course/manifest structure') from error
+    require(all(isinstance(value, dict) for value in (build, config, course)), 'build/config/course must be JSON objects')
+    require(isinstance(build.get('package'), dict) and isinstance(build.get('plugins'), list)
+            and all(isinstance(plugin, dict) and isinstance(plugin.get('name'), str) for plugin in build['plugins'])
+            and isinstance(build.get('includes'), list) and all(isinstance(name, str) for name in build['includes']),
+            'invalid plugin/build metadata types')
+    require(build.get('package', {}).get('version') == '5.22.6', 'unapproved framework version')
+    plugins = {plugin.get('name'): plugin.get('version') for plugin in build.get('plugins', [])}
+    require(len(plugins) == len(build['plugins']), 'duplicate pinned plugin names')
+    require(all(plugins.get(name) == version and name in build.get('includes', [])
+                for name, version in ASSESSMENT_PLUGINS.items()), 'required pinned plugin metadata missing')
+    for component, modules in ASSESSMENT_MODULES.items():
+        require(all(runtime.count('__AMD("components/' + module + '"') == 1 for module in modules),
+                'compiled model/view module missing: ' + component)
+        if component == 'infai-dragndrop':
+            require('Adapt$1.register("infai-dragndrop", {' in runtime and 'model: QuestionModel$1' in runtime,
+                    'native drag-and-drop registration missing')
+        else:
+            require('components$1.register("' + component + '",' in runtime,
+                    'native question registration missing: ' + component)
+        if component in {'mcq', 'matching', 'textinput'}:
+            require('register("' + component + '", function' in runtime, 'React question renderer missing: ' + component)
+        else:
+            require('this["Handlebars"]["templates"]["' + component + '"]' in templates,
+                    'compiled question renderer missing: ' + component)
+    require('components$1.register("gmcq",' not in runtime, 'GMCQ must use the reviewed MCQ adapter')
+    require('register("text", function' in runtime and 'this["Handlebars"]["templates"]["submitAll"]' in templates
+            and 'const SubmitAll = Backbone.View.extend' in runtime, 'result/SubmitAll implementation missing')
+    require('components/adapt-pageNav/js/adapt-pageNav' in runtime
+            and 'this["Handlebars"]["templates"]["pageNav"]' in templates, 'bundled pageNav implementation missing')
+    require(all(value in runtime for value in ('"libraries/rangeslider"', '"libraries/jquery-ui.min"',
+            '"libraries/jquery.ui.touch-punch"', '"libraries/SCORM_API_wrapper"')),
+            'native question/Spoor dependency wiring missing')
+    require('adapt/js/scriptLoader.js' in index and 'adapt.css' in index and 'adapt/js/adapt.min.js' in loader
+            and "'templates'" in loader and 'offline_API_wrapper.js' not in index, 'LMS launch/loader wiring missing')
+    resources = [node for node in xml.iter() if node.tag.rsplit('}', 1)[-1] == 'resource']
+    refs = {node.get('identifierref') for node in xml.iter() if node.tag.rsplit('}', 1)[-1] == 'item'}
+    require(len(resources) == 1 and resources[0].get('href') == 'index_lms.html'
+            and refs == {resources[0].get('identifier')}, 'manifest does not select the actual LMS entry')
+    require(config.get('_defaultLanguage') == 'en' and isinstance(config.get('_spoor'), dict)
+            and config['_spoor'].get('_isEnabled') is True,
+            'native English/Spoor source profile missing')
+    require(all(isinstance(data[name], list) and len(data[name]) == 1 and isinstance(data[name][0], dict) for name in DATA_FILES),
+            'single-page/article/result skeleton required')
+    page, article, block, result = (data[name][0] for name in DATA_FILES)
+    require(all(isinstance(value.get('_id'), str) and value['_id'] for value in (course, page, article, block, result))
+            and len({value['_id'] for value in (course, page, article, block, result)}) == 5,
+            'unique explicit skeleton IDs required')
+    require(page.get('_type') == 'page' and page.get('_parentId') == course.get('_id')
+            and article.get('_parentId') == page.get('_id') and block.get('_parentId') == article.get('_id')
+            and result.get('_parentId') == block.get('_id') and result.get('_component') == 'text'
+            and '_assessment' not in block, 'invalid result hierarchy or fictitious result bank')
+    require(isinstance(article.get('_submitAll'), dict) and isinstance(article.get('_assessment'), dict)
+            and isinstance(article['_assessment'].get('_banks'), dict), 'invalid SubmitAll/bank configuration types')
+    require(article.get('_submitAll', {}).get('_isEnabled') is True
+            and article.get('_assessment', {}).get('_isEnabled') is True
+            and article.get('_assessment', {}).get('_banks', {}).get('_isEnabled') is True,
+            'single-article SubmitAll/bank configuration missing')
+    start = course.get('_start', {})
+    require(isinstance(start, dict) and isinstance(start.get('_startIds'), list)
+            and all(isinstance(item, dict) for item in start['_startIds']), 'invalid assessment start configuration types')
+    require(start.get('_isEnabled') is True and start.get('_force') is True and start.get('_isMenuDisabled') is True
+            and [item.get('_id') for item in start.get('_startIds', [])] == [article.get('_id')],
+            'single-page assessment start strategy differs')
+    instruction = result.get('instruction', '')
+    require(isinstance(instruction, str) and 'parentApp.adaptHelpers.getDiagnosticResults()' in instruction
+            and "parentApp.renderView(parentApp.SCO_FRAME, 'views/dashboard/index.html')" in instruction,
+            'existing diagnostic result/host-return wiring missing')
+    try:
+        patched, _ = bootstrap_runtime(entries['adapt/js/adapt.min.js'])
+    except (ValueError, UnicodeError) as error:
+        raise PackageValidationError('Assessment template: unsupported persistence bootstrap') from error
+    require(patched == entries['adapt/js/adapt.min.js'], 'checked early persistence bootstrap missing')
+    require(expected['contentSha256'] == APPROVED_ASSESSMENT_CONTENT_SHA256,
+            'unapproved content SHA-256; a re-hashed manifest cannot approve a new bundle')
+    return declared
 
 
 def read_json(path):
@@ -29,7 +178,7 @@ def write_json(path, value):
     Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
-def safe_extract(archive, destination):
+def safe_extract(archive, destination, *, exclude=()):
     target = Path(destination).resolve()
     from lxp_multi_export import validate_archive_entries
     validate_archive_entries(archive)
@@ -37,7 +186,7 @@ def safe_extract(archive, destination):
         resolved = (target / entry.filename).resolve()
         if not resolved.is_relative_to(target) or (entry.external_attr >> 16) & 0o170000 == 0o120000:
             raise PackageValidationError('Unsafe ZIP entry: ' + entry.filename)
-    archive.extractall(target)
+    archive.extractall(target, members=[entry for entry in archive.infolist() if entry.filename not in exclude])
 
 
 def published_course(build):
@@ -120,8 +269,11 @@ def remove_oer_helper(data):
 def make_quiz(destination, template_path, candidates, title):
     if not candidates:
         raise PackageValidationError(title + ' contains no supported graded questions. Mark actual question components with et/at and publish again.')
+    capabilities = validate_assessment_template(template_path)
     with ZipFile(template_path) as archive:
-        safe_extract(archive, destination)
+        # The manifest qualifies the input template. Keep generated SCO bytes
+        # and native resume fingerprints stable by recording it in provenance.
+        safe_extract(archive, destination, exclude=(ASSESSMENT_CAPABILITIES_FILE,))
     directory = Path(destination) / 'course/en'
     result_component = read_json(directory / 'components.json')[0]
     result_block = read_json(directory / 'blocks.json')[0]
@@ -193,6 +345,7 @@ def make_quiz(destination, template_path, candidates, title):
     runtime = Path(destination) / 'adapt/js/adapt.min.js'
     output, metadata = bootstrap_runtime(runtime.read_bytes())
     runtime.write_bytes(output)
+    metadata['templateCapabilities'] = capabilities
     return metadata
 
 

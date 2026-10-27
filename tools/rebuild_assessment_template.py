@@ -5,6 +5,7 @@ Usage: python3 tools/rebuild_assessment_template.py [path/to/assessment-template
 The archive remains self-contained; this tool is not an export-time repair.
 """
 import hashlib
+from io import BytesIO
 import json
 from pathlib import Path
 import re
@@ -13,10 +14,13 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from adapt_persistence_bootstrap import bootstrap_runtime
+from lxp_export import assessment_template_capabilities, ASSESSMENT_CAPABILITIES_FILE, validate_assessment_template
 
 
 def rebuild(path):
+    from lxp_multi_export import validate_archive_entries
     with ZipFile(path) as archive:
+        validate_archive_entries(archive)
         entries = {name: archive.read(name) for name in archive.namelist() if not name.endswith('/')}
     css = entries['adapt.css'].decode('utf-8')
     # Native AAT question stems live in title/displayTitle and ordinary paragraphs.
@@ -62,12 +66,18 @@ def rebuild(path):
         raise ValueError('Expected exactly one known SubmitAll component-ready lifecycle method')
     entries['adapt/js/adapt.min.js'] = runtime.encode('utf-8')
     entries['adapt/js/adapt.min.js'], _ = bootstrap_runtime(entries['adapt/js/adapt.min.js'])
-    with ZipFile(path, 'w', compression=ZIP_DEFLATED) as archive:
+    entries[ASSESSMENT_CAPABILITIES_FILE] = (json.dumps(assessment_template_capabilities(entries),
+        ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode('utf-8')
+    output = BytesIO()
+    with ZipFile(output, 'w', compression=ZIP_DEFLATED) as archive:
         for name, data in sorted(entries.items()):
             info = ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
             info.compress_type = ZIP_DEFLATED
             info.external_attr = 0o644 << 16
             archive.writestr(info, data)
+    output.seek(0)
+    validate_assessment_template(output)
+    Path(path).write_bytes(output.getvalue())
 
 
 if __name__ == '__main__':
