@@ -1,0 +1,46 @@
+{
+  "format": "adapt-lxp-catalogue",
+  "version": 1,
+  "exampleOnly": false,
+  "revision": "local-digcomp22-ailit2026-r1",
+  "scope": "Local course addresses, not an automatic official competence mapping",
+  "frameworks": [
+    {
+      "id": "fw-digcomp-22",
+      "prefix": "DigComp",
+      "version": "2.2",
+      "label": "DigComp 2.2",
+      "defaultDiagnosticIntents": {"entry": "require", "final": "require"},
+      "defaultDomainId": "verstehen",
+      "domains": [
+        {"id": "verstehen", "label": "Verstehen", "sourceTitlePatterns": ["^A(?:\\b|[.\\-_:])", "^Verstehen"]},
+        {"id": "anwenden", "label": "Anwenden", "sourceTitlePatterns": ["^B(?:\\b|[.\\-_:])", "^Anwenden"]},
+        {"id": "bewerten", "label": "Bewerten", "sourceTitlePatterns": ["^C(?:\\b|[.\\-_:])", "^Bewerten"]}
+      ],
+      "modules": [
+        {"id": "mod-digcomp22-1", "number": "1", "label": "Internet & Information", "courseNumbers": ["1", "2", "3"]},
+        {"id": "mod-digcomp22-2", "number": "2", "label": "Kommunikation", "courseNumbers": ["1", "2", "3"]},
+        {"id": "mod-digcomp22-3", "number": "3", "label": "Inhalte erstellen", "courseNumbers": ["1", "2", "3"]},
+        {"id": "mod-digcomp22-4", "number": "4", "label": "Sicherheit & Gesundheit", "courseNumbers": ["1", "2", "3"]},
+        {"id": "mod-digcomp22-5", "number": "5", "label": "Problemlösen", "courseNumbers": ["1", "2"]}
+      ]
+    },
+    {
+      "id": "fw-ailit-2026",
+      "prefix": "AILit",
+      "version": "2026",
+      "label": "AILit 2026",
+      "defaultDiagnosticIntents": {"entry": "omit", "final": "omit"},
+      "domains": [],
+      "modules": [
+        {"id": "mod-ailit2026-1", "number": "1", "label": "KI-Kompetenz für Studierende und Erwachsene", "courseNumbers": ["1", "2", "3", "4"],
+         "courseLabels": {
+           "1": "KI verstehen und ihren Einfluss beurteilen",
+           "2": "Mit KI gestalten und die eigene Handschrift bewahren",
+           "3": "KI-Unterstützung auswählen und Arbeitswege steuern",
+           "4": "KI-Systeme prüfen und verantwortlich mitgestalten"
+         }}
+      ]
+    }
+  ]
+}

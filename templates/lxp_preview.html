@@ -1,0 +1,16 @@
+{% extends 'lxp_base.html' %}
+{% block content %}
+<h1>Gemeinsame LXP: {{ contract.package.title }}</h1>
+<p class="notice">Diese Vorschau ist an veröffentlichte Quellen, technische Titel, Katalog, Wrapper und Auswahl gebunden. Änderungen erfordern eine neue Vorschau. Die Bestätigung erzeugt genau eine gemeinsame ZIP.</p>
+<p>Paket-ID: <code>{{ contract.package.id }}</code> · Revision {{ contract.package.revision }} · Zielprofil {{ contract.package.targetProfileId }}</p>
+{% for warning in preview.warnings %}<p class="warning">{{ warning }}</p>{% endfor %}
+{% for framework in contract.frameworks %}<section><h2>{{ framework.label }} – {{ framework.version }}</h2>
+{% for module in contract.modules if module.frameworkId == framework.id %}<h3>{{ module.label }} · Modul {{ module.number or module.localNumber }}</h3><table><thead><tr><th>Lernkurs</th><th>Quelle / veröffentlichter Title</th><th>Abschluss</th></tr></thead><tbody>
+{% for sco in contract.scos if sco.frameworkId == framework.id and sco.moduleId == module.id and sco.role == 'learning' %}<tr><td>{{ sco.label or sco.title }}<br><small>Kurs {{ sco.number or sco.courseNumber or sco.localNumber }}</small></td><td>{{ sco.source.publishedTitle }}<br><small>{{ sco.source.originId }} / {{ sco.source.courseId }}</small></td><td>{{ 'Pflicht' if sco.requiredForCompletion else 'Optional' }}</td></tr>{% endfor %}
+</tbody></table>{% endfor %}
+<h3>Diagnostik</h3><table><thead><tr><th>Phase</th><th>Auftrag</th><th>Verfügbarkeit</th><th>Begründung</th></tr></thead><tbody>
+{% for phase, item in framework.diagnostics.items() %}<tr><td>{{ 'Einstieg' if phase == 'entry' else 'Abschluss' }}</td><td>{{ {'omit':'Nicht angefordert','ifAvailable':'Wenn verfügbar','require':'Erforderlich'}.get(item.intent, item.intent) }}</td><td>{{ 'Bereitgestellt' if item.status == 'provided' else 'Nicht bereitgestellt (kein Score / kein Bestehen)' }}</td><td>{{ item.reason or 'Echte zugeordnete Fragen verfügbar' }}</td></tr>{% endfor %}</tbody></table></section>{% endfor %}
+<p>LMS-Abschluss: alle Pflicht-Lernkurse des gesamten Pakets. Getrennte Testergebnisse werden nicht zu einer Gesamtkompetenz addiert. Das Ziel-LMS und sein Speicherbudget benötigen weiterhin eine eigene Freigabe.</p>
+<form method="post" action="{{ url_for('lxp_export_confirm', token=token) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="preflight_sha256" value="{{ preview.preflightSha256 }}"><button type="submit">Diese Vorschau bestätigen und eine gemeinsame ZIP herunterladen</button></form>
+<p><a href="{{ url_for('lxp_export_setup') }}">Neue Vorschau vorbereiten</a></p>
+{% endblock %}

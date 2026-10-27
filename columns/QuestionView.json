@@ -1,5 +1,9 @@
 {
   "title": "Überschrift",
+  "framework": "Kompetenzrahmen",
+  "framework_version": "Fassung",
+  "module_number": "Modul",
+  "course_number": "Kursnummer",
   "instruction": "Frage",
   "options": "Antwort",
   "_component": "Typ",

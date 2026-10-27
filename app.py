@@ -17,6 +17,8 @@ import copy
 import zipfile
 import pathlib
 import hashlib
+import secrets
+import time
 
 from collections import defaultdict
 from config import ADDITIONAL_COMPONENTS
@@ -32,6 +34,8 @@ from flask_admin.model.template import EndpointLinkRowAction, LinkRowAction
 from flask_admin.form import BaseForm
 from flask_admin.contrib.pymongo.filters import FilterLike, FilterEqual
 from flask_wtf import FlaskForm
+from flask_wtf.csrf import generate_csrf, validate_csrf
+from wtforms.validators import ValidationError
 
 from bson import ObjectId, regex, json_util
 from werkzeug.utils import secure_filename
@@ -54,6 +58,278 @@ conn = pymongo.MongoClient(app.config['MONGO_URI'])
 db = conn.get_default_database()
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+
+# Prepared builds never go into the client session. Tokens are user-bound,
+# short-lived, one-use references to frozen server-side preflight results.
+app.extensions['lxp_previews'] = {}
+
+
+def lxp_catalogue():
+    from lxp_catalogue import load_catalogue
+    return load_catalogue(app.config.get('LXP_CATALOGUE'))
+
+
+def course_assignment(course, *, legacy_import=False, framework_versions=None):
+    from lxp_catalogue import normalize_title
+    from lxp_multi_export import get_source_binding
+    bound_version = None
+    approved_legacy = False
+    if course.get('_id'):
+        metadata = _lxp_metadata([course])[0]
+        registration = get_source_binding(app.config['LXP_REGISTRY_PATH'],
+            origin_id=metadata['originId'], course_id=metadata['courseId']) or {}
+        bound_version = registration.get('binding', {}).get('version')
+        approved_legacy = registration.get('legacyApproved') is True
+    return normalize_title(course.get('title', ''), lxp_catalogue(),
+                           framework_versions=framework_versions,
+                           legacy_import=legacy_import or approved_legacy, bound_version=bound_version)
+
+
+def add_assignment_columns(model):
+    course = model if '_courseId' not in model else db.courses.find_one({'_id': model.get('_courseId')})
+    try:
+        assignment = course_assignment(course or {})
+        model.update(framework=assignment['prefix'], framework_version=assignment['version'],
+                     module_number=assignment['moduleNumber'], course_number=assignment['courseNumber'])
+        model['_assignment'] = assignment
+    except (ValueError, OSError) as error:
+        model.update(framework='Nicht zugeordnet', framework_version='—', module_number='—', course_number='—')
+        model['_assignment_error'] = str(error)
+    return model
+
+
+def assignment_sort_key(model):
+    add_assignment_columns(model)
+    assignment = model.get('_assignment', {})
+    return (assignment.get('prefix', '\uffff'), assignment.get('version', ''),
+            int(assignment.get('moduleNumber', 2147483647)),
+            int(assignment.get('courseNumber', 2147483647)),
+            model.get('_sortOrder', 0), str(model.get('_id', '')))
+
+
+def _lxp_csrf():
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+    except ValidationError as error:
+        abort(400, description='Formular abgelaufen oder ungültig. Bitte Seite erneut öffnen. ' + str(error))
+
+
+def _lxp_selected(ids):
+    if not ids or len(set(ids)) != len(ids) or not all(ObjectId.is_valid(value) for value in ids):
+        raise ValueError('Bitte mindestens einen gültigen veröffentlichten Kurs auswählen; keine doppelten IDs.')
+    # The same shared/authorization base query is retained, never replaced by
+    # selection or a framework filter.
+    courses = list(db.courses.find({'$and': [{'_isShared': True}, {'_id': {'$in': [ObjectId(value) for value in ids]}}]}))
+    if len(courses) != len(ids):
+        raise ValueError('Ein gewählter Kurs ist nicht mehr freigegeben oder nicht zugänglich.')
+    return sorted(courses, key=lambda course: str(course['_id']))
+
+
+def _lxp_metadata(courses):
+    origin = app.config.get('LXP_ORIGIN_ID') or app.config.get('AUTHORING_DOMAIN') or 'aat-local'
+    metadata = []
+    for course in courses:
+        registered = course.get('_lxpSource') or {}
+        item = {'kind': registered.get('kind', 'aat-published'),
+                         'originId': registered.get('originId', origin),
+                         'courseId': registered.get('courseId', str(course['_id'])),
+                         'currentTitle': course.get('title', '')}
+        if item['kind'] == 'aat-published' and app.config.get('LXP_AAT_BUILD_PROFILE'):
+            item['profile'] = app.config['LXP_AAT_BUILD_PROFILE']
+        for key in ('profile', 'resourceId', 'questionDomains'):
+            if key in registered:
+                item[key] = registered[key]
+        metadata.append(item)
+    return metadata
+
+
+def _lxp_fingerprint(builds, metadata, settings):
+    """Bind confirmation to live inputs as well as the backend's frozen copy."""
+    digest = hashlib.sha256(json.dumps({'metadata': metadata, 'settings': settings,
+                                      'catalogue': lxp_catalogue()}, sort_keys=True, default=str).encode())
+    for root in [pathlib.Path(value) for value in builds] + [pathlib.Path(app.config['LXP_WRAPPER_ZIP'])]:
+        paths = sorted(root.rglob('*')) if root.is_dir() else [root]
+        for path in paths:
+            if path.is_file():
+                digest.update(str(path.relative_to(root) if root.is_dir() else path.name).encode())
+                digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
+def _lxp_prune_previews():
+    previews = app.extensions['lxp_previews']
+    for token, value in list(previews.items()):
+        if time.time() - value['created'] > app.config['LXP_PREVIEW_TTL_SECONDS']:
+            previews.pop(token, None)
+            value['prepared'].close()
+    db.lxp_export_previews.delete_many({'created': {'$lt': time.time() - app.config['LXP_PREVIEW_TTL_SECONDS']}})
+
+
+def _lxp_preview(token):
+    _lxp_prune_previews()
+    record = db.lxp_export_previews.find_one({'_id': token, 'owner': current_user.get_id(), 'state': 'pending'})
+    if not record:
+        abort(410, description='Diese Vorschau ist abgelaufen oder bereits bestätigt. Bitte eine neue Vorschau erstellen.')
+    value = app.extensions['lxp_previews'].get(token)
+    if not value:
+        # A different WSGI worker (or a restarted process) can reconstruct the
+        # same frozen bytes only after all original live inputs match. The
+        # persisted exact hash, never a browser-provided contract, is authority.
+        from lxp_export import prepare_multi_framework_export
+        prepared = None
+        try:
+            metadata = _lxp_metadata(_lxp_selected(record['selected']))
+            if record['fingerprint'] != _lxp_fingerprint(record['builds'], metadata, record['settings']):
+                raise ValueError('Quellen seit der Vorschau geändert')
+            prepared = prepare_multi_framework_export(record['builds'], app.config['LXP_WRAPPER_ZIP'],
+                app.config['LXP_ASSESSMENT_TEMPLATE'], source_metadata=metadata,
+                registry_path=app.config['LXP_REGISTRY_PATH'], catalogue=lxp_catalogue(),
+                expected_wrapper_sha256=app.config.get('LXP_WRAPPER_SHA256'), **record['settings'])
+            if prepared.preflight_sha256 != record['preflight_sha256']:
+                raise ValueError('Der gespeicherte Preflight stimmt nicht mehr überein')
+            value = {key: item for key, item in record.items() if key not in ('_id', 'state', 'preflight_sha256')}
+            value['prepared'] = prepared
+            app.extensions['lxp_previews'][token] = value
+        except (ValueError, OSError, zipfile.BadZipFile) as error:
+            if prepared:
+                prepared.close()
+            db.lxp_export_previews.delete_one({'_id': token})
+            abort(410, description='Bitte eine neue Vorschau erstellen. ' + str(error))
+    return value
+
+
+@app.route('/lxp/export', methods=['GET', 'POST'])
+@login_required
+def lxp_export_setup():
+    from lxp_export import prepare_multi_framework_export
+    owner = current_user.get_id()
+    profiles = list(db.lxp_export_profiles.find({'owner': owner}))
+    profile_id = request.values.get('profile_id', '')
+    profile = next((value for value in profiles if value['_id'] == profile_id), None)
+    selected = request.form.getlist('course_id') if request.method == 'POST' else (request.args.getlist('course_id') or (profile or {}).get('course_ids', []))
+    catalogue = lxp_catalogue()
+    frameworks = catalogue.get('frameworks', [])
+    if isinstance(frameworks, dict):
+        frameworks = list(frameworks.values())
+    if request.method == 'POST':
+        _lxp_csrf()
+        prepared = None
+        try:
+            if profile_id and not profile:
+                raise ValueError('Das gewählte Exportprofil ist nicht verfügbar.')
+            if not app.config.get('LXP_WRAPPER_ZIP'):
+                raise ValueError('Bitte die Administration einen geprüften Multi-Framework-Wrapper konfigurieren lassen.')
+            courses = _lxp_selected(selected)
+            builds = [os.path.join(app.config['BUILDS_DIR'], str(course['_id']), 'build') for course in courses]
+            metadata = _lxp_metadata(courses)
+            diagnostics, versions = {}, {}
+            for framework in frameworks:
+                prefix = framework['prefix']
+                diagnostics[prefix] = {}
+                for phase in ('entry', 'final'):
+                    intent = request.form.get(f'test_{prefix}_{phase}', 'require' if prefix == 'DigComp' else 'omit')
+                    if intent not in ('omit', 'ifAvailable', 'require'):
+                        raise ValueError('Ungültiger Testauftrag.')
+                    diagnostics[prefix][phase] = intent
+                chosen_version = request.form.get('version_' + prefix)
+                if chosen_version:
+                    versions[prefix] = chosen_version
+            required = {entry['originId'] + '::' + entry['courseId']: str(course['_id']) in request.form.getlist('required_course') for entry, course in zip(metadata, courses)}
+            package_id = profile['package_id'] if profile else 'lxp-package-' + str(uuid.uuid4())
+            revision = str(int((profile or {}).get('revision', 0)) + 1)
+            title = request.form.get('title', '').strip()
+            if not title:
+                raise ValueError('Bitte einen Titel für das Lernangebot angeben.')
+            settings = dict(package_id=package_id, revision=revision, title=title, diagnostics=diagnostics,
+                            framework_versions=versions, required_courses=required,
+                            target_profile_id=app.config['LXP_TARGET_PROFILE_ID'],
+                            legacy_import=request.form.get('legacy_import') == 'yes',
+                            confirm_reassignment=request.form.get('confirm_reassignment') == 'yes')
+            if settings['legacy_import']:
+                from lxp_export import published_course
+                from lxp_multi_export import approve_legacy_source
+                for build, entry in zip(builds, metadata):
+                    if re.match(r'^\d+\.', entry['currentTitle'].strip()):
+                        if published_course(build)['course'].get('title') != entry['currentTitle']:
+                            raise ValueError('Bitte Kurs erneut veröffentlichen: aktueller Title stimmt nicht mit der veröffentlichten Altquelle überein.')
+                        approve_legacy_source(app.config['LXP_REGISTRY_PATH'], origin_id=entry['originId'],
+                            course_id=entry['courseId'], current_title=entry['currentTitle'],
+                            catalogue=catalogue, framework_version=versions.get('DigComp'))
+            fingerprint = _lxp_fingerprint(builds, metadata, settings)
+            prepared = prepare_multi_framework_export(builds, app.config['LXP_WRAPPER_ZIP'],
+                app.config['LXP_ASSESSMENT_TEMPLATE'], source_metadata=metadata,
+                registry_path=app.config['LXP_REGISTRY_PATH'], catalogue=catalogue,
+                expected_wrapper_sha256=app.config.get('LXP_WRAPPER_SHA256'), **settings)
+            if fingerprint != _lxp_fingerprint(builds, _lxp_metadata(_lxp_selected(selected)), settings):
+                raise ValueError('Quellen wurden während der Vorschau geändert. Bitte erneut veröffentlichen und Vorschau wiederholen.')
+            if not profile:
+                profile_id = secrets.token_urlsafe(18)
+                profile = {'_id': profile_id, 'owner': owner, 'package_id': package_id, 'revision': 0}
+                db.lxp_export_profiles.insert_one(profile)
+            token = secrets.token_urlsafe(32)
+            _lxp_prune_previews()
+            app.extensions['lxp_previews'][token] = dict(prepared=prepared, owner=owner,
+                created=time.time(), selected=selected, builds=builds, settings=settings,
+                fingerprint=fingerprint, profile_id=profile_id, previous_revision=profile['revision'])
+            db.lxp_export_previews.insert_one({'_id': token, 'state': 'pending',
+                'preflight_sha256': prepared.preflight_sha256,
+                **{key: value for key, value in app.extensions['lxp_previews'][token].items() if key != 'prepared'}})
+            return redirect(url_for('lxp_export_preview', token=token))
+        except (ValueError, OSError, zipfile.BadZipFile) as error:
+            if prepared:
+                prepared.close()
+            flash('LXP-Export gestoppt: ' + str(error), 'error')
+    courses = list(db.courses.find({'_isShared': True}))
+    courses.sort(key=assignment_sort_key)
+    for course, source in zip(courses, _lxp_metadata(courses)):
+        course['_lxp_required_key'] = source['originId'] + '::' + source['courseId']
+    return render_template('lxp_export.html', courses=courses, frameworks=frameworks, profiles=profiles,
+        profile=profile, selected=selected, csrf_token=generate_csrf())
+
+
+@app.route('/lxp/preview/<token>')
+@login_required
+def lxp_export_preview(token):
+    value = _lxp_preview(token)
+    return render_template('lxp_preview.html', token=token, preview=value['prepared'].preview,
+        contract=value['prepared'].contract, csrf_token=generate_csrf())
+
+
+@app.route('/lxp/confirm/<token>', methods=['POST'])
+@login_required
+def lxp_export_confirm(token):
+    from lxp_export import build_multi_framework_export
+    _lxp_csrf()
+    value = _lxp_preview(token)
+    prepared = value['prepared']
+    claimed = db.lxp_export_previews.find_one_and_update({'_id': token, 'owner': current_user.get_id(),
+        'state': 'pending'}, {'$set': {'state': 'exporting'}})
+    if not claimed:
+        abort(410, description='Diese Vorschau wird bereits exportiert. Bitte eine neue Vorschau erstellen.')
+    try:
+        if request.form.get('preflight_sha256') != prepared.preflight_sha256:
+            raise ValueError('Die bestätigte Vorschau stimmt nicht überein. Bitte neue Vorschau erstellen.')
+        metadata = _lxp_metadata(_lxp_selected(value['selected']))
+        if value['fingerprint'] != _lxp_fingerprint(value['builds'], metadata, value['settings']):
+            raise ValueError('Quelle, Titel, Katalog oder Wrapper wurde seit der Vorschau geändert. Bitte eine neue Vorschau erstellen und Kurse gegebenenfalls erneut veröffentlichen.')
+        profile = db.lxp_export_profiles.find_one({'_id': value['profile_id'], 'owner': current_user.get_id()})
+        if not profile or profile['revision'] != value['previous_revision']:
+            raise ValueError('Dieses Lernangebot wurde inzwischen exportiert. Bitte eine neue Vorschau erstellen.')
+        stream = build_multi_framework_export(prepared, confirmed_preflight_sha256=prepared.preflight_sha256,
+                                               source_metadata=metadata)
+        updated = db.lxp_export_profiles.update_one({'_id': profile['_id'], 'owner': current_user.get_id(),
+            'revision': value['previous_revision']}, {'$set': {'revision': int(value['settings']['revision']),
+            'title': value['settings']['title'], 'course_ids': value['selected'], 'settings': value['settings']}})
+        if updated.modified_count != 1:
+            raise ValueError('Exportprofil wurde gleichzeitig geändert. Bitte eine neue Vorschau erstellen.')
+        return send_file(stream, as_attachment=True, download_name=secure_filename(value['settings']['title']) + '.zip', mimetype='application/zip')
+    except (ValueError, OSError, zipfile.BadZipFile) as error:
+        flash('LXP-Export gestoppt: ' + str(error), 'error')
+        return redirect(url_for('lxp_export_setup', profile_id=value['profile_id']))
+    finally:
+        app.extensions['lxp_previews'].pop(token, None)
+        db.lxp_export_previews.delete_one({'_id': token})
+        prepared.close()
 
 # Here, we only have one user (admin user)
 users = [User(1, app.config['USERNAME'], app.config['PASSWORD'])]
@@ -107,12 +383,14 @@ def get_related_content_index(content_object, collection='articles'):
     parent_content_object_id = content_object.get('_parentId', '')
     parent_content_object = db.contentobjects.find_one({"_id": parent_content_object_id})
 
+    if not parent_content_object and collection == 'contentobjects':
+        parent_content_object = db.courses.find_one({'_id': parent_content_object_id})
     if not parent_content_object:
         return ''
 
     # Fetch all related content objects that share the same parent
     parent_id = parent_content_object['_id']
-    related_content_objects = db[collection].find({"_parentId": parent_id})
+    related_content_objects = db[collection].find({"_parentId": parent_id}).sort([('_sortOrder', 1), ('_id', 1)])
     related_content_objects_list = list(related_content_objects)
 
     # Get the list of IDs of all related content objects
@@ -175,6 +453,22 @@ def prepare_quizzes(directory, quiz_ids, zip_file):
 def compose_quiz(ids):
     quiz_template = f'static/assessment-template.zip'
 
+    selected = list(db.components.find({'_id': {'$in': [ObjectId(value) for value in ids]}}))
+    if not selected or len(selected) != len(set(ids)):
+        raise ValueError('Mindestens eine ausgewählte Frage fehlt.')
+    for question in selected:
+        course = db.courses.find_one({'_id': question.get('_courseId'), '_isShared': True})
+        if not course:
+            raise ValueError('Eine Frage gehört nicht zu einem freigegebenen zugänglichen Kurs.')
+        if not re.match(r'^\d+\.', course.get('title', '')):
+            # Resolve through the same normalizer so unknown prefixes are never
+            # silently treated as DigComp by this older action.
+            course_assignment(course)
+            raise ValueError('Der alte Einzelquiz-Export unterstützt keine Kompetenzrahmen. Bitte die gemeinsame LXP-Vorschau mit getrennten Tests verwenden.')
+        course_assignment(course, legacy_import=True)
+        if question.get('_component') not in ('slider', 'mcq', 'matching', 'infai-dragndrop') or 'self-assessment' in question.get('_classes', '').split():
+            raise ValueError('Die ausgewählte Frage wird von diesem Legacy-Einzelquiz nicht unterstützt; es werden keine Fragen übersprungen.')
+
     # Create a temporary directory
     tmpdirname = tempfile.mkdtemp()
 
@@ -223,9 +517,17 @@ def compose_quiz(ids):
                     article_parent_id = db.articles.find_one({'_id': ObjectId(block['_parentId'])})['_parentId']
                     content_object = db.contentobjects.find_one({'_id': article_parent_id})
                     domain = db.contentobjects.find_one({'_id': content_object['_parentId']})
+                    if not domain:
+                        raise ValueError('Dieser alte Einzelquiz-Export benötigt eine explizite A/B/C-Domäne. Für flache Kurse bitte die gemeinsame LXP-Vorschau verwenden.')
                     course_title = db.courses.find_one({'_id': domain['_parentId']})['title']
 
-                    result = int(course_title[:3].replace('.', '') + str(domain['_sortOrder']))
+                    if not re.match(r'^\d+\.', course_title):
+                        raise ValueError('Der alte Einzelquiz-Export unterstützt keine Kompetenzrahmen. Bitte die gemeinsame LXP-Vorschau mit getrennten Tests verwenden.')
+                    assignment = course_assignment({'title': course_title}, legacy_import=True)
+                    domain_number = {'A': 1, 'B': 2, 'C': 3}.get(str(domain.get('title', '')).strip()[:1])
+                    if assignment['prefix'] != 'DigComp' or not domain_number or int(assignment['moduleNumber']) > 9 or int(assignment['courseNumber']) > 9:
+                        raise ValueError('Die Legacy-Quizbank unterstützt diese Zuordnung nicht. Bitte den gemeinsamen LXP-Export verwenden.')
+                    result = int(assignment['moduleNumber'] + assignment['courseNumber'] + str(domain_number))
 
                     block["_assessment"] = {
                         "_quizBankID": result
@@ -261,8 +563,9 @@ def compose_quiz(ids):
                 bf.seek(0)
                 bf.write(json.dumps(transpiled_blocks, indent=2))
 
-    except Exception as e:
-        flash(f"An error occurred: {e}")
+    except Exception:
+        shutil.rmtree(tmpdirname)
+        raise
 
     return tmpdirname
 
@@ -278,11 +581,7 @@ def parse_taxonomy_string(taxonomy):
     return (int(match.group(1)), int(match.group(2)), match.group(3), int(match.group(4)))
 
 
-def get_learning_unit_taxonomy(unit):
-    """
-    Erzeugt die bestehende Taxonomie einer Lerneinheit im Format X.Y.A.N
-    auf Basis der vorhandenen Logik in app.py.
-    """
+def get_learning_unit_taxonomy(unit, *, legacy_import=False):
     raw_index = get_related_content_index(unit, 'contentobjects')
     if not isinstance(raw_index, int):
         return None
@@ -291,17 +590,12 @@ def get_learning_unit_taxonomy(unit):
     course = db.courses.find_one({'_id': unit['_courseId']})
     domain = db.contentobjects.find_one({'_id': unit['_parentId']})
 
-    if not course or not domain:
+    if not course:
         return None
-
-    course_prefix_match = re.match(r"^(\d+)\.(\d+)", str(course.get('title', '')))
-    if not course_prefix_match:
-        return None
-
-    course_prefix = f"{course_prefix_match.group(1)}.{course_prefix_match.group(2)}"
-    domain_abbrev = str(domain.get('title', '')).strip()[:1].upper()
-
-    return f"{course_prefix}.{domain_abbrev}.{learning_unit}"
+    assignment = course_assignment(course, legacy_import=legacy_import)
+    address = ('' if legacy_import else assignment['prefix']) + assignment['moduleNumber'] + '.' + assignment['courseNumber']
+    domain_abbrev = str((domain or {}).get('title', '')).strip()[:1].upper()
+    return address + ('.' + domain_abbrev if domain_abbrev in ('A', 'B', 'C') else '') + '.' + learning_unit
 
 
 def get_domain_letter_for_unit(unit):
@@ -630,13 +924,20 @@ def build_assembled_course_zip(selected_unit_ids):
     if not units:
         raise ValueError("Keine Lerneinheiten gefunden.")
 
+    if len(units) != len(set(selected_unit_ids)):
+        raise ValueError('Mindestens eine gewählte Lerneinheit fehlt.')
+    for unit in units:
+        course = db.courses.find_one({'_id': unit['_courseId'], '_isShared': True})
+        if not course or not re.match(r'^\\d+\\.', course.get('title', '')):
+            raise ValueError('Die bisherige Standalone-Kurszusammenstellung unterstützt ausschließlich bestätigte numerische DigComp-Altquellen. Präfixierte oder gemischte Kompetenzrahmen bitte als gemeinsame LXP exportieren.')
+        course_assignment(course, legacy_import=True)
     enriched_units = []
     for unit in units:
-        taxonomy = get_learning_unit_taxonomy(unit)
+        taxonomy = get_learning_unit_taxonomy(unit, legacy_import=True)
         domain_letter = get_domain_letter_for_unit(unit)
 
         if not taxonomy or domain_letter not in ['A', 'B', 'C']:
-            continue
+            raise ValueError('Die gewählte Lerneinheit hat keine unterstützte A/B/C-Domäne; es werden keine Einheiten übersprungen.')
 
         enriched_units.append({
             'unit': unit,
@@ -763,7 +1064,7 @@ class MyAdminIndexView(AdminIndexView):
 class MyModelView(ModelView):
     # set page_size = 10000 for production use
     page_size = 1000
-    column_default_sort = ('updatedAt', True)
+    column_default_sort = ('framework', False)
 
     form = BasicForm
 
@@ -774,9 +1075,7 @@ class MyModelView(ModelView):
         # Fetch IDs of shared courses
         shared_course_ids = [ObjectId(str(course['_id'])) for course in db.courses.find({'_isShared': True})]
         if hasattr(self, 'get_init_query') and self.get_init_query:
-            self.init_query = self.get_init_query()
-            self.init_query["_courseId"] = {"$in": shared_course_ids}
-            return self.init_query
+            return {'$and': [self.get_init_query(), {"_courseId": {"$in": shared_course_ids}}]}
         else:
             return {"_courseId": {"$in": shared_course_ids}}
 
@@ -787,7 +1086,7 @@ class MyModelView(ModelView):
         # forked code
         ########################################################################
         # Filters
-        if self._filters:
+        if self._filters and filters:
             data = []
 
             for flt, flt_name, value in filters:
@@ -795,10 +1094,7 @@ class MyModelView(ModelView):
                 data = f.apply(data, f.clean(value))
 
             if data:
-                if len(data) == 1:
-                    query = data[0]
-                else:
-                    query['$and'] = data
+                query = {'$and': [query] + data}
 
         # Search
         if self._search_supported and search:
@@ -828,10 +1124,14 @@ class MyModelView(ModelView):
         if page and page_size:
             skip = page * page_size
 
-        results = self.coll.find(query, sort=sort_by, skip=skip, limit=page_size)
-
-        if execute:
-            results = list(results)
+        # Derived addresses must be sorted numerically before pagination. A
+        # list (not a taxonomy-keyed dict) preserves identical display rows.
+        results = list(self.coll.find(query, sort=sort_by))
+        for model in results:
+            add_assignment_columns(model)
+        if not sort_column or sort_column in ('taxonomy', 'framework', 'framework_version', 'module_number', 'course_number'):
+            results.sort(key=assignment_sort_key, reverse=bool(sort_desc))
+        results = results[skip:skip + page_size] if page_size else results[skip:]
         #########################################################################
 
         return count, results
@@ -867,7 +1167,7 @@ class MyModelView(ModelView):
 
         except Exception as e:
             flash(f"Download fehlgeschlagen: {e}", "error")
-            return redirect(url_for('courseview.index_view'))
+            return redirect(url_for('coursesview.index_view'))
 
 
 class Meta(MyModelView.__class__, type):
@@ -883,10 +1183,13 @@ class Meta(MyModelView.__class__, type):
         super().__init__(name, bases, attrs)
 
 class CourseView(MyModelView, metaclass=Meta):
+    list_template = 'admin/courses_list.html'
     column_filters = [
         CustomFilter(column="tags", name="Tags",
             options=lambda: [(str(tag['_id']), tag['title']) for tag in db.tags.find()])
-    ]
+    ] + [AssignmentFilter(column=key, name=label, courses=lambda: db.courses.find({'_isShared': True}),
+                         normalize=course_assignment, course_field='_id')
+         for key, label in [('prefix', 'Kompetenzrahmen'), ('version', 'Rahmenfassung'), ('moduleNumber', 'Modul'), ('courseNumber', 'Kursnummer')]]
 
     def download_formatter(view, context, model, name):
         course_id = str(model['_id'])
@@ -921,42 +1224,9 @@ class CourseView(MyModelView, metaclass=Meta):
         except Exception as ex:
             flash('Failed to batch download files. {}'.format(str(ex)), 'error')
 
-    @action('package_download', 'Kurse als Lernpaket herunterladen (Adapt LXP)', 'Ihr Download beginnt nach der Bestätigung. Sie können das Lernpaket direkt in das LMS Ihrer Wahl laden!')
+    @action('package_download', 'Gemeinsame LXP vorbereiten (DigComp / AILit)')
     def package_download(self, ids):
-        from lxp_export import package_courses, PackageValidationError
-        try:
-            if not ids:
-                raise PackageValidationError('Select at least one published course.')
-            if not all(re.fullmatch(r'[a-fA-F0-9]{24}', str(course)) for course in ids):
-                raise PackageValidationError('Invalid selected AAT course ID.')
-            builds = [os.path.join(app.config['BUILDS_DIR'], str(course), 'build') for course in ids]
-            wrapper = app.config.get('LXP_WRAPPER_ZIP')
-            expected_sha = app.config.get('LXP_WRAPPER_SHA256')
-            with tempfile.TemporaryDirectory(prefix='adapt-oer-wrapper-') as temporary:
-                if not wrapper:
-                    # Preserve the normal upstream path, but never overwrite a
-                    # checked-in ZIP or silently reuse it after download failure.
-                    url = app.config['LXP_WRAPPER_URL']
-                    response = requests.get(url, timeout=(10, 60))
-                    response.raise_for_status()
-                    repo_root = pathlib.Path(temporary) / 'upstream'
-                    from lxp_export import safe_extract
-                    with ZipFile(BytesIO(response.content)) as archive:
-                        safe_extract(archive, repo_root)
-                    dist_dirs = list(repo_root.glob('*/dist'))
-                    if len(dist_dirs) != 1:
-                        raise PackageValidationError('Downloaded LXP repository does not contain exactly one dist folder.')
-                    wrapper = pathlib.Path(temporary) / 'wrapper.zip'
-                    with ZipFile(wrapper, 'w', ZIP_DEFLATED) as archive:
-                        for path in sorted(dist_dirs[0].rglob('*')):
-                            if path.is_file():
-                                archive.write(path, path.relative_to(dist_dirs[0]).as_posix())
-                stream = package_courses(builds, wrapper, 'static/assessment-template.zip', expected_sha)
-            return send_file(stream, as_attachment=True, download_name='scorm_package.zip')
-        except (OSError, ValueError, zipfile.BadZipFile, requests.RequestException) as error:
-            app.logger.exception('LXP package export failed')
-            flash('LXP export stopped: ' + str(error), 'error')
-            return redirect(url_for('.index_view'))
+        return redirect(url_for('lxp_export_setup', course_id=ids))
 
     def get_tags(self, tags):
         query = {"_id": {"$in": tags}}
@@ -968,7 +1238,7 @@ class CourseView(MyModelView, metaclass=Meta):
         count, data = super(CourseView, self).get_list(*args, **kwargs)
 
         for course in data:
-            tags = self.get_tags(course['tags'])
+            tags = self.get_tags(course.get('tags', []))
             course['tags'] = tags
 
         return count, data
@@ -978,19 +1248,20 @@ class CourseView(MyModelView, metaclass=Meta):
         shared_course_ids = [ObjectId(str(course['_id'])) for course in db.courses.find({'_isShared': True})]
 
         if hasattr(self, 'init_query') and self.init_query:
-            self.init_query["_id"] = {"$in": shared_course_ids}
-            return self.init_query
+            return {'$and': [copy.deepcopy(self.init_query), {"_id": {"$in": shared_course_ids}}]}
         else:
             return {"_id": {"$in": shared_course_ids}}
 
 class ContentsView(MyModelView, metaclass=Meta):
+    column_filters = [AssignmentFilter(column=key, name=label, courses=lambda: db.courses.find({'_isShared': True}),
+                                      normalize=course_assignment)
+         for key, label in [('prefix', 'Kompetenzrahmen'), ('version', 'Rahmenfassung'), ('moduleNumber', 'Modul'), ('courseNumber', 'Kursnummer')]]
     column_extra_row_actions = [
         template.EndpointLinkRowAction("fa fa-print", ".preview")
     ]
 
     def get_init_query(self):
-        all_ids = [doc['_id'] for doc in db.contentobjects.find({}, {"_id": 1})]
-        return {"_parentId": {"$in": all_ids}}
+        return {'_type': 'page'}
 
     def get_query(self):
         shared_course_ids = [course['_id'] for course in db.courses.find({'_isShared': True}, {"_id": 1})]
@@ -1010,28 +1281,10 @@ class ContentsView(MyModelView, metaclass=Meta):
         :param model:
         :return: (taxonomy, is_abbrev_valid)
         """
-        is_abbrev_valid = False
-
-        # Check if parent content object exists
-        raw_index = get_related_content_index(model, 'contentobjects')
-
-        if type(raw_index) == int:
-            learning_unit = str(raw_index + 1)
-            course_id = model['_courseId']
-
-            # Fetch the domain information
-            domain_title = str(db.contentobjects.find_one({'_id': model['_parentId']}).get("title"))
-            domain_abbrev_str = domain_title[0]
-
-            # If domain abbreviation is not A, B, or C, color it red
-            if domain_abbrev_str in ['A', 'B', 'C']:
-                is_abbrev_valid = True
-
-            # Construct taxonomy with course title, domain abbreviation, and learning unit
-            taxonomy = db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev_str + '.' + learning_unit
-            return taxonomy, is_abbrev_valid
-        else:
-            return raw_index, is_abbrev_valid
+        try:
+            return get_learning_unit_taxonomy(model) or 'Nicht zugeordnet', True
+        except (ValueError, OSError):
+            return 'Nicht zugeordnet – technischen Kurstitel prüfen', False
 
 
     def get_list(self, *args, **kwargs):
@@ -1043,20 +1296,11 @@ class ContentsView(MyModelView, metaclass=Meta):
         """
         count, results = super(ContentsView, self).get_list(*args, **kwargs)
 
-        sort_dict = {} # helper dictionary
-
-        for r in results: # cursor
+        for r in results:
             taxonomy, abbrev_valid = self.get_taxonomy_for_id(r)
             r['taxonomy_string'] = taxonomy
             r['abbrev_valid'] = abbrev_valid
-            sort_dict[taxonomy] = r
-
-        ret_val = [sort_dict[k] for k in sorted(sort_dict.keys())]
-
-        if args[2] is False: # args[2] contains sort_desc variable value
-            return count, ret_val
-        else:
-            return count, reversed(ret_val)
+        return count, results
 
     @action('export_unit_in_course', 'Lerneinheit mit Kurs exportieren', 'Der Kurs wird mit Startpunkt auf die ausgewählte Lerneinheit exportiert.')
     def export_unit_with_course_context(self, ids):
@@ -1224,53 +1468,8 @@ class ContentsView(MyModelView, metaclass=Meta):
         return render_template("handout.html", panels=panels, handout_title=learning_unit["displayTitle"])
 
     def taxonomy_formatter(view, context, model, name):
-        """
-        Adds HTML to the taxonomy column.
-        Can use model information of get_list() method from now on
-        TODO: Make use of model information, remove unneeded handlings and check which fallbacks should remain
-        TODO: Handle markup handling of abbrevation
-        :param context:
-        :param model:
-        :param name:
-        :return:
-        """
-        # use string set in get_list() if given
-        if 'taxonomy_string' in model:
-            if model['abbrev_valid']:
-                taxonomy = Markup(f"<a href='{get_editor_url(model['_courseId'], model['_id'])}'>{model['taxonomy_string']}</a>")
-            else:
-                colored = f"<span style=\"color: red\">{model['taxonomy_string']}</span>"
-                taxonomy = Markup(
-                    f"<a href='{get_editor_url(model['_courseId'], model['_id'])}'>{colored}</a>")
-            model['taxonomy'] = taxonomy
-            return taxonomy
-
-        # Check if parent content object exists
-        raw_index = get_related_content_index(model, 'contentobjects')
-        if isinstance(raw_index, int):
-            learning_unit = str(raw_index + 1)
-            course_id = model['_courseId']
-
-            # Fetch the domain information
-            domain_title = str(db.contentobjects.find_one({'_id': model['_parentId']}).get("title"))
-            domain_abbrev = domain_title[0]
-
-            # If domain abbreviation is not A, B, or C, color it red
-            if domain_abbrev not in ['A', 'B', 'C']:
-                domain_abbrev = f'<span style="color: red">{domain_abbrev}</span>'
-                domain_title = Markup(f'<span style="color: red">{domain_title}</span>')
-
-            # Construct taxonomy with course title, domain abbreviation, and learning unit
-            taxonomy = Markup(db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev + '.' + learning_unit)
-            taxonomy = Markup(f"<a href='{get_editor_url(course_id, model['_id'])}'>{taxonomy}</a>")
-
-            # Optionally, you can also return or store the domain title if needed
-            model['taxonomy'] = taxonomy
-            model['domain'] = domain_title
-        else:
-            model['taxonomy'] = raw_index
-
-        return model['taxonomy']
+        label = model.get('taxonomy_string', 'Nicht zugeordnet')
+        return Markup('<a href="{}">{}</a>').format(get_editor_url(model['_courseId'], model['_id']), label)
 
     def id_formatter(view, context, model, name):
         # Fetch the block that the model belongs to
@@ -1284,6 +1483,9 @@ class ContentsView(MyModelView, metaclass=Meta):
     }
 
 class ComponentView(MyModelView, metaclass=Meta):
+    column_filters = [AssignmentFilter(column=key, name=label, courses=lambda: db.courses.find({'_isShared': True}),
+                                      normalize=course_assignment)
+         for key, label in [('prefix', 'Kompetenzrahmen'), ('version', 'Rahmenfassung'), ('moduleNumber', 'Modul'), ('courseNumber', 'Kursnummer')]]
     component_formatter = ComponentFormatter(db)
     question_formatter = component_formatter.question_formatter
     answer_formatter = component_formatter.answer_formatter
@@ -1340,46 +1542,22 @@ class ComponentView(MyModelView, metaclass=Meta):
 
     def get_list(self, *args, **kwargs):
         count, results = super(ComponentView, self).get_list(*args, **kwargs)
-
-        new_results = []
-
         for component in results:
-            # Fetch the block that the component belongs to
-            component_parent_id = component['_parentId']
-            block = db.blocks.find_one({"_id": component_parent_id})
-
-            # Fetch the article that the block belongs to
-            block_parent_id = block['_parentId']
-            article = db.articles.find_one({"_id": block_parent_id})
-
-            if article:
-                # Add 'additional' field to the component if it has a related article
-                component['additional'] = True if get_related_content_index(article) else ''
-
-                # Fetch the parent content object of the article
-                article_parent_id = article['_parentId']
-                parent_content_objects = list(db.contentobjects.find({"_id": article_parent_id}))
-
-                # Add 'taxonomy' field to the component if it has a parent content object
-                if len(parent_content_objects) > 0:
-                    raw_index = get_related_content_index(parent_content_objects[0], 'contentobjects')
-                    if type(raw_index) == int:
-                        learning_unit = str(raw_index + 1)
-                        course_id = article['_courseId']
-                        domain_title = str(db.contentobjects.find_one({'_id': parent_content_objects[0]['_parentId']}).get("title"))
-                        domain_abbrev = domain_title[0]
-                        if domain_abbrev not in ['A', 'B', 'C']:
-                            domain_abbrev = f'<span style="color: red">{domain_abbrev}</span>'
-                            domain_title = Markup(f'<span style="color: red">{domain_title}</span>')
-                        component['taxonomy'] = db.courses.find_one({'_id': course_id})['title'][:3] + '.' + domain_abbrev + '.' + learning_unit
-                        component['taxonomy'] = Markup(f"<a href='{get_editor_url(course_id, article_parent_id)}'>{component['taxonomy']}</a>")
-                        component['domain'] = domain_title
-                    else:
-                        component['taxonomy'] = '-'
-
-                new_results.append(component)
-
-        return count, new_results
+            block = db.blocks.find_one({'_id': component.get('_parentId')}) or {}
+            article = db.articles.find_one({'_id': block.get('_parentId')}) or {}
+            unit = db.contentobjects.find_one({'_id': article.get('_parentId')})
+            component['additional'] = bool(get_related_content_index(article)) if article else False
+            component['taxonomy'] = 'Nicht zugeordnet'
+            component['domain'] = '—'
+            if unit:
+                try:
+                    label = get_learning_unit_taxonomy(unit) or 'Nicht zugeordnet'
+                    component['taxonomy'] = Markup('<a href="{}">{}</a>').format(get_editor_url(unit['_courseId'], unit['_id']), label)
+                    domain = db.contentobjects.find_one({'_id': unit.get('_parentId')})
+                    component['domain'] = (domain or {}).get('title', 'Flache Kursstruktur – keine didaktische Domäne abgeleitet')
+                except (ValueError, OSError):
+                    pass
+        return count, results
 
 class QuestionView(ComponentView, metaclass=Meta):
     def get_init_query(self=None):
@@ -1395,7 +1573,7 @@ class QuestionView(ComponentView, metaclass=Meta):
                     options=[(str(component), component) for component in component_types]),
         CustomClassesFilter(column="entry", name="Klassifizierung",
                     options=[("et", "Einstieg"), ("at", "Abschluss"), ("facts", "Fakt"), ("self-assessment", "Meinung")])
-    ]
+    ] + ComponentView.column_filters
 
     # Explicitly remove "Handout erstellen" by overriding and disabling the method
     def handout(self, ids):
@@ -1439,7 +1617,7 @@ class PresentationView(ComponentView):
     column_filters = [
         CustomFilter(column="_component", name="Typ",
                     options=[(str(component), component) for component in component_types])
-    ]
+    ] + ComponentView.column_filters
 
 class GraphicView(ComponentView):
     def get_init_query(self=None):
@@ -1451,7 +1629,7 @@ class GraphicView(ComponentView):
     column_filters = [
         CustomFilter(column="_component", name="Typ",
                     options=[(str(component), component) for component in component_types])
-    ]
+    ] + ComponentView.column_filters
 
 class GlossaryForm(BaseForm):
     term = fields.StringField('Term', validators=[validators.DataRequired()])

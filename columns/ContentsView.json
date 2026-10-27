@@ -1,5 +1,9 @@
 {
   "taxonomy": "Kürzel",
+  "framework": "Kompetenzrahmen",
+  "framework_version": "Fassung",
+  "module_number": "Modul",
+  "course_number": "Kursnummer",
   "title": "Name",
   "description": "Beschreibung",
   "updatedAt": "zuletzt aktualisiert"

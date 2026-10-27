@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Gemeinsame LXP – Adapt|OER{% endblock %}</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;color:#183044;background:#f5f7f9;margin:0}main{max-width:1160px;margin:2rem auto;padding:1.5rem;background:white}h1,h2{line-height:1.25}fieldset{border:1px solid #bdcbd5;margin:1.3rem 0;padding:1rem}legend{font-weight:650}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{text-align:left;padding:.6rem;border-bottom:1px solid #d5dfe5;vertical-align:top}input,select,button{font:inherit;padding:.4rem}button,.button{background:#12679c;color:white;border:0;border-radius:3px;padding:.65rem 1rem;cursor:pointer}label{display:block;margin:.6rem 0}label.inline{display:inline-block;margin-right:1rem}a{color:#12679c}.notice{padding:.8rem;background:#edf4fa}.error{background:#ffeded;padding:.8rem}.warning{background:#fff5dc;padding:.8rem}small{color:#465c6c}.scroll{overflow-x:auto}code{overflow-wrap:anywhere}input[type=checkbox]{width:1.1rem;height:1.1rem}input[type=text]{max-width:95%;width:35rem}</style>
+</head><body><main><nav><a href="{{ url_for('coursesview.index_view') }}">← Kurse</a> · <a href="{{ url_for('lxp_export_setup') }}">LXP-Export</a></nav>
+{% for category, message in get_flashed_messages(with_categories=true) %}<p role="alert" class="{{ category }}">{{ message }}</p>{% endfor %}
+{% block content %}{% endblock %}</main></body></html>

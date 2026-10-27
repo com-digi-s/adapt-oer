@@ -13,14 +13,11 @@ import shutil
 import tempfile
 from zipfile import ZipFile, ZIP_DEFLATED
 from adapt_persistence_bootstrap import bootstrap_runtime
+from lxp_catalogue import PackageValidationError
 
 
 QUESTION_TYPES = {'mcq', 'gmcq', 'matching', 'slider', 'textinput', 'infai-dragndrop'}
 DATA_FILES = ('contentObjects', 'articles', 'blocks', 'components')
-
-
-class PackageValidationError(ValueError):
-    pass
 
 
 def read_json(path):
@@ -34,6 +31,8 @@ def write_json(path, value):
 
 def safe_extract(archive, destination):
     target = Path(destination).resolve()
+    from lxp_multi_export import validate_archive_entries
+    validate_archive_entries(archive)
     for entry in archive.infolist():
         resolved = (target / entry.filename).resolve()
         if not resolved.is_relative_to(target) or (entry.external_attr >> 16) & 0o170000 == 0o120000:
@@ -50,7 +49,7 @@ def published_course(build):
     data_dir = build / 'course' / language
     course = read_json(data_dir / 'course.json')
     data = {name: read_json(data_dir / (name + '.json')) for name in DATA_FILES}
-    return {'build': build, 'language': language, 'course': course, 'data': data}
+    return {'build': build, 'language': language, 'course': course, 'data': data, 'config': config}
 
 
 def course_mapping(title, wrapper_config):
@@ -135,6 +134,21 @@ def make_quiz(destination, template_path, candidates, title):
         block_id = 'block-' + question_id
         question.update({'_id': question_id, '_parentId': block_id, '_layout': 'full', '_attempts': 1, '_isOptional': False,
                          '_isAvailable': True, '_isHidden': False, '_isVisible': True, '_canShowFeedback': False})
+        question.setdefault('_questionWeight', source.get('config', {}).get('_questionWeight', 1))
+        if question['_component'] == 'textinput':
+            # Older exports used this alias, while the actual bundled native
+            # model requires item._answers. Never alter the learning source.
+            for item in question.get('_items', []):
+                if '_answers' not in item and 'answers' in item:
+                    item['_answers'] = item.pop('answers')
+        if question['_component'] == 'infai-dragndrop':
+            for item in question.get('_items', []):
+                if isinstance(item.get('accepted'), str):
+                    item['accepted'] = [item['accepted']]
+        if question['_component'] == 'slider' and not isinstance(question.get('_correctAnswer'), bool) and question.get('_correctAnswer') == 0:
+            # Native SliderModel treats numeric zero as a falsy single answer;
+            # an equivalent explicit singleton range preserves the real key.
+            question['_correctRange'] = {'_bottom': 0, '_top': 0}
         if not any(re.sub(r'<[^>]+>', '', str(question.get(key, ''))).strip() for key in ('displayTitle', 'body', 'instruction')):
             if not question.get('title', '').strip():
                 raise PackageValidationError('Question has no visible prompt: ' + original['_id'])
@@ -182,7 +196,7 @@ def make_quiz(destination, template_path, candidates, title):
     return metadata
 
 
-def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256=None):
+def _package_legacy(builds, wrapper_path, template_path, expected_wrapper_sha256=None):
     """Return an unmodified-source package stream. No writes to published builds."""
     wrapper_path = Path(wrapper_path)
     digest = hashlib.sha256(wrapper_path.read_bytes()).hexdigest()
@@ -277,3 +291,26 @@ def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256
                     archive.write(path, path.relative_to(root).as_posix())
     output.seek(0)
     return output
+
+
+def package_courses(builds, wrapper_path, template_path, expected_wrapper_sha256=None, *, mode='legacy', **options):
+    """Export the historical numeric package or an explicitly selected new mode.
+
+    The legacy branch deliberately retains its old contract. Unknown versions
+    and foreign prefixed titles never cause an automatic fallback to it.
+    """
+    if mode == 'legacy':
+        if options:
+            raise PackageValidationError('Multi-framework options require mode="multi-framework"')
+        return _package_legacy(builds, wrapper_path, template_path, expected_wrapper_sha256)
+    if mode != 'multi-framework':
+        raise PackageValidationError('Unsupported LXP export mode: ' + str(mode))
+    prepared = prepare_multi_framework_export(builds, wrapper_path, template_path,
+        expected_wrapper_sha256=expected_wrapper_sha256, **options)
+    try:
+        return build_multi_framework_export(prepared, confirmed_preflight_sha256=prepared.preflight_sha256)
+    finally:
+        prepared.close()
+
+
+from lxp_multi_export import prepare_multi_framework_export, build_multi_framework_export

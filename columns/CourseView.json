@@ -1,6 +1,10 @@
 {
   "download": "Download",
   "displayTitle": "Kurs",
+  "framework": "Kompetenzrahmen",
+  "framework_version": "Fassung",
+  "module_number": "Modul",
+  "course_number": "Kursnummer",
   "description": "Beschreibung",
   "tags": "Tags",
   "updatedAt": "zuletzt aktualisiert"
