@@ -266,9 +266,12 @@ def remove_oer_helper(data):
         data[name] = [item for item in items if item['_id'] not in removed]
 
 
-def make_quiz(destination, template_path, candidates, title):
+def make_quiz(destination, template_path, candidates, title, *, assessment_options=None):
     if not candidates:
         raise PackageValidationError(title + ' contains no supported graded questions. Mark actual question components with et/at and publish again.')
+    if assessment_options is not None and (not isinstance(assessment_options, dict)
+            or any(type(assessment_options.get(key)) is not bool for key in ('showMarking', 'showModelAnswer'))):
+        raise PackageValidationError('Assessment marking options must be explicit booleans')
     capabilities = validate_assessment_template(template_path)
     with ZipFile(template_path) as archive:
         # The manifest qualifies the input template. Keep generated SCO bytes
@@ -286,6 +289,9 @@ def make_quiz(destination, template_path, candidates, title):
         block_id = 'block-' + question_id
         question.update({'_id': question_id, '_parentId': block_id, '_layout': 'full', '_attempts': 1, '_isOptional': False,
                          '_isAvailable': True, '_isHidden': False, '_isVisible': True, '_canShowFeedback': False})
+        if assessment_options is not None:
+            question['_canShowMarking'] = assessment_options['showMarking']
+            question['_canShowModelAnswer'] = assessment_options['showModelAnswer']
         question.setdefault('_questionWeight', source.get('config', {}).get('_questionWeight', 1))
         if question['_component'] == 'textinput':
             # Older exports used this alias, while the actual bundled native
@@ -341,6 +347,11 @@ def make_quiz(destination, template_path, candidates, title):
     for name in ('contentObjects', 'articles'):
         values = read_json(directory / (name + '.json'))
         values[0]['title'] = title
+        if name == 'articles' and assessment_options is not None:
+            assessment = values[0]['_assessment']
+            assessment['_suppressMarking'] = not assessment_options['showMarking']
+            assessment['_questions']['_canShowMarking'] = assessment_options['showMarking']
+            assessment['_questions']['_canShowModelAnswer'] = assessment_options['showModelAnswer']
         write_json(directory / (name + '.json'), values)
     runtime = Path(destination) / 'adapt/js/adapt.min.js'
     output, metadata = bootstrap_runtime(runtime.read_bytes())

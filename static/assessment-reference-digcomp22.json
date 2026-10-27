@@ -1,0 +1,610 @@
+{
+  "format": "adapt-oer-assessment-reference",
+  "version": 1,
+  "id": "comdigis-public-digcomp22-20261027",
+  "label": "Öffentliche ComDigiS*-Auswahl (DigComp 2.2)",
+  "framework": {
+    "prefix": "DigComp",
+    "version": "2.2"
+  },
+  "fingerprintFields": [
+    "_component",
+    "title",
+    "displayTitle",
+    "body",
+    "instruction",
+    "_items",
+    "_answers",
+    "_correctAnswer",
+    "_correctRange",
+    "_selectable",
+    "_questionWeight",
+    "_scaleStart",
+    "_scaleEnd",
+    "_scaleStep",
+    "_step"
+  ],
+  "phases": {
+    "entry": {
+      "expectedCount": 24,
+      "publicSourceUrl": "https://lxp.creativeartefact.org/scos/M0/course/en/components.json",
+      "responseSha256": "03ce6907babbbd41d8ddd5da8e832f083c277382d59bbb6794cb704b4a8356f6",
+      "questions": [
+        {
+          "moduleNumber": "1",
+          "courseNumber": "2",
+          "sourceComponentId": "6419a527c0b812002aaecf16",
+          "questionSha256": "fbae27e6b2afe673c0636b052b1ffd25c3a9d405a9a63c1516173c89d2a76285",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "c36c22be-b663-430b-a173-1f3f94ed9517"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "66290fd0c240300006e6c175",
+          "questionSha256": "d86970f63e0bdf6c81d24e85bd992db53979c5331a9e98c4e63692ca5a12b3a0",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "e7da713f-ac5f-487a-81b7-bb0378203c20"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "66684f00c240300006fbd827",
+          "questionSha256": "422bcb96bd73d53604be6c4de070ec1f88488fdbb09f2810734f697dbe814a47",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "5d98fc1c-bd71-45f3-bfa4-e78ad08dabb3"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "66684f43c240300006fbe1dc",
+          "questionSha256": "51bc7c84c3a3b2462ac0d95597edd4b2bc7ddff40f8f5e44f1c72d0505d3cb3c",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "69d6206a-a0e1-49d2-829a-b239a77b7c6d"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666ee929c240300006fe112a",
+          "questionSha256": "d59fad677e1de56714f2169441e411498912b319070364f203f2618f6b835bbd",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "3118e790-3fb7-4cf3-a499-2b419c59e6d5"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666eeb8cc240300006fe7299",
+          "questionSha256": "89bc2a9a8ad32c5832de5a3df7d70468e11d1b8c406cded7f33b95cc4a29c422",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "6e42a534-3ee5-4a09-bf80-db5c24e04d09"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666eebc7c240300006fe7be9",
+          "questionSha256": "521b0a42670da75d95227530abc48773365519465c5ae3897c6472c22984a2fd",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "a373db81-d52f-46f5-bfd0-5b51c06a1545"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666eec5cc240300006fe8f9a",
+          "questionSha256": "9116186461fb6ecc7267074db81e5e159342ac818d998986f16453d6d8ab5141",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "3015ad3b-88d8-403b-a5a9-60a3f33157c2"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65a91f5dc240300006ab0c85",
+          "questionSha256": "97d9a4678863ca061c1016c3178e71e3664efd6d963a41afc4b3cc56de9d905f",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "9f9312bc-c0d9-449a-a536-bab4559feaf3"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65aa859ec240300006ac633e",
+          "questionSha256": "1eb72ffdb20ac08cf25ff5a656ded560e455a619167f6dc8d83ba1d22e49b8ad",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "e608b113-09e9-4a9e-8fe5-7895f0529305"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "678430314bd5540006d5e967",
+          "questionSha256": "8f60b801b4f97b965c4ce16352f4daf8ebd33ffece1a94b5230c062cb3f12200",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "678430314bd5540006d5e967"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "2",
+          "sourceComponentId": "659e4fd0c240300006a570e0",
+          "questionSha256": "596094f8f961a4310b139659c06070b8c59c6dd7b8514f3193facd4e708d33eb",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "5daa67c0-3c83-4952-b33c-691812f728ce"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "3",
+          "sourceComponentId": "65a8fe04c240300006a9ed89",
+          "questionSha256": "5e2974dd344320ec3a5563875b7fb610563c397a05202780f319745b17285355",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "6f8e6182-f86b-47d4-b7ca-5268956d8a80"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "1",
+          "sourceComponentId": "649d62bac0b812002aaed7e9",
+          "questionSha256": "d6adeff8da9b3e4388579c2a5780293380a34a087995ce0ceefc48f915e3a6d9",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "649d62bac0b812002aaed7e9"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "2",
+          "sourceComponentId": "649d5107c0b812002aaed7dd",
+          "questionSha256": "4597e2f1cd28d960dc823755f34ad8061a35d29e235c079ac8c55f962da10a41",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "649d5107c0b812002aaed7dd"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "2",
+          "sourceComponentId": "649d5354c0b812002aaed7e3",
+          "questionSha256": "c5b1405ba39ce82286fec7bc3cbf2b175d3ceda6370da8823bcdf22f53c1bf0b",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "d8219c97-8be1-4622-a2d8-07b6682bcb99"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "3",
+          "sourceComponentId": "6492ccfcc0b812002aaed75b",
+          "questionSha256": "4960ed6a5e5db84ae3bb707718cfd077ad59505aa10064691bc45301a7a2f4da",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "bea09db1-059b-4838-9ef5-0605e8945b18"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "3",
+          "sourceComponentId": "649c3f1cc0b812002aaed7c9",
+          "questionSha256": "b4561c3b54fad045e3b6423e4f671cc636dd4faab23c3e3dfc11dc844b649fd4",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "b4592b17-ffd6-4bfa-87b8-5e9f07c3681e"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "659e4cc7c240300006a55da4",
+          "questionSha256": "df8f1ae43016ecfa3fbbd1d870f338df1c975ed859f460325ec42a34184b0c37",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "2667d873-c74a-41d5-9aa5-bf2ac5704ebe"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "2",
+          "sourceComponentId": "66df65eb33064b0006a8a3f3",
+          "questionSha256": "3a00aaa638c0936fa58554e57637162bff3276a9246b146e27cfd31aa4cc455b",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "12eb68b6-bc21-4cdd-aef9-44e7c044cad4"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "2",
+          "sourceComponentId": "66df661a33064b0006a8c88a",
+          "questionSha256": "36a4fc75aafc3ec70fdfa1b1d745214abcb719172794ec58677e8dd93ac91992",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "a106af74-3a45-40e7-a4fd-320b9966db52"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "1",
+          "sourceComponentId": "64ff0c2dc2403000067ff515",
+          "questionSha256": "417b47f3f27b214725f818e72106228079e2b97e18e981e4f945924e97443414",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "1baf4cc7-4e54-4493-858d-a7f9dcb55b80"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "1",
+          "sourceComponentId": "650166bac24030000685156d",
+          "questionSha256": "054e8acdc13acc85eecf658a071ae95896c68349862b6f76095f0637b2a1a0eb",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "3beaf706-02e9-459e-b9d5-408e1c9c42c0"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "65c3555dc240300006ba8f6b",
+          "questionSha256": "0f43f4a5485d607a683348a48e5ff5f71ac9117175bc0d8f9705745f1fb394bc",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "bf7c13f2-9f69-447f-bf67-a84b94b5c1c8"
+        }
+      ]
+    },
+    "final": {
+      "expectedCount": 39,
+      "publicSourceUrl": "https://lxp.creativeartefact.org/scos/MX/course/en/components.json",
+      "responseSha256": "51522775ab169a9ed3a454dda41238a9189c05ac031f3651176b648994acbfd0",
+      "questions": [
+        {
+          "moduleNumber": "1",
+          "courseNumber": "1",
+          "sourceComponentId": "667552c6c240300006019ad8",
+          "questionSha256": "8c0f9fafbb444eff239c8d69c830a4c7b7fe9d28bb544d744ea46670c270cc9c",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "6caf2f9a-a54c-49f2-95f5-7f007cf23f3d"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "1",
+          "sourceComponentId": "667559cec24030000601c942",
+          "questionSha256": "fa0d223b2bf757cd07398536ecec3bcf79ae7f19c78c62ffca3601bbfd063b74",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "0485a4e7-4c02-47c5-b5df-4190ade4357b"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "66290fd0c240300006e6c175",
+          "questionSha256": "d86970f63e0bdf6c81d24e85bd992db53979c5331a9e98c4e63692ca5a12b3a0",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "d699905e-ae9f-4a5a-9386-ecb0c763c4d9"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "66684f43c240300006fbe1dc",
+          "questionSha256": "51bc7c84c3a3b2462ac0d95597edd4b2bc7ddff40f8f5e44f1c72d0505d3cb3c",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "5e8391bd-ff40-4e0f-bbe9-2696c3729ad3"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666ee8ccc240300006fe05a8",
+          "questionSha256": "e69bf8c071518b25cca6922dd8ab62b2bc419f26d1402b6ad433c052a74a31a6",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "894b6f0c-d7ac-4afd-afcd-20418f221396"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666ee9cac240300006fe293f",
+          "questionSha256": "1db15f53449b234da63dea1238cabc2d536a3a7cde6a5688538226f52e4ddbd1",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "a8965d6b-90b6-42b5-a42b-6ff3f4098050"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666eea42c240300006fe42c0",
+          "questionSha256": "ee55dbe91f52bd76eb2783f57bb048c7963767716d1ddf734321b59dde183858",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "19964070-f310-4b6a-89ef-289e03a502de"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "666eead9c240300006fe58cb",
+          "questionSha256": "2b6cb204ecf3f2eea86de1292be6f7e302aa3c90e0dbe5f44ff019f3d5e5c26a",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "46f037f7-9581-457a-bd84-5adc42db6fc8"
+        },
+        {
+          "moduleNumber": "1",
+          "courseNumber": "3",
+          "sourceComponentId": "6783f6aa4bd5540006d44af4",
+          "questionSha256": "3902e8cb15824d071f2e3da2886835584ad341801bfd0124b0e7af66445294e2",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "6783f6aa4bd5540006d44af4"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65a90a40c240300006aa2300",
+          "questionSha256": "35eccf2d38f4e432c9812b69f4db3b844ba37ca41268b6318e3f0d26cd6292a1",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "900da6f7-c886-4388-9b58-ecf533fe274e"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65a91719c240300006aa4540",
+          "questionSha256": "1e425c02a24680a9950917a1c4819d131de9c8aa4d0bf6c657ca4870974669af",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "20377488-3510-4883-97a7-5b3c01761405"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65aa8308c240300006ac4e34",
+          "questionSha256": "f5f3e9f9df9200465558c239b7e3a0fc9e2f49af6b84c6af680ebbfe6818239b",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "a8d1a054-7131-4e4c-912a-c67b433149de"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "1",
+          "sourceComponentId": "65aa8617c240300006ac66fe",
+          "questionSha256": "97913d405178a34fbdd9054fcf7041898bb9bd50a6702d5f32d9c54172f1f24d",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "d2a96676-a38d-44bb-aa95-2ea1886a335e"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "2",
+          "sourceComponentId": "659d54b0c240300006a4ed22",
+          "questionSha256": "f41b7928a3f066183c9c210460d3bbff59c63fdd5e507c8b66db7964b34db088",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "723d9455-9699-498d-9eea-63bed016ecd1"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "2",
+          "sourceComponentId": "659e4fd0c240300006a5708c",
+          "questionSha256": "b79cad9b8d4f8125e2d35c77b4370cabc88e9e298d7d367b4bd95b10641cb115",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "9f266a6e-1911-4f62-9658-9a94589ff0cb"
+        },
+        {
+          "moduleNumber": "2",
+          "courseNumber": "2",
+          "sourceComponentId": "65afc072c240300006b04a42",
+          "questionSha256": "d1ada5658e0e2f87e9eb64233967cb14392c5dc9e53b2f29fc77d7eaa38ba813",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "bd64313b-cee5-4ab0-9ce6-d40aea30f489"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "1",
+          "sourceComponentId": "65d76367c240300006bd9f91",
+          "questionSha256": "c54d17da90f7089e998e7a144e272a1f1397a208983a5e14d1bc6e52cbb392b8",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "69f77fed-0cfe-4234-865a-b04442a9eec0"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "1",
+          "sourceComponentId": "6673ea49c240300006ff83cc",
+          "questionSha256": "b6f5cf0292673e2223c30f15b2f59f7ece54704f02e3697f139e199a33e10837",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "137bfd2d-ec80-4037-adce-e7433e641041"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "2",
+          "sourceComponentId": "649d5107c0b812002aaed7dd",
+          "questionSha256": "4597e2f1cd28d960dc823755f34ad8061a35d29e235c079ac8c55f962da10a41",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "649d5107c0b812002aaed7dd"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "3",
+          "sourceComponentId": "64773e87c0b812002aaed5f9",
+          "questionSha256": "e9d59afd9ed1a9f22ffb165749bb87876dfe423eb3cd6d717119a271b8092737",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "64773e87c0b812002aaed5f9"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "3",
+          "sourceComponentId": "649d3c98c0b812002aaed7d3",
+          "questionSha256": "c3af384ad59fff97e9c70b55760f238a56d57d214bef1bb184dcccc8203056cb",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "649d3c98c0b812002aaed7d3"
+        },
+        {
+          "moduleNumber": "3",
+          "courseNumber": "3",
+          "sourceComponentId": "649d44c2c0b812002aaed7d9",
+          "questionSha256": "47a800538db76e738a1854dbbc33ca3ff9a392669423b4a4dc62f5ac67e6f228",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "d65dd057-9650-409c-8d7e-09392c9869d6"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "64d24883c24030000660705a",
+          "questionSha256": "a0230814d7dc72e84bcbe3562bd9f73270832b49b49ab6973997df13deab750a",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "3fd4e40b-120f-49fa-8cea-f7fb850c2463"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "64d25777c24030000660a6d6",
+          "questionSha256": "d526e3b836014ea06e7fabd9421e2dcfb60a1fd3b3b03c3e65f879b2b05bb236",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "60477a1c-5b60-4f2e-8d4c-4100ff68fbbd"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "64d259fbc24030000660b6d3",
+          "questionSha256": "f666dc9ae9e43d6d4ef5dcfa4b7561cf16dd8e278698c48cc81b80a1c847b138",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "64d259fbc24030000660b6d3"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "64d4af55c24030000663a000",
+          "questionSha256": "d70dd9ff681d332d109253aef6588fc67f64f21a1a7af60ea42b077127bbdb71",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "7527e2b4-fdc7-4112-a09f-83ed8978b892"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "1",
+          "sourceComponentId": "65b26336c240300006b498b7",
+          "questionSha256": "2bfdfc37b8f4218c074869b32fc99517f2609e3d16f0f6629fcacc7afa05fb94",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "4e07ff36-9bd6-403a-a78a-0c8950baf312"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "2",
+          "sourceComponentId": "66df65ff33064b0006a8af9e",
+          "questionSha256": "e21aefded45626edbb8d7e9255f1643150dd41963a5a24a6583f53488cb3e71d",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "4107a935-0dd7-48cd-aa80-68398aa5312f"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "2",
+          "sourceComponentId": "66df660533064b0006a8b4c9",
+          "questionSha256": "1184f0e10d811f2b84c58789625f6bb3577870556538382677e449f866694d40",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "33c6aa42-5197-42bb-b422-b68a2076b740"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "3",
+          "sourceComponentId": "6527ff65c2403000069048eb",
+          "questionSha256": "69e1f72959aec44ecbf5b952f95611e24b7a8d596266f6de0255b26229ebd430",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "17c9a1e0-826d-4f1b-b025-589e2a44bd0d"
+        },
+        {
+          "moduleNumber": "4",
+          "courseNumber": "3",
+          "sourceComponentId": "65437b88c2403000069a59d3",
+          "questionSha256": "13570283d5636386fd9fdab8b0b2bfb1dc1047c68e2608e79aa9dcdc6de1a958",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "65437b88c2403000069a59d3"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "1",
+          "sourceComponentId": "64faf2bac2403000067c4520",
+          "questionSha256": "870bdfc0a4e8e909ec4ffd7ad8ce7d60665214cbb6bbc4157e74ad16837aa9cc",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "03859011-0f73-433c-b06e-0a5c9b261804"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "1",
+          "sourceComponentId": "65b37e7fc240300006b8d50a",
+          "questionSha256": "2838c7534ac9525e144529d0ad4a8ce7b3563d3b0d413991b3d7236ef8322236",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "2b7bb73c-7d8b-4fbf-bc97-ee71558a9644"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "1",
+          "sourceComponentId": "678420074bd5540006d55c71",
+          "questionSha256": "bd99364b68a64009a292e9aaca323bf65de0a1fa3e6d5f3a0df75cbaad64f82c",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "678420074bd5540006d55c71"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "65b28607c240300006b72251",
+          "questionSha256": "71a84e65644870034f9e78aab39ce4a788edb7964c8daab8536e3e0acf7a9ba6",
+          "effectiveQuestionWeight": 1,
+          "domainId": "bewerten",
+          "publicComponentId": "d157c784-db17-4dbf-a7c7-e1419e123995"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "65c35704c240300006ba9772",
+          "questionSha256": "95e6ade7b535f0df3ce34f30a4e995f39945794a6d7fbcd29d193ebd35ff31fe",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "24544525-07f0-4c77-8f9c-64ccae4643fd"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "65c35781c240300006ba9bb9",
+          "questionSha256": "00bf51f4242c490be8167472d2bf83c680824483dda4e2d5beefa7f58d683993",
+          "effectiveQuestionWeight": 1,
+          "domainId": "verstehen",
+          "publicComponentId": "ad4bbc94-a10a-4ff5-bc56-4fafff76c53b"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "66029510c240300006cdf747",
+          "questionSha256": "df341ab322f0bed6e477314c9f7581af57a55c00dbe3678246f5edd51da42b9d",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "9b4357a5-da7b-46a6-b08f-d1588c3395c8"
+        },
+        {
+          "moduleNumber": "5",
+          "courseNumber": "2",
+          "sourceComponentId": "660298acc240300006ce03c9",
+          "questionSha256": "aa395f3ae5283404360e5a0ab8f3584eeb1dc1a2bf713609d5521c7265ef2ba1",
+          "effectiveQuestionWeight": 1,
+          "domainId": "anwenden",
+          "publicComponentId": "1a92757a-53d4-47ad-9c47-512e8bfc33b9"
+        }
+      ]
+    }
+  }
+}

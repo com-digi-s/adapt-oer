@@ -143,6 +143,77 @@ def _lxp_metadata(courses):
     return metadata
 
 
+def _lxp_assessment_defaults(framework, profile):
+    """GUI defaults are explicit export choices, not hidden runtime sampling."""
+    settings = ((profile or {}).get('settings') or {}).get('assessment_options') or {}
+    saved = settings.get(framework['prefix'], settings.get(framework['id'], {}))
+    result = {}
+    for phase in ('entry', 'final'):
+        count = (24 if phase == 'entry' else 39) if framework['prefix'] == 'DigComp' else 12
+        result[phase] = {'mode': 'balanced', 'questionCount': count, 'equalSampling': True,
+                         'showMarking': True, 'showModelAnswer': False}
+        result[phase].update(framework.get('defaultAssessmentOptions', {}).get(phase, {}))
+        result[phase].update(saved.get(phase, {}))
+    return result
+
+
+def _lxp_assessment_options(frameworks, profile):
+    """Read only the known controls; omitted controls retain the saved choice.
+
+    A per-phase marker distinguishes an unchecked rendered checkbox from an old
+    or partial POST that does not yet include these controls.
+    """
+    controls = {'present', 'mode', 'questionCount', 'equalSampling', 'showMarking', 'showModelAnswer'}
+    allowed = {f'assessment_{framework["prefix"]}_{phase}_{key}'
+               for framework in frameworks for phase in ('entry', 'final') for key in controls}
+    if any(name.startswith('assessment_') and name not in allowed for name in request.form):
+        raise ValueError('Unbekannte Testeinstellung. Bitte das Formular erneut öffnen.')
+    result = {}
+    for framework in frameworks:
+        prefix = framework['prefix']
+        defaults = _lxp_assessment_defaults(framework, profile)
+        result[prefix] = {}
+        for phase in ('entry', 'final'):
+            name = f'assessment_{prefix}_{phase}_'
+            for key in controls:
+                if len(request.form.getlist(name + key)) > 1:
+                    raise ValueError('Doppelte Testeinstellung. Bitte das Formular erneut öffnen.')
+            present = request.form.get(name + 'present')
+            if present not in (None, 'yes'):
+                raise ValueError('Ungültige Testeinstellung.')
+            values = dict(defaults[phase])
+            mode = request.form.get(name + 'mode', values['mode'])
+            if mode not in ('balanced', 'all', 'reference'):
+                raise ValueError('Ungültige Fragen-Auswahl.')
+            if mode == 'reference' and (prefix != 'DigComp' or request.form.get('version_' + prefix, framework['version']) not in ('', '2.2')):
+                raise ValueError('Die öffentliche Fragen-Auswahl ist nur für DigComp 2.2 verfügbar.')
+            raw_count = request.form.get(name + 'questionCount')
+            if raw_count is not None:
+                if raw_count == '' and mode in ('all', 'reference'):
+                    count = None
+                elif not re.fullmatch(r'[0-9]+', raw_count or '') or int(raw_count) < 1:
+                    raise ValueError('Bitte eine positive ganze Fragenanzahl angeben.')
+                else:
+                    count = int(raw_count)
+            else:
+                count = values['questionCount']
+            if mode == 'reference':
+                count = 24 if phase == 'entry' else 39
+            if mode == 'balanced' and count is None:
+                raise ValueError('Bitte für die eigene Auswahl eine positive ganze Fragenanzahl angeben.')
+            values.update(mode=mode, questionCount=None if mode == 'all' else count)
+            for key in ('equalSampling', 'showMarking', 'showModelAnswer'):
+                value = request.form.get(name + key)
+                if value is not None:
+                    if value not in ('yes', 'no'):
+                        raise ValueError('Ungültige Ja-/Nein-Testeinstellung.')
+                    values[key] = value == 'yes'
+                elif present:
+                    values[key] = False
+            result[prefix][phase] = values
+    return result
+
+
 def _lxp_fingerprint(builds, metadata, settings):
     """Bind confirmation to live inputs as well as the backend's frozen copy."""
     digest = hashlib.sha256(json.dumps({'metadata': metadata, 'settings': settings,
@@ -244,6 +315,7 @@ def lxp_export_setup():
             if not title:
                 raise ValueError('Bitte einen Titel für das Lernangebot angeben.')
             settings = dict(package_id=package_id, revision=revision, title=title, diagnostics=diagnostics,
+                            assessment_options=_lxp_assessment_options(frameworks, profile),
                             framework_versions=versions, required_courses=required,
                             target_profile_id=app.config['LXP_TARGET_PROFILE_ID'],
                             legacy_import=request.form.get('legacy_import') == 'yes',
@@ -287,7 +359,8 @@ def lxp_export_setup():
     for course, source in zip(courses, _lxp_metadata(courses)):
         course['_lxp_required_key'] = source['originId'] + '::' + source['courseId']
     return render_template('lxp_export.html', courses=courses, frameworks=frameworks, profiles=profiles,
-        profile=profile, selected=selected, csrf_token=generate_csrf())
+        profile=profile, selected=selected, csrf_token=generate_csrf(),
+        assessment_form={framework['prefix']: _lxp_assessment_defaults(framework, profile) for framework in frameworks})
 
 
 @app.route('/lxp/preview/<token>')

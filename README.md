@@ -55,6 +55,43 @@ the central assessment template supplies the supported question plugins and
 their dependencies for the generated tests. Changed course publications still
 need a compatibility check before existing learner state is reused.
 
+### Configure tests directly in Adapt|OER
+
+There is no additional Adaptmin upload step. In the shared LXP export form:
+
+1. Select the published courses and load the existing offer profile for an update.
+2. Set entry and final tests separately for each framework.
+3. Choose a bounded selection, all tagged questions, or the reviewed public
+   ComDigiS* reference selection for DigComp 2.2 (24 entry / 39 final questions).
+4. Set question count, balanced distribution and answer-marking preferences.
+5. Check the preview's available/selected counts, module/course/domain coverage
+   and the selected question list. Uncovered areas are **not assessed**, not 0%.
+6. Confirm that preview to download one shared LXP ZIP.
+
+The GUI defaults to 24/39 DigComp questions and 12/12 AILit questions; smaller
+pools produce an explicit notice rather than fabricated questions. Stored
+profile choices take precedence. `et`/`at` still define the pool, not the final
+test length. The reviewed public preset requires its actual unchanged source
+questions; missing/edited questions stop that preset rather than being silently
+substituted. Its labels, options, keys, domain and effective question weight are
+bound to the reviewed source fingerprints.
+
+The balanced policy is new, versioned `adapt-oer-balanced-selection@1`, **not**
+a claimed reconstruction of Adaptmin's undocumented backend. It distributes
+questions across available modules/courses and favours underrepresented
+configured domains, redistributing exhausted capacities. Selection is stable
+for unchanged inputs and is frozen at export time, not redrawn for each learner.
+Balanced coverage is not psychometric validation.
+
+Programmatic callers can pass `assessment_options`, keyed by framework ID or
+prefix and then `entry`/`final`. Allowed phase keys are `mode` (`balanced`, `all`,
+`reference`), `questionCount` (positive integer or null), `equalSampling`,
+`showMarking` and `showModelAnswer` (explicit booleans). Old API callers omitting
+these options retain the full-pool/template behaviour. The exported
+`assessment-selection.json` and provenance record the exact chosen identities,
+fingerprints and coverage. Changed test sets produce changed native test
+fingerprints; old responses are not relabelled as answers to new questions.
+
 ### Checked central assessment template
 
 `static/assessment-template.zip` contains a versioned capabilities manifest.

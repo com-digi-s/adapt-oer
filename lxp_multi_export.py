@@ -13,6 +13,7 @@ import binascii
 import fcntl
 import hashlib
 from io import BytesIO
+from html import unescape
 import json
 import math
 import os
@@ -29,6 +30,8 @@ from adapt_persistence_bootstrap import bootstrap_runtime
 from lxp_catalogue import (PackageValidationError, canonical_bytes, catalogue_sha256,
                            load_catalogue, normalize_title)
 from lxp_diagnostics_articles import learning_source_view, restore_removed_nodes
+from lxp_assessment_selection import (normalize_assessment_options, select_questions,
+    question_fingerprint, QUESTION_FINGERPRINT_FIELDS)
 
 
 PHASE_TAG = {'entry': 'et', 'final': 'at'}
@@ -47,7 +50,55 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+
+
+def _reference_question_identities(candidates, framework, phase):
+    """Bind the known public selection to actual, unchanged published questions."""
+    reference = _read(Path(__file__).parent / 'static/assessment-reference-digcomp22.json')
+    if (reference.get('format') != 'adapt-oer-assessment-reference' or reference.get('version') != 1
+            or reference.get('framework') != {'prefix': framework['prefix'], 'version': framework['version']}
+            or reference.get('fingerprintFields') != list(QUESTION_FINGERPRINT_FIELDS)):
+        raise PackageValidationError('Die öffentliche Referenzauswahl ist nur für DigComp 2.2 freigegeben.')
+    selected = reference.get('phases', {}).get(phase, {})
+    rows = selected.get('questions', [])
+    if not rows or selected.get('expectedCount') != len(rows):
+        raise PackageValidationError('Die geprüfte öffentliche Referenzauswahl ist unvollständig.')
+    by_address = {(row['moduleNumber'], row['courseNumber'], row['identity'][-1]): row for row in candidates}
+    identities = []
+    for row in rows:
+        candidate = by_address.get((row['moduleNumber'], row['courseNumber'], row['sourceComponentId']))
+        if (not candidate or candidate['fingerprint'] != row['questionSha256']
+                or candidate['domainId'] != row['domainId']
+                or candidate['effectiveQuestionWeight'] != row['effectiveQuestionWeight']):
+            raise PackageValidationError('Die öffentliche Referenzauswahl benötigt die unveränderte Quellfrage '
+                + framework['prefix'] + row['moduleNumber'] + '.' + row['courseNumber'] + ' / '
+                + row['sourceComponentId'] + '. Bitte die passenden Kurse wählen oder eine eigene Auswahl konfigurieren.')
+        identities.append(candidate['identity'])
+    if len(set(identities)) != len(rows):
+        raise PackageValidationError('Doppelte Frage in der öffentlichen Referenzauswahl.')
+    return identities
+
+
+def _complete_selection_coverage(summary, sources, framework):
+    """Zero-question selected courses remain visible, never a fabricated score."""
+    courses = summary['coverage']['courses']
+    present = {row['id'] for row in courses}
+    selected_module_ids = {source['sco']['moduleId'] for source in sources if source['sco']['frameworkId'] == framework['id']}
+    summary['coverage']['modules'] = [row for row in summary['coverage']['modules'] if row['id'] in selected_module_ids]
+    for source in sources:
+        sco = source['sco']
+        if sco['frameworkId'] == framework['id'] and sco['id'] not in present:
+            courses.append({'id': sco['id'], 'label': sco['label'], 'number': sco['number'], 'moduleId': sco['moduleId'],
+                'poolCount': 0, 'selectedCount': 0, 'status': 'not-assessed'})
+
+
+def _question_preview_title(question):
+    for field in ('displayTitle', 'body', 'title', 'instruction'):
+        text = ' '.join(unescape(re.sub(r'<[^>]*>', ' ', str(question.get(field) or ''))).split())
+        if text:
+            return text[:180] + ('…' if len(text) > 180 else '')
+    return 'Frage ohne Titel'
 
 
 def _generator_sha256():
@@ -507,6 +558,7 @@ class PreparedExport:
     _catalogue_sha256: str
     _report: dict
     _candidates: dict
+    _assessment_selection: list
     _closed: bool = False
 
     def close(self):
@@ -523,6 +575,7 @@ class PreparedExport:
 
 def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, source_metadata,
         registry_path, catalogue=None, package_id, revision, title, diagnostics=None,
+        assessment_options=None,
         framework_versions=None, required_courses=None, target_profile_id='scorm-1.2-conservative',
         expected_wrapper_sha256=None, legacy_import=False, confirm_reassignment=False):
     """Freeze actual published bytes, validate, normalize and return a preview.
@@ -543,6 +596,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         raise PackageValidationError('Duplicate selected source origin/course identity')
     original_catalogue = catalogue
     normalized_catalogue = load_catalogue(catalogue)
+    normalized_assessment_options = normalize_assessment_options(assessment_options, normalized_catalogue)
     allowed_diagnostics = {value for f in normalized_catalogue['frameworks'] for value in (f['id'], f['prefix'])}
     if diagnostics is not None and (not isinstance(diagnostics, dict) or any(key not in allowed_diagnostics for key in diagnostics)):
         raise PackageValidationError('Diagnostic request contains an unknown framework key')
@@ -573,6 +627,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
             'assessments': [], 'pathways': [], 'glossary': [],
             'completion': {'policy': 'all-required-learning-courses', 'outerScorePolicy': 'no-cross-framework-score'}}
         sources, addresses, versions, used_frameworks, candidates = [], set(), {}, {}, {}
+        selection_summaries, quiz_options = [], {}
         report = {'format': 'adapt-lxp-provenance', 'version': 2, 'packageId': package_id, 'revision': revision,
                   'wrapperSha256': wrapper_hash, 'wrapperCapability': capability, 'persistenceContract': persistence,
                   'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
@@ -636,6 +691,8 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 'title': meta['currentTitle'], 'publishedTitle': published_title, 'language': source['language'],
                 'buildSha256': original_hash, 'catalogueSha256': catalogue_hash, 'manifest': manifest,
                 'componentFingerprint': learning_compatibility_fingerprint(source)}
+            if 'questionDomains' in meta:
+                source_info['questionDomains'] = deepcopy(meta['questionDomains'])
             if adapter:
                 source_info['launchAdapter'] = adapter
                 source_info['manifestOrigin'] = 'generated-aat-core-build'
@@ -671,7 +728,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 entry['diagnostics'][phase] = availability
                 if intent == 'omit':
                     continue
-                selected = []
+                pool = []
                 for item in sources:
                     if item['sco']['frameworkId'] != framework_id:
                         continue
@@ -694,10 +751,30 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                                   'tags': sorted(classes & {'et', 'at'}), 'available': True, 'selfAssessment': False, 'maxPoints': points}
                         if runtime_type != question['_component']:
                             record['componentAdapter'] = 'gmcq-to-mcq-v1'
-                        existing = next((q for q in contract['questions'] if q['id'] == q_id), None)
-                        if existing is None:
-                            contract['questions'].append(record)
-                        selected.append((item, question, q_id, domain_id, points))
+                        module = next(m for m in contract['modules'] if m['id'] == item['sco']['moduleId'])
+                        pool.append({'identity': (item['metadata']['originId'], item['metadata']['courseId'], question['_id']),
+                            'frameworkId': framework_id, 'moduleId': module['id'], 'moduleNumber': module['number'],
+                            'moduleLabel': module['label'], 'courseId': item['sco']['id'],
+                            'courseNumber': item['sco']['number'], 'courseLabel': item['sco']['label'],
+                            'domainId': domain_id, 'title': _question_preview_title(question),
+                            'fingerprint': question_fingerprint(question),
+                            'effectiveQuestionWeight': question.get('_questionWeight', item['source']['config'].get('_questionWeight', 1)),
+                            'payload': (item, question, q_id, domain_id, points, record)})
+                configured_options = normalized_assessment_options.get(framework_id, {}).get(phase)
+                # Old API callers retain the unchanged full-pool/template policy.
+                selection_options = configured_options or {'mode': 'all', 'questionCount': None,
+                    'equalSampling': False, 'showMarking': True, 'showModelAnswer': True}
+                reference = (_reference_question_identities(pool, framework, phase)
+                    if selection_options['mode'] == 'reference' else None)
+                chosen, summary = select_questions(pool, selection_options, framework, phase,
+                    reference_identities=reference)
+                _complete_selection_coverage(summary, sources, framework)
+                selection_summaries.append(summary)
+                selected = [candidate['payload'][:5] for candidate in chosen]
+                for candidate in chosen:
+                    record = candidate['payload'][5]
+                    if not any(q['id'] == record['id'] for q in contract['questions']):
+                        contract['questions'].append(record)
                 if not selected:
                     if intent == 'require':
                         raise PackageValidationError(framework['prefix'] + ' ' + phase + ': required diagnostic has no assigned questions')
@@ -725,6 +802,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                         'questions': [{'questionId': q_id, 'sourceCourseId': item['sco']['id'], 'sourceComponentId': question['_id']} for item, question, q_id, _, _ in sorted(selected, key=lambda x: x[2])]},
                     'launch': {'root': 'scos/' + sco_id}})
                 candidates[sco_id] = quiz_candidates
+                quiz_options[sco_id] = configured_options
                 availability.update(status='provided', reason=None)
         # Real generator output is validated during preflight, not deferred until after confirmation.
         from lxp_export import make_quiz
@@ -732,7 +810,8 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
             if sco['role'] == 'learning':
                 continue
             target = frozen / 'generated' / sco['id']
-            bootstrap = make_quiz(target, frozen / 'template.zip', candidates[sco['id']], sco['label'])
+            bootstrap = make_quiz(target, frozen / 'template.zip', candidates[sco['id']], sco['label'],
+                assessment_options=quiz_options[sco['id']])
             manifest, entry = _manifest_launch(target)
             sco['launch'].update(entry=entry, manifestHref=manifest['href'])
             sco['source'].update(buildSha256=tree_sha256(target), manifest=manifest)
@@ -744,20 +823,24 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         contract['questions'].sort(key=lambda q: q['id'])
         contract['assessments'].sort(key=lambda a: (a['frameworkId'], a['phase']))
         report['diagnostics'] = {f['id']: f['diagnostics'] for f in contract['frameworks']}
+        report['assessmentSelection'] = deepcopy(selection_summaries)
         preview = {'package': deepcopy(contract['package']), 'frameworks': deepcopy(contract['frameworks']),
                    'modules': deepcopy(contract['modules']), 'scos': deepcopy(contract['scos']),
                    'assessments': deepcopy(contract['assessments']), 'diagnostics': deepcopy(report['diagnostics']),
+                   'assessmentSelection': deepcopy(selection_summaries),
                    'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
                    'warnings': ['Target LMS storage/runtime acceptance remains a separate human release gate.']}
         binding = {'contract': contract, 'wrapperSha256': wrapper_hash, 'templateSha256': template_hash,
-                   'catalogueSha256': catalogue_hash, 'generatorSha256': _generator_sha256()}
+                   'catalogueSha256': catalogue_hash, 'generatorSha256': _generator_sha256(),
+                   'assessmentSelection': selection_summaries}
         preflight_hash = sha256_bytes(canonical_bytes(binding))
         preview['preflightSha256'] = preflight_hash
         report['preflightSha256'] = preflight_hash
         _write(frozen / 'catalogue.json', normalized_catalogue)
         _save_registry(registry_path, registry)
         return PreparedExport(deepcopy(contract), preview, preflight_hash, temporary, sources,
-            wrapper_path, wrapper_hash, template_path, template_hash, original_catalogue, catalogue_hash, report, candidates)
+            wrapper_path, wrapper_hash, template_path, template_hash, original_catalogue, catalogue_hash, report, candidates,
+            deepcopy(selection_summaries))
     except Exception:
         temporary.cleanup()
         raise
@@ -777,6 +860,7 @@ def _registry_lock(registry_path):
 
 def prepare_multi_framework_export(builds, wrapper_path, template_path, *, source_metadata,
         registry_path, catalogue=None, package_id, revision, title, diagnostics=None,
+        assessment_options=None,
         framework_versions=None, required_courses=None, target_profile_id='scorm-1.2-conservative',
         expected_wrapper_sha256=None, legacy_import=False, confirm_reassignment=False):
     """Public, process-locked source-registry transaction; see implementation."""
@@ -784,6 +868,7 @@ def prepare_multi_framework_export(builds, wrapper_path, template_path, *, sourc
         return _prepare_multi_framework_export(builds, wrapper_path, template_path,
             source_metadata=source_metadata, registry_path=registry_path, catalogue=catalogue,
             package_id=package_id, revision=revision, title=title, diagnostics=diagnostics,
+            assessment_options=assessment_options,
             framework_versions=framework_versions, required_courses=required_courses,
             target_profile_id=target_profile_id, expected_wrapper_sha256=expected_wrapper_sha256,
             legacy_import=legacy_import, confirm_reassignment=confirm_reassignment)
@@ -867,7 +952,7 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
     # Mutating a public preview/contract object cannot alter the confirmed package.
     binding = {'contract': prepared.contract, 'wrapperSha256': prepared._wrapper_sha256,
                'templateSha256': prepared._template_sha256, 'catalogueSha256': prepared._catalogue_sha256,
-               'generatorSha256': _generator_sha256()}
+               'generatorSha256': _generator_sha256(), 'assessmentSelection': prepared._assessment_selection}
     if sha256_bytes(canonical_bytes(binding)) != prepared.preflight_sha256:
         raise PackageValidationError('Prepared contract/implementation changed; create a new preview')
     if file_sha256(prepared._wrapper_original) != prepared._wrapper_sha256 or file_sha256(prepared._template_original) != prepared._template_sha256:
@@ -889,6 +974,7 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         shutil.copytree(frozen / 'wrapper', root, dirs_exist_ok=True)
         capability, _ = _validate_wrapper(root)
         report = deepcopy(prepared._report)
+        report['assessmentSelection'] = deepcopy(prepared._assessment_selection)
         for item in prepared._sources:
             target = root / item['sco']['launch']['root']
             shutil.copytree(item['frozen'], target)
@@ -937,6 +1023,7 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         _write(root / 'lxp-contract.json', prepared.contract)
         _write(root / 'lxp-catalogue.json', _read(frozen / 'catalogue.json'))
         _write(root / 'package-provenance.json', report)
+        _write(root / 'assessment-selection.json', prepared._assessment_selection)
         # Legacy catalogue is not a parallel source of course/role authority.
         config = _read(root / 'config.json')
         for key in ('SCOS', 'pathways', 'glossary'):
@@ -1147,8 +1234,8 @@ def validate_product_contract(contract, root):
         if not seen_questions:
             raise PackageValidationError('Empty provided assessment')
         expected_questions = {qid for bank in assessment['banks'] for qid in bank['questionIds']}
-        provenance = sco['source'].get('questions', [])
-        if sco['source'].get('assessmentId') != assessment['id'] or len(provenance) != len(expected_questions) or {ref.get('questionId') for ref in provenance} != expected_questions or any(ref.get('sourceCourseId') != questions[ref['questionId']]['sourceCourseId'] or ref.get('sourceComponentId') != questions[ref['questionId']]['sourceComponentId'] for ref in provenance):
+        question_refs = sco['source'].get('questions', [])
+        if sco['source'].get('assessmentId') != assessment['id'] or len(question_refs) != len(expected_questions) or {ref.get('questionId') for ref in question_refs} != expected_questions or any(ref.get('sourceCourseId') != questions[ref['questionId']]['sourceCourseId'] or ref.get('sourceComponentId') != questions[ref['questionId']]['sourceComponentId'] for ref in question_refs):
             raise PackageValidationError('Generated source question provenance differs from assessment banks')
     if any(sco['role'] != 'learning' and (sco['id'] not in used_assessment_scos or sco.get('requiredForCompletion') is not False) for sco in scos.values()):
         raise PackageValidationError('Assessment SCO without explicit non-required test assignment')
@@ -1174,4 +1261,6 @@ def validate_product_contract(contract, root):
                 raise PackageValidationError('Invalid explicit glossary target references')
     if not any(s['role'] == 'learning' and s.get('requiredForCompletion') is True for s in scos.values()):
         raise PackageValidationError('Empty required learning-course set')
+    from lxp_assessment_validation import validate_assessment_selection
+    validate_assessment_selection(contract, root, original_sources, provenance)
     return True
