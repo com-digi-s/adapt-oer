@@ -23,6 +23,41 @@ BUILDS_DIR=/path/to/adapt_authoring/temp/tenantId/adapt_framework/courses
 AUTHORING_DOMAIN=https://your.auhtoring.url
 ```
 
+## Shared multi-framework LXP export
+
+Technical AAT titles such as `DigComp1.1 – …` and `AILit1.1 – …` assign
+published courses to the registered framework/module/course address. Display
+Title is not parsed. Republish after changing the technical Title. The shared
+LXP action provides a frozen preview before downloading one ZIP; reuse its
+saved offer profile for updates so the package ID remains stable.
+
+Administrators configure `LXP_WRAPPER_ZIP` and `LXP_WRAPPER_SHA256` with the
+new hash-bound multi-framework LXP build, a stable `LXP_ORIGIN_ID`, and a durable
+`LXP_REGISTRY_PATH`. Framework versions and permitted addresses come from
+`static/lxp-catalogue.json` (or `LXP_CATALOGUE`), not from guessed prefixes.
+This does not require a new AAT plugin. Registered native sources are a separate
+administrative path, not an arbitrary ZIP import. The explicit
+`aat-core-build-v1` adapter validates known manifestless Core publications.
+
+Diagnostics are requested separately for each framework/phase. Missing optional
+diagnostics are reported as not provided, never passed or scored zero. Required
+diagnostics without supported assigned questions block the export. Completion
+requires all required learning courses across both frameworks, not a fabricated
+combined competency score. The conservative SCORM1.2 profile limits suspend
+data to 4096 characters; local persistence is not a target-LMS release.
+
+### Regression tests
+
+Install test dependencies separately from production requirements, then run:
+
+```sh
+python -m pip install -r requirements-test.txt
+python -m unittest discover -s tests -v
+```
+
+GUI tests exercise actual Flask routes and the exporter using isolated builds
+and `mongomock`; no production MongoDB, AAT instance or external LMS is changed.
+
 ## **Architecture Overview**
 
 ### **Tech Stack**
