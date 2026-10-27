@@ -52,7 +52,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
 def _reference_question_identities(candidates, framework, phase):
@@ -744,7 +744,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 reference = (_reference_question_identities(pool, framework, phase)
                     if selection_options['mode'] == 'reference' else None)
                 chosen, summary = select_questions(pool, selection_options, framework, phase,
-                    reference_identities=reference)
+                    reference_identities=reference, include_available_questions=True)
                 _complete_selection_coverage(summary, sources, framework)
                 selection_summaries.append(summary)
                 selected = [candidate['payload'][:5] for candidate in chosen]
@@ -754,7 +754,9 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                         contract['questions'].append(record)
                 if not selected:
                     if intent == 'require':
-                        raise PackageValidationError(framework['prefix'] + ' ' + phase + ': required diagnostic has no assigned questions')
+                        detail = (' Nach deinen Ausschlüssen bleiben keine Fragen übrig. Bitte mindestens eine Frage '
+                                  'automatisch auswählen oder fest aufnehmen.') if pool else ''
+                        raise PackageValidationError(framework['prefix'] + ' ' + phase + ': required diagnostic has no assigned questions.' + detail)
                     continue
                 assessment_id = _identity(registry, 'assessment:' + package_id + ':' + framework_id + ':' + phase, 'as')
                 sco_id = _identity(registry, 'assessment-sco:' + package_id + ':' + framework_id + ':' + phase, 'sco')

@@ -225,6 +225,9 @@ def _lxp_assessment_options(frameworks, profile):
                for framework in frameworks for phase in ('entry', 'final') for key in controls}
     if any(name.startswith('assessment_') and name not in allowed for name in request.form):
         raise ValueError('Unbekannte Testeinstellung. Bitte das Formular erneut öffnen.')
+    reset = request.form.getlist('reset_manual_selection')
+    if len(reset) > 1 or reset and reset[0] != 'yes':
+        raise ValueError('Ungültiges Zurücksetzen der Fragenfeinauswahl.')
     result = {}
     for framework in frameworks:
         prefix = framework['prefix']
@@ -239,6 +242,9 @@ def _lxp_assessment_options(frameworks, profile):
             if present not in (None, 'yes'):
                 raise ValueError('Ungültige Testeinstellung.')
             values = dict(defaults[phase])
+            if reset:
+                values.pop('includeQuestions', None)
+                values.pop('excludeQuestions', None)
             mode = request.form.get(name + 'mode', values['mode'])
             if mode not in ('balanced', 'all', 'reference'):
                 raise ValueError('Ungültige Fragen-Auswahl.')
@@ -324,7 +330,139 @@ def _lxp_preview(token):
                 prepared.close()
             db.lxp_export_previews.delete_one({'_id': token})
             abort(410, description='Bitte eine neue Vorschau erstellen. ' + str(error))
+    try:
+        _lxp_selected(value['selected'])
+        _lxp_assert_navigation_access(value['prepared'])
+    except (ValueError, OSError) as error:
+        _lxp_forget_preview(token)
+        abort(410, description='Eine Quelle ist nicht mehr zugänglich. Bitte eine neue Vorschau erstellen. ' + str(error))
     return value
+
+
+def _lxp_store_preview(prepared, *, owner, selected, builds, settings, fingerprint, profile_id, previous_revision):
+    token = secrets.token_urlsafe(32)
+    _lxp_prune_previews()
+    value = dict(owner=owner, created=time.time(), selected=list(selected), builds=list(builds),
+        settings=copy.deepcopy(settings), fingerprint=fingerprint, profile_id=profile_id,
+        previous_revision=previous_revision)
+    db.lxp_export_previews.insert_one({'_id': token, 'state': 'pending',
+        'preflight_sha256': prepared.preflight_sha256, **value})
+    app.extensions['lxp_previews'][token] = dict(value, prepared=prepared)
+    return token
+
+
+def _lxp_forget_preview(token):
+    value = app.extensions['lxp_previews'].pop(token, None)
+    try:
+        db.lxp_export_previews.delete_one({'_id': token, 'owner': current_user.get_id()})
+    finally:
+        if value:
+            value['prepared'].close()
+
+
+def _lxp_manual_controls(prepared):
+    """Opaque control names map to server-frozen identities, never browser IDs."""
+    from lxp_catalogue import canonical_bytes
+    controls = {}
+    for selection in prepared._assessment_selection:
+        if selection['options']['mode'] == 'reference' or not selection.get('availableQuestions'):
+            continue
+        stem = selection['frameworkId'] + '_' + selection['phase']
+        questions = []
+        for question in selection['availableQuestions']:
+            digest = hashlib.sha256(canonical_bytes(question['identity'])).hexdigest()
+            questions.append({**question, 'field': 'choice_' + stem + '_' + digest})
+        controls[selection['frameworkId'] + '-' + selection['phase']] = {
+            'marker': 'manual_' + stem, 'count': 'count_' + stem,
+            'options': selection['options'], 'questions': questions}
+    return controls
+
+
+def _lxp_manual_settings(value):
+    """Read a complete, allowlisted form against this exact frozen pool."""
+    from lxp_assessment_selection import normalize_assessment_options
+    if (request.mimetype != 'application/x-www-form-urlencoded' or request.content_length is None
+            or request.content_length > 512 * 1024):
+        raise ValueError('Die Fragenauswahl ist zu groß oder hat ein ungültiges Format.')
+    prepared = value['prepared']
+    controls = _lxp_manual_controls(prepared)
+    allowed = {'csrf_token', 'preflight_sha256'}
+    required = set(allowed)
+    for group in controls.values():
+        fields = {group['marker'], *(question['field'] for question in group['questions'])}
+        if group['options']['mode'] == 'balanced':
+            fields.add(group['count'])
+        allowed.update(fields)
+        required.update(fields)
+    if (set(request.form) - allowed or required - set(request.form)
+            or any(len(request.form.getlist(key)) != 1 for key in request.form)):
+        raise ValueError('Unbekannte, doppelte oder fehlende Fragenauswahl. Bitte die Vorschau neu öffnen.')
+    if request.form.get('preflight_sha256') != prepared.preflight_sha256:
+        raise ValueError('Die Fragenauswahl gehört nicht zu dieser Vorschau.')
+    settings = copy.deepcopy(value['settings'])
+    options = normalize_assessment_options(settings.get('assessment_options'), lxp_catalogue())
+    changed = False
+    for key, group in controls.items():
+        if request.form.get(group['marker']) != 'yes':
+            raise ValueError('Ungültige Fragenauswahl. Bitte die Vorschau neu öffnen.')
+        phase = key.rsplit('-', 1)[-1]
+        framework_id = key[:-(len(phase) + 1)]
+        current = group['options']
+        updated = {name: copy.deepcopy(option) for name, option in current.items()
+                   if name not in ('includeQuestions', 'excludeQuestions')}
+        if current['mode'] == 'balanced':
+            raw = request.form[group['count']]
+            if not re.fullmatch(r'[1-9][0-9]*', raw):
+                raise ValueError('Bitte eine positive ganze Fragenanzahl angeben.')
+            updated['questionCount'] = int(raw)
+        includes, excludes = [], []
+        for question in group['questions']:
+            choice = request.form[question['field']]
+            if choice not in ('auto', 'include', 'exclude'):
+                raise ValueError('Bitte Automatik, fest aufnehmen oder ausschließen wählen.')
+            if choice != 'auto':
+                record = {'identity': list(question['identity']), 'fingerprint': question['fingerprint']}
+                (includes if choice == 'include' else excludes).append(record)
+        if includes:
+            updated['includeQuestions'] = includes
+        if excludes:
+            updated['excludeQuestions'] = excludes
+        normalized = normalize_assessment_options({framework_id: {phase: updated}}, lxp_catalogue())[framework_id][phase]
+        if normalized != current:
+            changed = True
+        options.setdefault(framework_id, {})[phase] = normalized
+    settings['assessment_options'] = options
+    return settings, changed
+
+
+def _lxp_render_preview(token, value, *, manual_error=None, status=200):
+    prepared = value['prepared']
+    return render_template('lxp_preview.html', token=token, preview=prepared.preview,
+        contract=prepared.contract, csrf_token=generate_csrf(),
+        manual_controls=_lxp_manual_controls(prepared), manual_error=manual_error,
+        manual_values=request.form if manual_error else {}), status
+
+
+def _lxp_bound_preview_form():
+    if (request.mimetype != 'application/x-www-form-urlencoded' or request.content_length is None
+            or request.content_length > 512 * 1024):
+        abort(400, description='Das Vorschauformular ist zu groß oder hat ein ungültiges Format.')
+
+
+def _lxp_manual_live_inputs(token, value):
+    try:
+        metadata = _lxp_metadata(_lxp_selected(value['selected']))
+        _lxp_assert_navigation_access(value['prepared'])
+        if value['fingerprint'] != _lxp_fingerprint(value['builds'], metadata, value['settings']):
+            raise ValueError('Veröffentlichung oder Katalog seit der Vorschau geändert. Bitte eine neue Vorschau erstellen.')
+        profile = db.lxp_export_profiles.find_one({'_id': value['profile_id'], 'owner': current_user.get_id(),
+            'revision': value['previous_revision']})
+        if not profile:
+            raise ValueError('Dieses Lernangebot wurde inzwischen exportiert. Bitte eine neue Vorschau erstellen.')
+        return metadata, profile
+    except (ValueError, OSError) as error:
+        _lxp_forget_preview(token)
+        abort(410, description=str(error))
 
 
 @app.route('/lxp/export', methods=['GET', 'POST'])
@@ -411,14 +549,8 @@ def lxp_export_setup():
                 profile_id = secrets.token_urlsafe(18)
                 profile = {'_id': profile_id, 'owner': owner, 'package_id': package_id, 'revision': 0}
                 db.lxp_export_profiles.insert_one(profile)
-            token = secrets.token_urlsafe(32)
-            _lxp_prune_previews()
-            app.extensions['lxp_previews'][token] = dict(prepared=prepared, owner=owner,
-                created=time.time(), selected=selected, builds=builds, settings=settings,
-                fingerprint=fingerprint, profile_id=profile_id, previous_revision=profile['revision'])
-            db.lxp_export_previews.insert_one({'_id': token, 'state': 'pending',
-                'preflight_sha256': prepared.preflight_sha256,
-                **{key: value for key, value in app.extensions['lxp_previews'][token].items() if key != 'prepared'}})
+            token = _lxp_store_preview(prepared, owner=owner, selected=selected, builds=builds,
+                settings=settings, fingerprint=fingerprint, profile_id=profile_id, previous_revision=profile['revision'])
             return redirect(url_for('lxp_export_preview', token=token))
         except (ValueError, OSError, zipfile.BadZipFile) as error:
             if prepared:
@@ -438,17 +570,96 @@ def lxp_export_setup():
 @login_required
 def lxp_export_preview(token):
     value = _lxp_preview(token)
-    return render_template('lxp_preview.html', token=token, preview=value['prepared'].preview,
-        contract=value['prepared'].contract, csrf_token=generate_csrf())
+    return _lxp_render_preview(token, value)
+
+
+@app.route('/lxp/refine/<token>', methods=['POST'])
+@login_required
+def lxp_export_refine(token):
+    from lxp_export import prepare_multi_framework_export
+    _lxp_bound_preview_form()
+    _lxp_csrf()
+    value = _lxp_preview(token)
+    metadata, profile = _lxp_manual_live_inputs(token, value)
+    try:
+        settings, _ = _lxp_manual_settings(value)
+    except ValueError as error:
+        _lxp_manual_live_inputs(token, value)
+        return _lxp_render_preview(token, value, manual_error=str(error), status=400)
+    claimed = db.lxp_export_previews.find_one_and_update({'_id': token, 'owner': current_user.get_id(),
+        'state': 'pending'}, {'$set': {'state': 'refining'}})
+    if not claimed:
+        abort(410, description='Diese Vorschau wird bereits bearbeitet. Bitte eine neue Vorschau erstellen.')
+    prepared, new_token = None, None
+    try:
+        fingerprint = _lxp_fingerprint(value['builds'], metadata, settings)
+        prepared = prepare_multi_framework_export(value['builds'], app.config['LXP_WRAPPER_ZIP'],
+            app.config['LXP_ASSESSMENT_TEMPLATE'], source_metadata=metadata,
+            registry_path=app.config['LXP_REGISTRY_PATH'], catalogue=lxp_catalogue(),
+            navigation_sources=_lxp_navigation_sources(),
+            expected_wrapper_sha256=app.config.get('LXP_WRAPPER_SHA256'), **settings)
+        _lxp_assert_navigation_access(prepared)
+        if fingerprint != _lxp_fingerprint(value['builds'], _lxp_metadata(_lxp_selected(value['selected'])), settings):
+            raise ValueError('Quellen während der Fragenauswahl geändert. Bitte eine neue Vorschau erstellen.')
+        if not db.lxp_export_profiles.find_one({'_id': profile['_id'], 'owner': current_user.get_id(),
+                'revision': value['previous_revision']}):
+            raise ValueError('Dieses Lernangebot wurde gleichzeitig exportiert. Bitte eine neue Vorschau erstellen.')
+        new_token = _lxp_store_preview(prepared, owner=current_user.get_id(), selected=value['selected'],
+            builds=value['builds'], settings=settings, fingerprint=fingerprint,
+            profile_id=profile['_id'], previous_revision=value['previous_revision'])
+        superseded = db.lxp_export_previews.delete_one({'_id': token, 'owner': current_user.get_id(), 'state': 'refining'})
+        if superseded.deleted_count != 1:
+            _lxp_forget_preview(new_token)
+            _lxp_forget_preview(token)
+            abort(410, description='Die vorherige Vorschau ist abgelaufen. Bitte eine neue Vorschau erstellen.')
+        _lxp_forget_preview(token)
+        flash('Fragenauswahl übernommen. Bitte diese neue Vorschau prüfen und anschließend bestätigen.', 'notice')
+        return redirect(url_for('lxp_export_preview', token=new_token))
+    except (ValueError, OSError, zipfile.BadZipFile, pymongo.errors.PyMongoError) as error:
+        database_failure = isinstance(error, pymongo.errors.PyMongoError)
+        if new_token:
+            try:
+                _lxp_forget_preview(new_token)
+            except pymongo.errors.PyMongoError:
+                database_failure = True
+        elif prepared:
+            prepared.close()
+        if database_failure:
+            try:
+                db.lxp_export_previews.update_one({'_id': token, 'owner': current_user.get_id(), 'state': 'refining'},
+                    {'$set': {'state': 'pending'}})
+            except pymongo.errors.PyMongoError:
+                pass  # No stale question data is returned while authorization cannot be rechecked.
+            abort(503, description='Die neue Vorschau konnte nicht gespeichert werden. Es wurde keine ZIP erzeugt '
+                  'und kein Exportprofil aktualisiert. Bitte das Formular neu laden und erneut versuchen.')
+        _lxp_manual_live_inputs(token, value)
+        db.lxp_export_previews.update_one({'_id': token, 'owner': current_user.get_id(), 'state': 'refining'},
+            {'$set': {'state': 'pending'}})
+        return _lxp_render_preview(token, value, manual_error=str(error), status=400)
 
 
 @app.route('/lxp/confirm/<token>', methods=['POST'])
 @login_required
 def lxp_export_confirm(token):
     from lxp_export import build_multi_framework_export
+    _lxp_bound_preview_form()
     _lxp_csrf()
     value = _lxp_preview(token)
     prepared = value['prepared']
+    has_manual = any(name.startswith(('choice_', 'manual_', 'count_')) for name in request.form)
+    if not has_manual and (set(request.form) != {'csrf_token', 'preflight_sha256'}
+            or any(len(request.form.getlist(name)) != 1 for name in request.form)):
+        return _lxp_render_preview(token, value,
+            manual_error='Unbekannte, doppelte oder fehlende Bestätigungsfelder. Bitte die Vorschau neu öffnen.', status=400)
+    if has_manual:
+        _lxp_manual_live_inputs(token, value)
+        try:
+            _, changed = _lxp_manual_settings(value)
+        except ValueError as error:
+            _lxp_manual_live_inputs(token, value)
+            return _lxp_render_preview(token, value, manual_error=str(error), status=400)
+        if changed:
+            return lxp_export_refine(token)
     claimed = db.lxp_export_previews.find_one_and_update({'_id': token, 'owner': current_user.get_id(),
         'state': 'pending'}, {'$set': {'state': 'exporting'}})
     if not claimed:
@@ -465,6 +676,8 @@ def lxp_export_confirm(token):
             raise ValueError('Dieses Lernangebot wurde inzwischen exportiert. Bitte eine neue Vorschau erstellen.')
         stream = build_multi_framework_export(prepared, confirmed_preflight_sha256=prepared.preflight_sha256,
                                                source_metadata=metadata)
+        _lxp_selected(value['selected'])
+        _lxp_assert_navigation_access(prepared)
         updated = db.lxp_export_profiles.update_one({'_id': profile['_id'], 'owner': current_user.get_id(),
             'revision': value['previous_revision']}, {'$set': {'revision': int(value['settings']['revision']),
             'title': value['settings']['title'], 'course_ids': value['selected'], 'settings': value['settings']}})

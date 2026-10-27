@@ -165,9 +165,15 @@ class NavigationGuiExportTest(unittest.TestCase):
 
     def test_revoking_excluded_access_after_preview_blocks_confirmation_without_zip(self):
         location = self.subset()
+        html = self.client.get(location).data
+        import re
+        confirmation = {
+            'csrf_token': re.search(rb'name="csrf_token" value="([^"]+)"', html)[1].decode(),
+            'preflight_sha256': re.search(rb'name="preflight_sha256" value="([^"]+)"', html)[1].decode()}
         self.db.courses.update_one({'_id': ObjectId(self.dig)}, {'$set': {'_isShared': False}})
-        response = self.confirm(location)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(location).status_code, 410)
+        response = self.client.post(location.replace('/preview/', '/confirm/'), data=confirmation)
+        self.assertEqual(response.status_code, 410)
         self.assertNotEqual(response.mimetype, 'application/zip')
         self.assertEqual(self.db.lxp_export_profiles.find_one()['revision'], 0)
 

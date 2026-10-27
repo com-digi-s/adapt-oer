@@ -4,6 +4,9 @@
 <p class="notice">Diese Vorschau ist an veröffentlichte Quellen, technische Titel, Katalog, Wrapper und Auswahl gebunden. Änderungen erfordern eine neue Vorschau. Die Bestätigung erzeugt genau eine gemeinsame ZIP.</p>
 <p>Paket-ID: <code>{{ contract.package.id }}</code> · Revision {{ contract.package.revision }} · Zielprofil {{ contract.package.targetProfileId }}</p>
 {% for warning in preview.warnings %}<p class="warning">{{ warning }}</p>{% endfor %}
+{% if manual_error %}<p role="alert" class="error">Fragenänderungen nicht übernommen: {{ manual_error }} Bitte die Eingaben korrigieren und die Auswahl erneut übernehmen. Bestätigt werden kann nur eine gültige neue Vorschau.</p>{% endif %}
+<form method="post" id="lxp-preview-form" action="{{ url_for('lxp_export_confirm', token=token) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="preflight_sha256" value="{{ preview.preflightSha256 }}">
 {% set navigation = preview.get('navigationProjection') %}
 {% if navigation %}<section data-navigation-projection><h2>Glossar und Lernpfade für diese Kursauswahl</h2>
 <p>Es werden nur Verweise auf ausgewählte Kurse mitgeliefert. Die übrigen Verweise wurden anhand zugänglicher veröffentlichter Kurse geprüft und für dieses Paket weggelassen. Der ursprüngliche Katalog bleibt unverändert.</p>
@@ -23,6 +26,20 @@
 <p data-selection-summary><strong>{{ selection.selectedCount }} von {{ selection.poolCount }} verfügbaren Fragen ausgewählt.</strong> {% if selection.requestedCount is not none %}Gewünscht: {{ selection.requestedCount }}.{% endif %}</p>
 <p>Auswahl: {{ {'balanced':'Eigene Auswahl', 'all':'Alle markierten Fragen', 'reference':'Öffentliche ComDigiS*-Auswahl'}.get(selection.options.mode, selection.options.mode) }}{% if selection.options.mode == 'balanced' %} · {{ 'gleichmäßig verteilt' if selection.options.equalSampling else 'ohne gleichmäßige Verteilung' }}{% endif %}.<br>Abgegebene Auswahl kennzeichnen: {{ 'Ja' if selection.options.showMarking else 'Nein' }} · richtige Antworten kennzeichnen: {{ 'Ja' if selection.options.showModelAnswer else 'Nein' }}.</p>
 {% for warning in selection.warnings %}<p class="warning">{{ warning }}</p>{% endfor %}
+{% if selection.get('includedCount') is not none %}<p data-manual-summary>Fest aufgenommen: {{ selection.includedCount }} · ausgeschlossen: {{ selection.excludedCount }} · noch geeignet: {{ selection.eligibleCount }} von {{ selection.poolCount }} markierten Fragen. Der ursprüngliche Fragenpool bleibt unverändert.</p>{% endif %}
+{% set manual = manual_controls.get(framework.id ~ '-' ~ selection.phase) %}
+{% if manual %}<details data-manual-selection="{{ framework.id }}-{{ selection.phase }}"><summary>Einzelne Fragen auswählen ({{ manual.questions|length }} im Pool)</summary>
+<p>Die Automatik bleibt Standard. Du kannst einzelne Fragen fest aufnehmen oder ausschließen; übrige Plätze werden automatisch gefüllt. Das gilt nur für dieses Lernangebot und diese Testphase, nicht für die Kurse im Authoring Tool.</p>
+<input type="hidden" name="{{ manual.marker }}" value="yes">
+{% if manual.options.mode == 'balanced' %}{% set frozen_count = manual.options.questionCount %}<label>Gewünschte Gesamtzahl für diesen Test <input type="number" name="{{ manual.count }}" min="1" required value="{{ manual_values.get(manual.count, frozen_count) }}" data-manual-input data-original="{{ frozen_count }}"></label>{% endif %}
+<label>Fragen suchen <input type="search" data-manual-search placeholder="Fragentext, Kurs oder Domäne" autocomplete="off"></label>
+<div class="scroll"><table><thead><tr><th>Frage / Quelle</th><th>Derzeit im Test</th><th>Deine Vorgabe</th></tr></thead><tbody>
+{% for question in manual.questions %}{% set source_course = contract.scos|selectattr('id', 'equalto', question.sourceCourseId)|first %}{% set source_domain = contract.domains|selectattr('frameworkId', 'equalto', framework.id)|selectattr('id', 'equalto', question.domainId)|first %}{% set choice = manual_values.get(question.field, question.manualChoice) %}
+<tr data-manual-row><td>{{ question.title or 'Frage ohne Titel' }}<br><small>{{ source_course.label if source_course else question.sourceCourseId }} · {{ source_domain.label if source_domain else question.domainId }}</small></td><td>{{ 'Ja' if question.selected else 'Nein' }}</td><td><select name="{{ question.field }}" aria-label="Vorgabe für {{ question.title or 'Frage ohne Titel' }}" data-manual-input data-original="{{ question.manualChoice }}" data-question-identity='{{ question.identity|tojson }}' data-question-fingerprint="{{ question.fingerprint }}">
+{% for value, label in [('auto', 'Automatisch auswählen'), ('include', 'Fest aufnehmen'), ('exclude', 'Ausschließen')] %}<option value="{{ value }}" {% if choice == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td></tr>
+{% endfor %}</tbody></table></div>
+<p><small>„Derzeit im Test“ beschreibt die bestätigbare Vorschau, noch nicht deine neuen Eingaben. Änderungen unten übernehmen und die neu berechnete Auswahl prüfen. Sind nach Ausschlüssen zu wenige Fragen verfügbar, wird die tatsächliche Zahl angezeigt.</small></p>
+</details>{% elif selection.options.mode == 'reference' %}<p>Die geprüfte öffentliche Auswahl bleibt unverändert. Für eigene Ein- oder Ausschlüsse bitte im Exportformular eine eigene Auswahl wählen.</p>{% endif %}
 {% for key, label in [('modules', 'Module'), ('courses', 'Kurse'), ('domains', 'Kognitive Domänen')] %}
 <h5>{{ label }}</h5><div class="scroll"><table><thead><tr><th>Bereich</th><th>Im Pool</th><th>Im Test</th><th>Abdeckung</th></tr></thead><tbody>
 {% for item in selection.coverage.get(key, []) %}<tr><td>{{ item.label }}</td><td>{{ item.poolCount }}</td><td>{{ item.selectedCount }}</td><td>{{ 'Im Test enthalten' if item.selectedCount else 'Nicht geprüft' }}</td></tr>{% endfor %}
@@ -32,6 +49,34 @@
 </section>{% endfor %}
 </section>{% endfor %}
 <p>LMS-Abschluss: alle Pflicht-Lernkurse des gesamten Pakets. Getrennte Testergebnisse werden nicht zu einer Gesamtkompetenz addiert. Das Ziel-LMS und sein Speicherbudget benötigen weiterhin eine eigene Freigabe.</p>
-<form method="post" action="{{ url_for('lxp_export_confirm', token=token) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="preflight_sha256" value="{{ preview.preflightSha256 }}"><button type="submit">Diese Vorschau bestätigen und eine gemeinsame ZIP herunterladen</button></form>
+<p data-manual-dirty-notice {% if not manual_error %}hidden{% endif %}>Deine Fragenänderungen sind noch nicht in dieser Vorschau enthalten. Bitte zuerst übernehmen und die neue Auswahl prüfen.</p>
+<button type="submit" data-confirm-lxp {% if manual_error %}disabled{% endif %}>Diese Vorschau bestätigen und eine gemeinsame ZIP herunterladen</button>
+{% if manual_controls %}<button type="submit" formaction="{{ url_for('lxp_export_refine', token=token) }}" data-apply-manual-selection>Fragenauswahl übernehmen und Vorschau neu berechnen</button>{% endif %}
+</form>
 <p><a href="{{ url_for('lxp_export_setup') }}">Neue Vorschau vorbereiten</a></p>
+<script>
+(() => {
+  const form = document.getElementById('lxp-preview-form');
+  const inputs = [...form.querySelectorAll('[data-manual-input]')];
+  const confirm = form.querySelector('[data-confirm-lxp]');
+  const notice = form.querySelector('[data-manual-dirty-notice]');
+  const error = {{ (manual_error is not none)|tojson }};
+  const refresh = () => {
+    const dirty = inputs.some(input => input.value !== input.dataset.original);
+    confirm.disabled = dirty || error;
+    notice.hidden = !dirty && !error;
+  };
+  inputs.forEach(input => input.addEventListener('input', refresh));
+  form.querySelectorAll('[data-manual-search]').forEach(search => {
+    search.addEventListener('input', () => {
+      const words = search.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+      search.closest('[data-manual-selection]').querySelectorAll('[data-manual-row]').forEach(row => {
+        const text = row.textContent.toLocaleLowerCase();
+        row.hidden = !words.every(word => text.includes(word));
+      });
+    });
+  });
+  refresh();
+})();
+</script>
 {% endblock %}

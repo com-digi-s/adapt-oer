@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from lxp_assessment_selection import question_fingerprint, select_questions
+from lxp_assessment_overrides import normalize_overrides
 from lxp_catalogue import PackageValidationError, load_catalogue
 
 
@@ -140,10 +141,14 @@ def validate_assessment_selection(contract, root, original_sources, provenance):
         options = summary.get('options')
         if not isinstance(options, dict):
             raise PackageValidationError('Assessment selection options are missing')
+        has_inventory = 'availableQuestions' in summary
+        if normalize_overrides(options) and not has_inventory:
+            raise PackageValidationError('Manual assessment selection requires the complete available question inventory')
         pool = _pool(contract, original_sources, sources, framework, phase)
         reference = (_reference_question_identities(pool, framework, phase)
                      if options.get('mode') == 'reference' else None)
-        selected, expected = select_questions(pool, options, framework, phase, reference_identities=reference)
+        selected, expected = select_questions(pool, options, framework, phase, reference_identities=reference,
+                                             include_available_questions=has_inventory)
         _complete_selection_coverage(expected, sources, framework)
         if not _same(summary, expected):
             raise PackageValidationError('Assessment selection summary differs from the actual source pool or policy')

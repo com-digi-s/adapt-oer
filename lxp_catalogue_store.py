@@ -127,7 +127,11 @@ def _validate(value):
             raise PackageValidationError('Default domain must be a domain ID')
         if 'defaultAssessmentOptions' in framework:
             from lxp_assessment_selection import normalize_assessment_options
+            from lxp_assessment_overrides import OVERRIDE_KEYS
             options = framework['defaultAssessmentOptions']
+            if isinstance(options, dict) and any(isinstance(phase, dict) and set(phase) & OVERRIDE_KEYS
+                                                for phase in options.values()):
+                raise PackageValidationError('Course-bound manual questions belong to an export profile, not catalogue defaults')
             normalized = normalize_assessment_options({framework['id']: options}, {'frameworks': [framework]})[framework['id']]
             for phase, settings in normalized.items():
                 mode, count = settings['mode'], settings['questionCount']

@@ -12,10 +12,11 @@ import json
 import re
 
 from lxp_catalogue import PackageValidationError
+from lxp_assessment_overrides import OVERRIDE_KEYS, normalize_overrides, resolve_overrides
 
 
 PHASES = {'entry', 'final'}
-OPTION_KEYS = {'mode', 'questionCount', 'equalSampling', 'showMarking', 'showModelAnswer'}
+OPTION_KEYS = {'mode', 'questionCount', 'equalSampling', 'showMarking', 'showModelAnswer'} | OVERRIDE_KEYS
 DEFAULT_OPTIONS = {'mode': 'balanced', 'questionCount': None, 'equalSampling': True,
                    'showMarking': True, 'showModelAnswer': False}
 QUESTION_FINGERPRINT_FIELDS = ('_component', 'title', 'displayTitle', 'body', 'instruction',
@@ -48,7 +49,8 @@ def question_fingerprint(question):
 def _options(value):
     if not isinstance(value, dict) or set(value) - OPTION_KEYS:
         raise PackageValidationError('Unknown or malformed assessment selection options')
-    result = {**DEFAULT_OPTIONS, **deepcopy(value)}
+    result = {**DEFAULT_OPTIONS, **deepcopy({key: item for key, item in value.items() if key not in OVERRIDE_KEYS}),
+              **normalize_overrides(value)}
     if not isinstance(result['mode'], str) or result['mode'] not in {'balanced', 'all', 'reference'}:
         raise PackageValidationError('Unknown assessment selection mode')
     count = result['questionCount']
@@ -57,6 +59,8 @@ def _options(value):
     for key in ('equalSampling', 'showMarking', 'showModelAnswer'):
         if type(result[key]) is not bool:
             raise PackageValidationError('Assessment ' + key + ' must be an explicit boolean')
+    if result['mode'] == 'reference' and any(key in result for key in OVERRIDE_KEYS):
+        raise PackageValidationError('Die öffentliche Referenzauswahl darf nicht durch einzelne Ein- oder Ausschlüsse verändert werden.')
     return result
 
 
@@ -194,20 +198,67 @@ def _coverage(candidates, selected, framework):
     return {'modules': modules, 'courses': course_rows, 'domains': domains}
 
 
-def select_questions(candidates, options, framework, phase, *, reference_identities=None):
+def _available_questions(candidates, selected, settings, phase):
+    selected_ids = {tuple(candidate['identity']) for candidate in selected}
+    included = {tuple(row['identity']) for row in settings.get('includeQuestions', [])}
+    excluded = {tuple(row['identity']) for row in settings.get('excludeQuestions', [])}
+    result = []
+    for candidate in sorted(candidates, key=lambda row: (
+            int(row['moduleNumber']), int(row['courseNumber']), _rank(row, phase))):
+        identity = tuple(candidate['identity'])
+        # A fixed allowlist deliberately never exposes the native payload,
+        # answer items, correctness keys, weights or generated assessment data.
+        result.append({'identity': list(identity), 'sourceCourseId': candidate['courseId'],
+            'sourceComponentId': identity[-1], 'title': candidate.get('title', '') if isinstance(candidate.get('title', ''), str) else '',
+            'domainId': candidate['domainId'], 'fingerprint': candidate['fingerprint'], 'moduleId': candidate['moduleId'],
+            'manualChoice': 'include' if identity in included else 'exclude' if identity in excluded else 'auto',
+            'selected': identity in selected_ids})
+    return result
+
+
+def select_questions(candidates, options, framework, phase, *, reference_identities=None,
+                     include_available_questions=False):
     """Return original candidate objects and an exportable selection summary.
 
     Reference mode accepts only a complete trusted identity list; the caller
     additionally verifies its content fingerprints against the reviewed preset.
     No partial reference match or unannounced top-up from the pool is allowed.
+    Manual pins win, then the existing policy fills from the remaining eligible
+    pool. Pins can affect balance; coverage reports the actual result, not a
+    claim of representative sampling. Empty overrides preserve legacy summaries.
+
+    The pure API may omit the safe inventory. Durable manual export summaries
+    must request it: the archive validator requires availableQuestions whenever
+    manual options are present, while old automatic summaries remain valid.
     """
     if phase not in PHASES:
         raise PackageValidationError('Unknown assessment selection phase')
+    if type(include_available_questions) is not bool:
+        raise PackageValidationError('Available question inventory must be explicitly enabled or disabled')
     _validated(candidates, framework)
     settings = _options({} if options is None else options)
     mode, requested = settings['mode'], settings['questionCount']
     warnings = []
-    if mode == 'reference':
+    manual = any(key in settings for key in OVERRIDE_KEYS)
+    if manual:
+        included, excluded, eligible = resolve_overrides(candidates, settings)
+        included = sorted(included, key=lambda candidate: _rank(candidate, phase))
+        included_ids = {tuple(candidate['identity']) for candidate in included}
+        remaining = [candidate for candidate in eligible if tuple(candidate['identity']) not in included_ids]
+        limit = len(eligible) if mode == 'all' or requested is None else min(requested, len(eligible))
+        if mode == 'all':
+            requested = None
+            settings['questionCount'] = None
+        elif requested is not None and requested > len(eligible):
+            warnings.append('Nach der Feinauswahl sind nur ' + str(len(eligible)) + ' geeignete Fragen verfügbar; '
+                            'die gewünschte Anzahl von ' + str(requested) + ' wird nicht erreicht.')
+        if mode != 'all' and requested is not None and settings['equalSampling']:
+            selected = included + _balanced(remaining, limit - len(included), framework, phase)
+            algorithm = 'adapt-oer-manual-balanced-selection@1'
+        else:
+            selected = included + sorted(remaining, key=lambda candidate: _rank(candidate, phase))[:limit - len(included)]
+            algorithm = 'adapt-oer-manual-all-selection@1' if limit == len(eligible) else 'adapt-oer-manual-fixed-selection@1'
+    elif mode == 'reference':
         if not isinstance(reference_identities, (tuple, list)) or not reference_identities:
             raise PackageValidationError('A trusted complete public reference selection is required')
         identities = [_identity(value) for value in reference_identities]
@@ -244,7 +295,12 @@ def select_questions(candidates, options, framework, phase, *, reference_identit
                   'sourceComponentId': candidate['identity'][-1], 'title': candidate.get('title', ''),
                   'domainId': candidate['domainId'], 'fingerprint': candidate['fingerprint']}
                  for candidate in selected]
-    return selected, {'frameworkId': framework['id'], 'prefix': framework['prefix'], 'phase': phase,
+    summary = {'frameworkId': framework['id'], 'prefix': framework['prefix'], 'phase': phase,
                       'poolCount': len(candidates), 'selectedCount': len(selected),
                       'requestedCount': requested, 'options': settings, 'algorithm': algorithm,
                       'warnings': warnings, 'coverage': coverage, 'questions': questions}
+    if manual:
+        summary.update(eligibleCount=len(eligible), includedCount=len(included), excludedCount=len(excluded))
+    if include_available_questions:
+        summary['availableQuestions'] = _available_questions(candidates, selected, settings, phase)
+    return selected, summary

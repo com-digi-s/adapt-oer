@@ -178,6 +178,11 @@ class MultiFrameworkGuiTest(unittest.TestCase):
         for change in ('title', 'build', 'catalogue', 'wrapper', 'shared'):
             with self.subTest(change=change):
                 location = self.prepare()
+                if change == 'shared':
+                    html = self.client.get(location).data
+                    confirmation = {
+                        'csrf_token': re.search(rb'name="csrf_token" value="([^"]+)"', html)[1].decode(),
+                        'preflight_sha256': re.search(rb'name="preflight_sha256" value="([^"]+)"', html)[1].decode()}
                 if change == 'title':
                     self.db.courses.update_one({'_id': ObjectId(self.ai)}, {'$set': {'title': 'AILit1.1 – Unveröffentlicht'}})
                 elif change == 'build':
@@ -189,8 +194,15 @@ class MultiFrameworkGuiTest(unittest.TestCase):
                         archive.writestr('changed.txt', 'changed')
                 else:
                     self.db.courses.update_one({'_id': ObjectId(self.ai)}, {'$set': {'_isShared': False}})
-                response = self.confirm(location)
-                self.assertEqual(response.status_code, 302)
+                if change == 'shared':
+                    blocked = self.client.get(location)
+                    self.assertEqual(blocked.status_code, 410)
+                    self.assertNotIn('Echte markierte Frage', blocked.data.decode())
+                    response = self.client.post(location.replace('/preview/', '/confirm/'), data=confirmation)
+                    self.assertEqual(response.status_code, 410)
+                else:
+                    response = self.confirm(location)
+                    self.assertEqual(response.status_code, 302)
                 self.assertNotEqual(response.mimetype, 'application/zip')
                 self.db.courses.update_one({'_id': ObjectId(self.ai)}, {'$set': {'title': 'AILit1.1 – Echter AILit-Kurs', '_isShared': True}})
 

@@ -111,7 +111,33 @@ There is no additional Adaptmin upload step. In the shared LXP export form:
 4. Set question count, balanced distribution and answer-marking preferences.
 5. Check the preview's available/selected counts, module/course/domain coverage
    and the selected question list. Uncovered areas are **not assessed**, not 0%.
-6. Confirm that preview to download one shared LXP ZIP.
+6. Optionally open **Einzelne Fragen auswählen**. Leave most questions on
+   automatic, pin individual questions with **Fest aufnehmen**, or exclude them.
+   Search by prompt, course or domain when the pool is large.
+7. Apply those changes to calculate a new preview. Check its actual selected
+   questions and coverage, then confirm it to download one shared LXP ZIP.
+
+Manual choices belong to the current offer, framework and test phase. Other
+offers do not inherit them. Pins take priority; the remaining eligible pool
+fills the requested count using the existing policy. Excluded questions are
+never re-added to fill a shortfall. Too many pins for the requested count are
+an explicit error. The preview reports original/eligible/selected counts, not
+a fabricated full test or a claim of representative sampling.
+
+Unapplied changes disable normal confirmation in the browser. Without
+JavaScript, submitting changed choices still creates a new preview instead
+of downloading the old test. Confirmation remains bound to the exact frozen
+questions; changed source data cannot be exported through an old preview.
+No-longer-shared sources also block viewing the old preview. Invalid input retains the previous valid preview and
+the author's unsaved choices without updating the offer profile.
+
+Offer profiles retain fixed choices after export. A missing question, removed
+`et`/`at` tag, or changed question content requires a new review. In the setup
+form, **Gespeicherte Fragenfeinauswahl** offers an explicit reset of all pins
+and exclusions for the new preview; count and marking choices remain intact.
+The saved profile changes only after successful confirmation/export. The fixed
+public DigComp reference selection is read-only: switch to a custom selection
+and explicitly clear incompatible manual choices before changing it.
 
 The GUI defaults to 24/39 DigComp questions and 12/12 AILit questions; smaller
 pools produce an explicit notice rather than fabricated questions. Stored
@@ -131,11 +157,27 @@ Balanced coverage is not psychometric validation.
 Programmatic callers can pass `assessment_options`, keyed by framework ID or
 prefix and then `entry`/`final`. Allowed phase keys are `mode` (`balanced`, `all`,
 `reference`), `questionCount` (positive integer or null), `equalSampling`,
-`showMarking` and `showModelAnswer` (explicit booleans). Old API callers omitting
+`showMarking` and `showModelAnswer` (explicit booleans), plus optional
+`includeQuestions`/`excludeQuestions`. Each manual record has exactly
+`{'identity': [originId, courseId, sourceComponentId], 'fingerprint': sha256}`,
+using the current tagged pool's source-content fingerprint. Duplicate,
+contradictory, unknown and changed records fail rather than being guessed.
+Empty manual arrays are omitted canonically. Manual records cannot be used
+as global catalogue defaults or modify the public reference preset.
+
+The content fingerprint covers the authored question, options, keys and any
+explicit question weight. Inherited course-wide grading settings are separately
+bound to the full source/preflight snapshot and verified in native test banks;
+changing them invalidates an old preview, not the identity of an unchanged
+question in a newly calculated offer. Old API callers omitting
 these options retain the full-pool/template behaviour. The exported
 `assessment-selection.json` and provenance record the exact chosen identities,
 fingerprints and coverage. Changed test sets produce changed native test
 fingerprints; old responses are not relabelled as answers to new questions.
+New exports also contain a safe `availableQuestions` inventory with selection
+status and manual choices, never native answer payloads. The validator rebuilds
+it against the original source pool. Older automatic exports without that
+inventory remain valid; manually refined exports require it.
 
 ### Checked central assessment template
 
