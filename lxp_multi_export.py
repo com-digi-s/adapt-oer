@@ -32,6 +32,7 @@ from lxp_catalogue import (PackageValidationError, canonical_bytes, catalogue_sh
 from lxp_diagnostics_articles import learning_source_view, restore_removed_nodes
 from lxp_assessment_selection import (normalize_assessment_options, select_questions,
     question_fingerprint, QUESTION_FINGERPRINT_FIELDS)
+from lxp_navigation import project_navigation, verify_navigation_inputs
 
 
 PHASE_TAG = {'entry': 'et', 'final': 'at'}
@@ -50,7 +51,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
 def _reference_question_identities(candidates, framework, phase):
@@ -507,42 +508,6 @@ def _validate_question(question, default_weight=1):
     return points
 
 
-def _explicit_navigation(catalogue, sources, contract):
-    """Resolve explicit source references, never historical taxonomy URL text."""
-    selected = {_source_key(item['metadata']): item for item in sources}
-    by_id = {item['sco']['id']: item for item in sources}
-    def resolve(reference, framework_id):
-        if isinstance(reference, str):
-            item = by_id.get(reference)
-        elif isinstance(reference, dict) and reference.get('originId') and reference.get('courseId'):
-            item = selected.get(_source_key(reference))
-        else:
-            item = None
-        if not item or item['sco']['frameworkId'] != framework_id:
-            raise PackageValidationError('Explicit navigation references an unselected or foreign-framework course')
-        return item
-    for pathway in catalogue.get('pathways', []):
-        refs = pathway.get('courseRefs', pathway.get('courseIds'))
-        if not pathway.get('id') or not pathway.get('label') or not isinstance(refs, list) or not refs:
-            raise PackageValidationError('Invalid explicit catalogue pathway')
-        contract['pathways'].append({'id': pathway['id'], 'frameworkId': pathway['frameworkId'], 'label': pathway['label'],
-            'courseIds': [resolve(ref, pathway['frameworkId'])['sco']['id'] for ref in refs]})
-    for term in catalogue.get('glossary', []):
-        if not term.get('id') or not term.get('term') or not isinstance(term.get('targets'), list) or not term['targets']:
-            raise PackageValidationError('Invalid explicit catalogue glossary term')
-        result = {k: deepcopy(term[k]) for k in ('id', 'frameworkId', 'term')}
-        if 'definition' in term:
-            result['definition'] = term['definition']
-        result['targets'] = []
-        for target in term['targets']:
-            item = resolve(target.get('scoId', target), term['frameworkId'])
-            content_ids = {v['_id'] for values in item['source']['data'].values() for v in values}
-            if target.get('contentId') not in content_ids:
-                raise PackageValidationError('Explicit glossary target content ID does not exist')
-            result['targets'].append({'scoId': item['sco']['id'], 'contentId': target['contentId']})
-        contract['glossary'].append(result)
-
-
 @dataclass
 class PreparedExport:
     contract: dict
@@ -559,6 +524,7 @@ class PreparedExport:
     _report: dict
     _candidates: dict
     _assessment_selection: list
+    _navigation: dict
     _closed: bool = False
 
     def close(self):
@@ -575,7 +541,7 @@ class PreparedExport:
 
 def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, source_metadata,
         registry_path, catalogue=None, package_id, revision, title, diagnostics=None,
-        assessment_options=None,
+        assessment_options=None, navigation_sources=None,
         framework_versions=None, required_courses=None, target_profile_id='scorm-1.2-conservative',
         expected_wrapper_sha256=None, legacy_import=False, confirm_reassignment=False):
     """Freeze actual published bytes, validate, normalize and return a preview.
@@ -711,7 +677,12 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                                      'mappingChanged': changed, 'fileManifest': tree_manifest(frozen_build), 'copyChanges': []})
         if not any(s['requiredForCompletion'] for s in contract['scos']):
             raise PackageValidationError('Leerer Pflichtumfang: mindestens ein Lernkurs muss verpflichtend sein')
-        _explicit_navigation(normalized_catalogue, sources, contract)
+        navigation = project_navigation(normalized_catalogue, sources, navigation_sources, registry,
+            framework_versions=framework_versions)
+        contract['pathways'] = navigation['pathways']
+        contract['glossary'] = navigation['glossary']
+        report['navigationProjection'] = deepcopy(navigation['projection'])
+        report['navigationSources'] = deepcopy(navigation['evidence'])
         for framework_id, framework in sorted(used_frameworks.items()):
             diagnostics_for = (diagnostics or {}).get(framework_id, (diagnostics or {}).get(framework['prefix'], {}))
             if not isinstance(diagnostics_for, dict):
@@ -828,11 +799,13 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                    'modules': deepcopy(contract['modules']), 'scos': deepcopy(contract['scos']),
                    'assessments': deepcopy(contract['assessments']), 'diagnostics': deepcopy(report['diagnostics']),
                    'assessmentSelection': deepcopy(selection_summaries),
+                   'navigationProjection': deepcopy(navigation['projection']),
                    'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
                    'warnings': ['Target LMS storage/runtime acceptance remains a separate human release gate.']}
         binding = {'contract': contract, 'wrapperSha256': wrapper_hash, 'templateSha256': template_hash,
                    'catalogueSha256': catalogue_hash, 'generatorSha256': _generator_sha256(),
-                   'assessmentSelection': selection_summaries}
+                   'assessmentSelection': selection_summaries,
+                   'navigationProjection': navigation['projection'], 'navigationSources': navigation['evidence']}
         preflight_hash = sha256_bytes(canonical_bytes(binding))
         preview['preflightSha256'] = preflight_hash
         report['preflightSha256'] = preflight_hash
@@ -840,7 +813,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         _save_registry(registry_path, registry)
         return PreparedExport(deepcopy(contract), preview, preflight_hash, temporary, sources,
             wrapper_path, wrapper_hash, template_path, template_hash, original_catalogue, catalogue_hash, report, candidates,
-            deepcopy(selection_summaries))
+            deepcopy(selection_summaries), navigation)
     except Exception:
         temporary.cleanup()
         raise
@@ -860,7 +833,7 @@ def _registry_lock(registry_path):
 
 def prepare_multi_framework_export(builds, wrapper_path, template_path, *, source_metadata,
         registry_path, catalogue=None, package_id, revision, title, diagnostics=None,
-        assessment_options=None,
+        assessment_options=None, navigation_sources=None,
         framework_versions=None, required_courses=None, target_profile_id='scorm-1.2-conservative',
         expected_wrapper_sha256=None, legacy_import=False, confirm_reassignment=False):
     """Public, process-locked source-registry transaction; see implementation."""
@@ -868,7 +841,7 @@ def prepare_multi_framework_export(builds, wrapper_path, template_path, *, sourc
         return _prepare_multi_framework_export(builds, wrapper_path, template_path,
             source_metadata=source_metadata, registry_path=registry_path, catalogue=catalogue,
             package_id=package_id, revision=revision, title=title, diagnostics=diagnostics,
-            assessment_options=assessment_options,
+            assessment_options=assessment_options, navigation_sources=navigation_sources,
             framework_versions=framework_versions, required_courses=required_courses,
             target_profile_id=target_profile_id, expected_wrapper_sha256=expected_wrapper_sha256,
             legacy_import=legacy_import, confirm_reassignment=confirm_reassignment)
@@ -952,13 +925,16 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
     # Mutating a public preview/contract object cannot alter the confirmed package.
     binding = {'contract': prepared.contract, 'wrapperSha256': prepared._wrapper_sha256,
                'templateSha256': prepared._template_sha256, 'catalogueSha256': prepared._catalogue_sha256,
-               'generatorSha256': _generator_sha256(), 'assessmentSelection': prepared._assessment_selection}
+               'generatorSha256': _generator_sha256(), 'assessmentSelection': prepared._assessment_selection,
+               'navigationProjection': prepared._navigation['projection'],
+               'navigationSources': prepared._navigation['evidence']}
     if sha256_bytes(canonical_bytes(binding)) != prepared.preflight_sha256:
         raise PackageValidationError('Prepared contract/implementation changed; create a new preview')
     if file_sha256(prepared._wrapper_original) != prepared._wrapper_sha256 or file_sha256(prepared._template_original) != prepared._template_sha256:
         raise PackageValidationError('Wrapper/template changed since preview; create a new preview')
     if catalogue_sha256(load_catalogue(prepared._catalogue_original)) != prepared._catalogue_sha256:
         raise PackageValidationError('Catalogue changed since preview; create a new preview')
+    verify_navigation_inputs(prepared._navigation['inputs'])
     for item in prepared._sources:
         if tree_sha256(item['original']) != item['hash'] or tree_sha256(item['frozen']) != item['hash']:
             raise PackageValidationError('Published source changed since preview; create a new preview')
@@ -975,6 +951,8 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         capability, _ = _validate_wrapper(root)
         report = deepcopy(prepared._report)
         report['assessmentSelection'] = deepcopy(prepared._assessment_selection)
+        report['navigationProjection'] = deepcopy(prepared._navigation['projection'])
+        report['navigationSources'] = deepcopy(prepared._navigation['evidence'])
         for item in prepared._sources:
             target = root / item['sco']['launch']['root']
             shutil.copytree(item['frozen'], target)

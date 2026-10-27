@@ -31,6 +31,16 @@ Title is not parsed. Republish after changing the technical Title. The shared
 LXP action provides a frozen preview before downloading one ZIP; reuse its
 saved offer profile for updates so the package ID remains stable.
 
+The course selection also scopes glossary links and learning pathways. The
+preview lists omitted terms/paths and shortened destinations before confirmation;
+the configured catalogue is not changed. Unknown sources, foreign-framework
+links and missing content IDs remain errors, including in excluded courses.
+The GUI verifies excluded destinations against accessible shared publications.
+Programmatic subset exports with catalogue links to excluded courses must pass
+`navigation_sources=[{'build': path, 'metadata': source_metadata}, ...]` for those
+explicitly authorized publications. Referenced JSON snapshots are bound to the
+preview; excluded assets and question text are not included in the package.
+
 Administrators configure `LXP_WRAPPER_ZIP` and `LXP_WRAPPER_SHA256` with the
 new hash-bound multi-framework LXP build, a stable `LXP_ORIGIN_ID`, and a durable
 `LXP_REGISTRY_PATH`. Framework versions and permitted addresses come from

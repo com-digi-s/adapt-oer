@@ -143,6 +143,27 @@ def _lxp_metadata(courses):
     return metadata
 
 
+def _lxp_navigation_sources():
+    """Only explicitly shared publications can prove excluded link targets."""
+    courses = sorted(db.courses.find({'_isShared': True}), key=lambda course: str(course['_id']))
+    result = []
+    for course, metadata in zip(courses, _lxp_metadata(courses)):
+        build = pathlib.Path(app.config['BUILDS_DIR']) / str(course['_id']) / 'build'
+        if build.is_dir():
+            result.append({'build': str(build.resolve()), 'metadata': metadata})
+    return result
+
+
+def _lxp_assert_navigation_access(prepared):
+    from lxp_navigation import source_key
+    authorized = {source_key(item['metadata']): item for item in _lxp_navigation_sources()}
+    for frozen in prepared._navigation['inputs']:
+        current = authorized.get(source_key(frozen['metadata']))
+        if (not current or pathlib.Path(current['build']) != frozen['original']
+                or current['metadata'].get('kind') != frozen['metadata'].get('kind')):
+            raise ValueError('Ein referenzierter Kurs ist nicht mehr freigegeben. Bitte eine neue Vorschau erstellen.')
+
+
 def _lxp_assessment_defaults(framework, profile):
     """GUI defaults are explicit export choices, not hidden runtime sampling."""
     settings = ((profile or {}).get('settings') or {}).get('assessment_options') or {}
@@ -255,6 +276,7 @@ def _lxp_preview(token):
             prepared = prepare_multi_framework_export(record['builds'], app.config['LXP_WRAPPER_ZIP'],
                 app.config['LXP_ASSESSMENT_TEMPLATE'], source_metadata=metadata,
                 registry_path=app.config['LXP_REGISTRY_PATH'], catalogue=lxp_catalogue(),
+                navigation_sources=_lxp_navigation_sources(),
                 expected_wrapper_sha256=app.config.get('LXP_WRAPPER_SHA256'), **record['settings'])
             if prepared.preflight_sha256 != record['preflight_sha256']:
                 raise ValueError('Der gespeicherte Preflight stimmt nicht mehr überein')
@@ -334,7 +356,9 @@ def lxp_export_setup():
             prepared = prepare_multi_framework_export(builds, app.config['LXP_WRAPPER_ZIP'],
                 app.config['LXP_ASSESSMENT_TEMPLATE'], source_metadata=metadata,
                 registry_path=app.config['LXP_REGISTRY_PATH'], catalogue=catalogue,
+                navigation_sources=_lxp_navigation_sources(),
                 expected_wrapper_sha256=app.config.get('LXP_WRAPPER_SHA256'), **settings)
+            _lxp_assert_navigation_access(prepared)
             if fingerprint != _lxp_fingerprint(builds, _lxp_metadata(_lxp_selected(selected)), settings):
                 raise ValueError('Quellen wurden während der Vorschau geändert. Bitte erneut veröffentlichen und Vorschau wiederholen.')
             if not profile:
@@ -386,6 +410,7 @@ def lxp_export_confirm(token):
         if request.form.get('preflight_sha256') != prepared.preflight_sha256:
             raise ValueError('Die bestätigte Vorschau stimmt nicht überein. Bitte neue Vorschau erstellen.')
         metadata = _lxp_metadata(_lxp_selected(value['selected']))
+        _lxp_assert_navigation_access(prepared)
         if value['fingerprint'] != _lxp_fingerprint(value['builds'], metadata, value['settings']):
             raise ValueError('Quelle, Titel, Katalog oder Wrapper wurde seit der Vorschau geändert. Bitte eine neue Vorschau erstellen und Kurse gegebenenfalls erneut veröffentlichen.')
         profile = db.lxp_export_profiles.find_one({'_id': value['profile_id'], 'owner': current_user.get_id()})
