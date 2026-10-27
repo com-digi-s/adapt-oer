@@ -923,200 +923,40 @@ class CourseView(MyModelView, metaclass=Meta):
 
     @action('package_download', 'Kurse als Lernpaket herunterladen (Adapt LXP)', 'Ihr Download beginnt nach der Bestätigung. Sie können das Lernpaket direkt in das LMS Ihrer Wahl laden!')
     def package_download(self, ids):
-        def extract_course_id(title):
-            match = re.search(r"^\d\.\d", title)
-            return f"M{match.group(0).replace('.', '/')}" if match else title
-
-        def download_and_overwrite_zip_with_dist(wrapper_zip_path):
-            # GitHub URL for downloading the entire repo as a ZIP file
-            repo_url = "https://github.com/com-digi-s/adapt-lxp/archive/refs/heads/main.zip"
-
-            # Send request to download the repository as a ZIP file
-            response = requests.get(repo_url, stream=True)
-
-            if response.status_code == 200:
-                # Save the ZIP file temporarily
-                temp_zip_path = "repo_main.zip"
-                with open(temp_zip_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
-                                f.write(chunk)
-
-                # Extract the ZIP file into a temporary directory
-                with zipfile.ZipFile(temp_zip_path, 'r') as zip_ref:
-                    zip_ref.extractall("repo_extracted")
-
-                    # Define the path of the 'dist' folder in the extracted repository
-                    dist_folder_path = os.path.join("repo_extracted", "adapt-lxp-main", "dist")
-
-                    if os.path.exists(dist_folder_path):
-                        # Create a new empty ZIP file (this will overwrite the existing ZIP)
-                        with zipfile.ZipFile(wrapper_zip_path, 'w') as wrapper_zip:
-                            # Walk through the 'dist' folder and add both files and directories
-                            for root, dirs, files in os.walk(dist_folder_path):
-                                for dir_name in dirs:
-                                    # Create the directory structure in the ZIP
-                                    dir_path = os.path.join(root, dir_name)
-                                    arcname = os.path.relpath(dir_path, dist_folder_path)
-                                    wrapper_zip.write(dir_path, arcname)
-                                    print(f"Added directory to ZIP: {arcname}")
-                                for file_name in files:
-                                    # Add files to the ZIP
-                                    file_path = os.path.join(root, file_name)
-                                    arcname = os.path.relpath(file_path, dist_folder_path)
-                                    wrapper_zip.write(file_path, arcname)
-                                    print(f"Added file to ZIP: {arcname}")
-                    else:
-                        print("The 'dist' folder was not found in the repository.")
-
-                # Clean up the temporary files
-                os.remove(temp_zip_path)
-                shutil.rmtree("repo_extracted")
-
-            else:
-                    print(f"Failed to download the repository. Status code: {response.status_code}")
-
-        def delete_descendants(data, parent_id, hierarchy):
-            if not hierarchy:
-                return data
-
-            current_key = hierarchy[0]
-            child_hierarchy = hierarchy[1:]
-
-            if current_key in data:
-                new_list = []
-                for obj in data[current_key]:
-                    if obj.get('_parentId') == parent_id:
-                        data = delete_descendants(data, obj['_id'], child_hierarchy)
-                    else:
-                        new_list.append(obj)
-                data[current_key] = new_list
-
-            return data
-
-        def find_and_delete_root_object(data):
-            for obj in data.get('contentObjects', []):
-                if obj["title"] == "Adapt|OER Komponenten":
-                    root_id = obj["_id"]
-                    data['contentObjects'] = [o for o in data['contentObjects'] if o["_id"] != root_id]
-                    hierarchy = ['articles', 'blocks', 'components']
-                    data = delete_descendants(data, root_id, hierarchy)
-                    break
-            return data
-
-        wrapper_dir = "static/adapt-lxp-latest.zip"
-        download_and_overwrite_zip_with_dist(wrapper_dir)
-        courses = [os.path.join(app.config['BUILDS_DIR'], course, 'build') for course in ids]
-        ids_for_et, ids_for_at = [], []
-        zip_buffer = BytesIO()
-
-        with ZipFile(zip_buffer, 'w') as zip_file:
-            curr_ids = []
-            components = []
-            terms_in_co = []
-
-            for course in courses:
-                course_name = json.load(open(os.path.join(course, 'course/en/course.json'))).get('title')
-                curr_ids.append(extract_course_id(course_name))
-
-                file_names = ['contentObjects', 'articles', 'blocks', 'components']
-                course_directory = 'course/en'
-
-                preloaded_data = {}
-                for file_name in file_names:
-                    json_path = os.path.join(course, course_directory, f'{file_name}.json')
-                    file_data = read_json_file(json_path)
-                    preloaded_data[file_name] = file_data
-
-                preloaded_data = find_and_delete_root_object(preloaded_data)
-
-                for file_name in file_names:
-                    items = preloaded_data[file_name]
-                    json_path = os.path.join(course, course_directory, f'{file_name}.json')
-
-                    modified_items = []
-                    for item in items:
-                        item["body"], found_terms = annotate_terms(item["body"])
-
-                        classes = item['_classes'].split(' ')
-                        if 'et' in classes:
-                            ids_for_et.append(item['_id'])
-                        if 'at' in classes:
-                            ids_for_at.append(item['_id'])
-
-                        if found_terms and found_terms != [None]:
-                            if file_name == "components":
-                                block = next((i for i in preloaded_data['blocks'] if i["_id"] == item["_parentId"]), None)
-                            else:
-                                block = item
-                            terms_in_co.append(process_content_objects(course, course_name, course_directory, block, found_terms))
-
-                        modified_items.append(item)
-
-                    with open(json_path, 'w', encoding='utf-8') as file:
-                        json.dump(modified_items, file, indent=4)
-
-            prepare_quizzes("M0", ids_for_et, zip_file)
-            prepare_quizzes("MX", ids_for_at, zip_file)
-            curr_ids.append("M0")
-            curr_ids.append("MX")
-
-            for course_dir, curr_id in zip(courses, curr_ids):
-                components_path = os.path.join(course_dir, 'course/en/components.json')
-
-                with open(ADDITIONAL_COMPONENTS, 'r', encoding="utf-8") as f:
-                    new_component_template = json.loads(f.read())['pageNav']
-
-                with open(components_path, 'r', encoding="utf-8") as f:
-                    data = json.load(f)
-
-            # Verarbeitung der transpiled_components
-                data = process_transpiled_components(data)
-
-            # Verarbeitung der Quellen-Komponenten
-                data = process_quellen_components(data, new_component_template)
-
-                with open(components_path, 'w', encoding="utf-8") as f:
-                    json.dump(data, f, ensure_ascii=False, indent=2)
-
-                add_files_to_zip(zip_file, course_dir, f"scos/{curr_id}")
-
-            with tempfile.TemporaryDirectory() as tmpdirname:
-                ZipFile(wrapper_dir, 'r').extractall(tmpdirname)
-                lxp_config = json.load(open(os.path.join(tmpdirname, 'config.json')))
-                enabled_modules = set()
-                enabled_courses = set()
-
-                for curr_id in curr_ids:
-                    mod, cur = curr_id.split('/') if ("/" in curr_id) else (curr_id, "-")
-
-                    for key, value in lxp_config["SCOS"].items():
-                        if key == mod:
-                            value["disabled"] = False
-                            enabled_modules.add(key)
-                        elif key not in enabled_modules:
-                            value["disabled"] = True
-
-                        if value.get("courses"):
-                            for idx, course in enumerate(value["courses"]):
-                                course_key = f"{key}/{course['id']}"
-                                if key == mod and course["id"] == cur:
-                                    value["courses"][idx]["disabled"] = False
-                                    enabled_courses.add(course_key)
-                                elif course_key not in enabled_courses:
-                                    value["courses"][idx]["disabled"] = True
-
-                """
-        lxp_config['glossary'] = list(load_glossary().values())
-                if terms_in_co:
-                    for idx, entry in enumerate(lxp_config['glossary']):
-                        lxp_config['glossary'][idx]["in"] = retrieve_content_objects_by_term(terms_in_co, entry["term"])
-        """
-
-                json.dump(lxp_config, open(os.path.join(tmpdirname, 'config.json'), "w"))
-                add_files_to_zip(zip_file, tmpdirname)
-
-        zip_buffer.seek(0)
-        return send_file(zip_buffer, as_attachment=True, download_name='scorm_package.zip')
+        from lxp_export import package_courses, PackageValidationError
+        try:
+            if not ids:
+                raise PackageValidationError('Select at least one published course.')
+            if not all(re.fullmatch(r'[a-fA-F0-9]{24}', str(course)) for course in ids):
+                raise PackageValidationError('Invalid selected AAT course ID.')
+            builds = [os.path.join(app.config['BUILDS_DIR'], str(course), 'build') for course in ids]
+            wrapper = app.config.get('LXP_WRAPPER_ZIP')
+            expected_sha = app.config.get('LXP_WRAPPER_SHA256')
+            with tempfile.TemporaryDirectory(prefix='adapt-oer-wrapper-') as temporary:
+                if not wrapper:
+                    # Preserve the normal upstream path, but never overwrite a
+                    # checked-in ZIP or silently reuse it after download failure.
+                    url = app.config['LXP_WRAPPER_URL']
+                    response = requests.get(url, timeout=(10, 60))
+                    response.raise_for_status()
+                    repo_root = pathlib.Path(temporary) / 'upstream'
+                    from lxp_export import safe_extract
+                    with ZipFile(BytesIO(response.content)) as archive:
+                        safe_extract(archive, repo_root)
+                    dist_dirs = list(repo_root.glob('*/dist'))
+                    if len(dist_dirs) != 1:
+                        raise PackageValidationError('Downloaded LXP repository does not contain exactly one dist folder.')
+                    wrapper = pathlib.Path(temporary) / 'wrapper.zip'
+                    with ZipFile(wrapper, 'w', ZIP_DEFLATED) as archive:
+                        for path in sorted(dist_dirs[0].rglob('*')):
+                            if path.is_file():
+                                archive.write(path, path.relative_to(dist_dirs[0]).as_posix())
+                stream = package_courses(builds, wrapper, 'static/assessment-template.zip', expected_sha)
+            return send_file(stream, as_attachment=True, download_name='scorm_package.zip')
+        except (OSError, ValueError, zipfile.BadZipFile, requests.RequestException) as error:
+            app.logger.exception('LXP package export failed')
+            flash('LXP export stopped: ' + str(error), 'error')
+            return redirect(url_for('.index_view'))
 
     def get_tags(self, tags):
         query = {"_id": {"$in": tags}}

@@ -1,0 +1,23 @@
+<div style="margin: 0 auto; max-width: 56.25rem;"><div id="template_results"></div></div>
+<script>
+(function () {
+  var parentApp = window.parent.App;
+  if (!parentApp || !parentApp.adaptHelpers) return;
+  // Subscribe as soon as the result component exists, not only after a click.
+  // Restored completed questions disable SubmitAll; they still need a report.
+  parentApp.adaptHelpers.getDiagnosticResults();
+  $('.submit-all button').on('click', function () {
+    parentApp.adaptHelpers.getDiagnosticResults();
+    var back = $('<button></button>')
+      .addClass('btn-text btn__action')
+      .text('Zurück zum Dashboard')
+      .attr('aria-disabled', 'false')
+      .attr('aria-label', 'Zurück zum Dashboard')
+      .on('click', function () {
+        parentApp.renderView(parentApp.SCO_FRAME, 'views/dashboard/index.html');
+      });
+    setTimeout(function () { $('.submit-all .btn__response-container').append(back); }, 3000);
+    window.scrollTo(0, document.body.scrollHeight);
+  });
+}());
+</script>
