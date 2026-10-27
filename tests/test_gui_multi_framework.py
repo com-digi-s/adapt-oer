@@ -49,6 +49,10 @@ class MultiFrameworkGuiTest(unittest.TestCase):
         self.module.app.extensions['lxp_previews'].clear()
         from lxp_catalogue import load_catalogue
         self.catalogue = load_catalogue()
+        # This existing suite deliberately exercises an offer whose AILit
+        # source has no assigned questions. Keep its explicit omit policy;
+        # production catalogue defaults are covered by the dedicated tests.
+        self.catalogue['frameworks'][1]['defaultDiagnosticIntents'] = {'entry': 'omit', 'final': 'omit'}
         self.wrapper = self.root / 'wrapper.zip'
         # Bind the complete production capability schema. The tiny implementation
         # is only a route/export fixture; genuine browser acceptance is separate.

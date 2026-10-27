@@ -2,7 +2,7 @@
   "format": "adapt-lxp-catalogue",
   "version": 1,
   "exampleOnly": false,
-  "revision": "local-digcomp22-ailit2026-r1",
+  "revision": "local-digcomp22-ailit2026-r2",
   "scope": "Local course addresses, not an automatic official competence mapping",
   "frameworks": [
     {
@@ -30,8 +30,12 @@
       "prefix": "AILit",
       "version": "2026",
       "label": "AILit 2026",
-      "defaultDiagnosticIntents": {"entry": "omit", "final": "omit"},
-      "domains": [],
+      "defaultDiagnosticIntents": {"entry": "require", "final": "require"},
+      "domains": [
+        {"id": "verstehen", "label": "Verstehen", "sourceTitlePatterns": ["^A(?:\\b|[.\\-_:])", "^Verstehen"]},
+        {"id": "anwenden", "label": "Anwenden", "sourceTitlePatterns": ["^B(?:\\b|[.\\-_:])", "^Anwenden"]},
+        {"id": "bewerten", "label": "Bewerten", "sourceTitlePatterns": ["^C(?:\\b|[.\\-_:])", "^Bewerten"]}
+      ],
       "modules": [
         {"id": "mod-ailit2026-1", "number": "1", "label": "KI-Kompetenz für Studierende und Erwachsene", "courseNumbers": ["1", "2", "3", "4"],
          "courseLabels": {

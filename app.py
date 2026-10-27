@@ -223,11 +223,14 @@ def lxp_export_setup():
             builds = [os.path.join(app.config['BUILDS_DIR'], str(course['_id']), 'build') for course in courses]
             metadata = _lxp_metadata(courses)
             diagnostics, versions = {}, {}
+            saved_diagnostics = ((profile or {}).get('settings') or {}).get('diagnostics') or {}
             for framework in frameworks:
                 prefix = framework['prefix']
                 diagnostics[prefix] = {}
                 for phase in ('entry', 'final'):
-                    intent = request.form.get(f'test_{prefix}_{phase}', 'require' if prefix == 'DigComp' else 'omit')
+                    default = framework.get('defaultDiagnosticIntents', {}).get(phase, 'ifAvailable')
+                    saved = saved_diagnostics.get(prefix, saved_diagnostics.get(framework['id'], {}))
+                    intent = request.form.get(f'test_{prefix}_{phase}', saved.get(phase, default))
                     if intent not in ('omit', 'ifAvailable', 'require'):
                         raise ValueError('Ungültiger Testauftrag.')
                     diagnostics[prefix][phase] = intent
