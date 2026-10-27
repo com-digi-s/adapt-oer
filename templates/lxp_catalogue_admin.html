@@ -1,0 +1,72 @@
+{% extends 'lxp_base.html' %}
+{% block title %}Kompetenzrahmen verwalten – Adapt|OER{% endblock %}
+{% block content %}
+<style>.catalogue textarea{box-sizing:border-box;width:100%;max-width:45rem;font:inherit;padding:.4rem}.catalogue details{border-top:1px solid #bdcbd5;padding:1rem 0}.catalogue summary{font-size:1.25rem;font-weight:650;cursor:pointer}.catalogue .add-form{background:#f5f7f9;padding:1rem;margin:1rem 0}.catalogue input[type=number]{max-width:10rem}</style>
+<div class="catalogue">
+<h1>Kompetenzrahmen verwalten</h1>
+<p>Hier legst du fest, wie veröffentlichte Kurse im LXP-Export zusammengehören. Ein Kurs mit dem Titel <code>AILit1.5 – Mein Kurstitel</code> gehört beispielsweise zum Rahmen <strong>AILit</strong>, Modul <strong>1</strong>, Kurs <strong>5</strong>. Neue Kursnummern brauchst du nicht einzeln einzutragen.</p>
+<p class="notice">Die Änderungen gelten als Vorgaben für neue Exporte. Bereits gespeicherte Lernangebote, Kurse im Authoring Tool und Lernstände werden nicht automatisch verändert. Vorhandene Präfixe, Fassungen und Modulnummern bleiben erhalten.</p>
+{% if error %}<p role="alert" class="error">{{ error }}</p>{% endif %}
+{% if conflict or not snapshot %}<p><a class="button" href="{{ url_for('lxp_catalogue_admin.index') }}">Aktuellen Katalog neu laden</a></p>
+{% else %}
+<p><small>Aktueller Stand: {{ snapshot.catalogue.revision }}. Vor jeder Änderung wird die bisherige Fassung gesichert.</small></p>
+{% for framework in frameworks %}
+{% set editing = request.method == 'POST' and request.form.get('action') == 'edit_framework' and request.form.get('framework_id') == framework.id %}
+<details open id="framework-{{ framework.id }}"><summary>{{ framework.label }} · {{ framework.prefix }} / {{ framework.version }}</summary>
+<form method="post" action="{{ url_for('lxp_catalogue_admin.index') }}" data-catalogue-form="edit_framework" data-framework-id="{{ framework.id }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="expected_sha256" value="{{ snapshot.sha256 }}"><input type="hidden" name="action" value="edit_framework"><input type="hidden" name="framework_id" value="{{ framework.id }}">
+<label>Name des Kompetenzrahmens <input type="text" name="label" maxlength="200" required value="{{ request.form.get('label', framework.label) if editing else framework.label }}"></label>
+<p>Präfix: <strong>{{ framework.prefix }}</strong> · Fassung: <strong>{{ framework.version }}</strong> <small>(bleiben unverändert; für eine andere Fassung einen neuen Rahmen anlegen)</small></p>
+<fieldset><legend>Module</legend>
+<p>Die Modulnummer steht vor dem Punkt im Kurstitel. Der Modulname erscheint später in der LXP.</p>
+{% for module in framework.modules %}
+<input type="hidden" name="module_id_{{ module.id }}" value="{{ module.id }}"><input type="hidden" name="module_number_{{ module.id }}" value="{{ module.number }}">
+<label>Modul {{ module.number }} <input type="text" name="module_label_{{ module.id }}" maxlength="200" required value="{{ request.form.get('module_label_' ~ module.id, module.label) if editing else module.label }}"></label>
+{% else %}<p>Noch kein Modul vorhanden. Lege unterhalb dieses Formulars das erste Modul an.</p>{% endfor %}
+</fieldset>
+<fieldset><legend>Kognitive Domänen und Zuordnung der Testfragen</legend>
+<p>Übernimm die Menütitel aus dem Adapt Authoring Tool genau, jeweils einen Titel pro Zeile. Fragen unter diesen Menüs können dieser Domäne zugeordnet werden. Die Fragen müssen weiterhin mit <code>et</code> und/oder <code>at</code> gekennzeichnet sein.</p>
+{% for domain in framework.domains %}
+<fieldset><legend>{{ domain.label }}</legend><input type="hidden" name="domain_id_{{ domain.id }}" value="{{ domain.id }}">
+<label>Name der Domäne <input type="text" name="domain_label_{{ domain.id }}" maxlength="200" required value="{{ request.form.get('domain_label_' ~ domain.id, domain.label) if editing else domain.label }}"></label>
+<label>Passende Menütitel, einer pro Zeile <textarea name="domain_titles_{{ domain.id }}" rows="3" maxlength="22000">{{ request.form.get('domain_titles_' ~ domain.id, domain.sourceTitles|default([])|join('\n')) if editing else domain.sourceTitles|default([])|join('\n') }}</textarea></label>
+{% if domain.sourceTitlePatterns %}<p><small>Für diese Domäne bestehen bereits technische Zuordnungsregeln. Sie bleiben unverändert erhalten; hier kannst du zusätzliche genaue Menütitel ergänzen.</small></p>{% endif %}
+</fieldset>{% else %}<p>Noch keine Domäne vorhanden. Lege sie unterhalb dieses Formulars an, bevor du Tests aus Menüzuordnungen zusammenstellst.</p>{% endfor %}
+<label>Standarddomäne für Fragen auf Seiten ohne übergeordnetes Menü
+{% set default_domain = request.form.get('default_domain', framework.defaultDomainId|default('')) if editing else framework.defaultDomainId|default('') %}
+<select name="default_domain"><option value="" {% if not default_domain %}selected{% endif %}>Keine – veröffentlichte Menüzuordnung erforderlich</option>{% for domain in framework.domains %}<option value="{{ domain.id }}" {% if default_domain == domain.id %}selected{% endif %}>{{ domain.label }}</option>{% endfor %}</select></label>
+<p><small>Nur bewusst eine Standarddomäne wählen: Sie ordnet auch Fragen in einer flachen Seitenstruktur ohne übergeordnetes Menü zu. Ohne Standarddomäne bleibt diese fehlende Zuordnung ein prüfbarer Fehler. Ein unbekannter Menütitel bleibt auch mit Standarddomäne ein Fehler.</small></p>
+</fieldset>
+<fieldset><legend>Vorgaben für neue Testzusammenstellungen</legend>
+<p>Diese Vorgaben können beim nächsten Export geändert werden. Bereits gespeicherte Lernangebote behalten ihre ausdrücklich gespeicherten Testeinstellungen.</p>
+{% for phase, label in [('entry', 'Einstiegstest'), ('final', 'Abschlusstest')] %}{% set options = framework._assessment[phase] %}{% set name = phase ~ '_' %}
+<fieldset><legend>{{ label }}</legend>
+{% set intent = request.form.get(name ~ 'intent', framework.defaultDiagnosticIntents.get(phase, 'ifAvailable') if framework.defaultDiagnosticIntents else 'ifAvailable') if editing else framework.defaultDiagnosticIntents.get(phase, 'ifAvailable') if framework.defaultDiagnosticIntents else 'ifAvailable' %}
+<label>Bereitstellung <select name="{{ name }}intent">{% for value, text in [('require', 'Erforderlich – ohne passende Fragen abbrechen'), ('ifAvailable', 'Nur wenn passende Fragen vorhanden sind'), ('omit', 'Keinen Test anfordern')] %}<option value="{{ value }}" {% if intent == value %}selected{% endif %}>{{ text }}</option>{% endfor %}</select></label>
+{% set mode = request.form.get(name ~ 'mode', options.mode) if editing else options.mode %}
+<label>Fragen auswählen <select name="{{ name }}mode">{% for value, text in [('balanced', 'Eigene überschaubare Auswahl'), ('all', 'Alle markierten Fragen')] %}<option value="{{ value }}" {% if mode == value %}selected{% endif %}>{{ text }}</option>{% endfor %}{% if framework.prefix == 'DigComp' and framework.version == '2.2' %}<option value="reference" {% if mode == 'reference' %}selected{% endif %}>Öffentliche ComDigiS*-Auswahl ({{ '24' if phase == 'entry' else '39' }} Fragen)</option>{% endif %}</select></label>
+<label>Gewünschte Fragenanzahl <input type="number" name="{{ name }}questionCount" min="1" max="10000" step="1" value="{{ request.form.get(name ~ 'questionCount', options.questionCount if options.questionCount is not none else '') if editing else options.questionCount if options.questionCount is not none else '' }}"></label>
+<p><small>Die Anzahl gilt für die eigene Auswahl. „Alle“ verwendet den gesamten Fragenpool; die öffentliche Auswahl behält ihre feste Anzahl. Sind weniger passende Fragen vorhanden, zeigt die Exportvorschau den tatsächlichen Umfang.</small></p>
+{% for key, text in [('equalSampling', 'Gleichmäßig über Module, Kurse und kognitive Domänen verteilen'), ('showMarking', 'Abgegebene Auswahl kennzeichnen'), ('showModelAnswer', 'Richtige Antworten kennzeichnen')] %}<label><input type="checkbox" name="{{ name }}{{ key }}" value="yes" {% if (request.form.get(name ~ key) == 'yes' if editing else options[key]) %}checked{% endif %}> {{ text }}</label>{% endfor %}
+</fieldset>{% endfor %}
+</fieldset>
+<button type="submit">Einstellungen für {{ framework.prefix }} / {{ framework.version }} speichern</button>
+</form>
+<div class="add-form"><h3>Ein Modul zu {{ framework.prefix }} / {{ framework.version }} hinzufügen</h3>
+{% set adding_module = request.method == 'POST' and request.form.get('action') == 'add_module' and request.form.get('framework_id') == framework.id %}
+<form method="post" action="{{ url_for('lxp_catalogue_admin.index') }}" data-catalogue-form="add_module" data-framework-id="{{ framework.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="expected_sha256" value="{{ snapshot.sha256 }}"><input type="hidden" name="action" value="add_module"><input type="hidden" name="framework_id" value="{{ framework.id }}">
+<label>Modulnummer <input type="number" min="1" max="999999999999" step="1" name="number" required value="{{ request.form.get('number', '') if adding_module else '' }}"></label><label>Modulname <input type="text" name="label" maxlength="200" required value="{{ request.form.get('label', '') if adding_module else '' }}"></label><button type="submit">Modul hinzufügen</button></form></div>
+<div class="add-form"><h3>Eine kognitive Domäne hinzufügen</h3>
+{% set adding_domain = request.method == 'POST' and request.form.get('action') == 'add_domain' and request.form.get('framework_id') == framework.id %}
+<form method="post" action="{{ url_for('lxp_catalogue_admin.index') }}" data-catalogue-form="add_domain" data-framework-id="{{ framework.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="expected_sha256" value="{{ snapshot.sha256 }}"><input type="hidden" name="action" value="add_domain"><input type="hidden" name="framework_id" value="{{ framework.id }}">
+<label>Domänenname <input type="text" name="label" maxlength="200" required value="{{ request.form.get('label', '') if adding_domain else '' }}"></label><label>Passende Menütitel, einer pro Zeile <textarea name="source_titles" rows="3" maxlength="22000">{{ request.form.get('source_titles', '') if adding_domain else '' }}</textarea></label><p><small>Beispiel: <code>D – Gestalten</code>. Ohne passende Zuordnung werden Fragen nicht automatisch dieser Domäne zugeordnet.</small></p><button type="submit">Domäne hinzufügen</button></form></div>
+</details>{% endfor %}
+<section class="add-form"><h2>Einen Kompetenzrahmen oder eine neue Fassung anlegen</h2>
+<p>Das Präfix steht am Anfang der Kurstitel, zum Beispiel <code>Media1.1 – Mein Kurs</code>. Verwende nur Buchstaben und behalte die Groß-/Kleinschreibung bei. Die Rahmenfassung wird getrennt ausgewählt und gehört nicht ins Präfix.</p>
+{% set adding_framework = request.method == 'POST' and request.form.get('action') == 'add_framework' %}
+<form method="post" action="{{ url_for('lxp_catalogue_admin.index') }}" data-catalogue-form="add_framework"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="expected_sha256" value="{{ snapshot.sha256 }}"><input type="hidden" name="action" value="add_framework">
+<label>Präfix <input type="text" name="prefix" pattern="[A-Za-z]+" maxlength="48" placeholder="z. B. Media" required value="{{ request.form.get('prefix', '') if adding_framework else '' }}"></label><label>Rahmenfassung <input type="text" name="version" maxlength="80" placeholder="z. B. 2027" required value="{{ request.form.get('version', '') if adding_framework else '' }}"></label><label>Angezeigter Rahmenname <input type="text" name="label" maxlength="200" placeholder="z. B. Medienkompetenz" required value="{{ request.form.get('label', '') if adding_framework else '' }}"></label>
+<p><small>Ein neuer Rahmen startet mit je 12 Fragen für Einstiegs- und Abschlusstest und einer gleichmäßigen Auswahl. Eigene Module und Domänen legst du anschließend an.</small></p><button type="submit">Kompetenzrahmen anlegen</button></form>
+</section>{% endif %}
+</div>
+{% endblock %}

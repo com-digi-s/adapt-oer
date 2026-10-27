@@ -56,6 +56,34 @@ This does not require a new AAT plugin. Registered native sources are a separate
 administrative path, not an arbitrary ZIP import. The explicit
 `aat-core-build-v1` adapter validates known manifestless Core publications.
 
+### Maintain frameworks in the GUI
+
+Use **Kompetenzrahmen verwalten** next to **LXP-Export** while signed in with
+the application's existing single administrator account:
+
+1. Add the prefix, version and display name of a new framework.
+2. Add its numbered modules. New published course numbers are discovered during export.
+3. Add cognitive domains and the exact AAT parent-menu titles, one per line.
+   Existing technical matching rules are preserved; no regular expressions are required.
+4. Set entry/final test availability, counts, distribution and answer marking.
+5. Save, then return to the export form and inspect its frozen preview.
+
+New frameworks start with bounded 12-question tests only when suitable tagged
+questions are available. Existing AILit/DigComp requirements are not changed.
+
+Existing prefixes, versions, module numbers and technical IDs cannot be renamed
+or deleted here. Add a new version rather than reinterpreting old identities.
+An optional default domain applies only to flat sources without parent menus;
+unmatched menu titles still fail rather than being guessed. Explicit settings
+in saved offer profiles take precedence over new global defaults.
+
+Edits use a separate `instance/lxp-catalogue.json` override (or
+`LXP_CATALOGUE_STORE_PATH`). Keep that file and its adjacent `.backups` directory
+with the persistent registry. The configured source catalogue is never overwritten.
+Every real save preserves the previous bytes and assigns a new revision;
+simultaneous edits require reloading instead of silently overwriting each other.
+Existing pending export previews must be recreated after a catalogue change.
+
 Diagnostics are requested separately for each framework/phase. Missing optional
 diagnostics are reported as not provided, never passed or scored zero. Required
 diagnostics without supported assigned questions block the export. Completion

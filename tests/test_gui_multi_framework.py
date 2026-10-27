@@ -78,6 +78,7 @@ class MultiFrameworkGuiTest(unittest.TestCase):
         self.module.app.config.update(TESTING=True, WTF_CSRF_ENABLED=True, SECRET_KEY='gui-test-secret',
             BUILDS_DIR=str(self.root / 'builds'), LXP_WRAPPER_ZIP=str(self.wrapper), LXP_WRAPPER_SHA256=None,
             LXP_CATALOGUE=self.catalogue, LXP_ORIGIN_ID='gui-tenant',
+            LXP_CATALOGUE_STORE_PATH=str(self.root / 'instance/catalogue.json'),
             LXP_REGISTRY_PATH=str(self.root / 'registry.json'),
             LXP_ASSESSMENT_TEMPLATE=str(Path('static/assessment-template.zip').resolve()))
         self.dig = self.make_course('1' * 24, 'DigComp1.1 – Echter DigComp-Kurs', questions=True)

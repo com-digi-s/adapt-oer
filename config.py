@@ -23,6 +23,9 @@ LXP_WRAPPER_ZIP = os.environ.get('LXP_WRAPPER_ZIP')
 LXP_WRAPPER_SHA256 = os.environ.get('LXP_WRAPPER_SHA256')
 LXP_WRAPPER_URL = os.environ.get('LXP_WRAPPER_URL', 'https://github.com/com-digi-s/adapt-lxp/archive/refs/heads/main.zip')
 LXP_CATALOGUE = os.environ.get('LXP_CATALOGUE')
+# Separate writable override; the configured source catalogue stays read-only.
+# None uses Flask's instance/lxp-catalogue.json path.
+LXP_CATALOGUE_STORE_PATH = os.environ.get('LXP_CATALOGUE_STORE_PATH')
 LXP_ORIGIN_ID = os.environ.get('LXP_ORIGIN_ID', AUTHORING_DOMAIN or 'aat-local')
 LXP_REGISTRY_PATH = os.environ.get('LXP_REGISTRY_PATH', './instance/lxp-source-registry.json')
 LXP_ASSESSMENT_TEMPLATE = os.environ.get('LXP_ASSESSMENT_TEMPLATE', './static/assessment-template.zip')

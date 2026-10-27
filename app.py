@@ -62,11 +62,16 @@ login_manager.login_view = "login"
 # Prepared builds never go into the client session. Tokens are user-bound,
 # short-lived, one-use references to frozen server-side preflight results.
 app.extensions['lxp_previews'] = {}
+from lxp_catalogue_admin import blueprint as catalogue_admin_blueprint
+app.register_blueprint(catalogue_admin_blueprint)
 
 
 def lxp_catalogue():
-    from lxp_catalogue import load_catalogue
-    return load_catalogue(app.config.get('LXP_CATALOGUE'))
+    from lxp_catalogue_store import read_snapshot
+    store = app.config.get('LXP_CATALOGUE_STORE_PATH')
+    if store is None:
+        store = pathlib.Path(app.instance_path) / 'lxp-catalogue.json'
+    return read_snapshot(app.config.get('LXP_CATALOGUE'), store)['catalogue']
 
 
 def course_assignment(course, *, legacy_import=False, framework_versions=None):
@@ -175,6 +180,37 @@ def _lxp_assessment_defaults(framework, profile):
                          'showMarking': True, 'showModelAnswer': False}
         result[phase].update(framework.get('defaultAssessmentOptions', {}).get(phase, {}))
         result[phase].update(saved.get(phase, {}))
+    return result
+
+
+def _lxp_framework_controls(frameworks, profile, metadata=()):
+    """One visible form per prefix, using its explicitly chosen/bound version.
+
+    When a new source has an ambiguous version the exporter still rejects it;
+    choosing a representative for displaying controls is not a source binding.
+    """
+    from lxp_multi_export import get_source_binding
+    saved = ((profile or {}).get('settings') or {}).get('framework_versions') or {}
+    bound = defaultdict(set)
+    for item in metadata:
+        registration = get_source_binding(app.config['LXP_REGISTRY_PATH'],
+            origin_id=item['originId'], course_id=item['courseId']) or {}
+        binding = registration.get('binding') or {}
+        if binding.get('prefix') and binding.get('version'):
+            bound[binding['prefix']].add(binding['version'])
+    grouped = {}
+    for framework in frameworks:
+        grouped.setdefault(framework['prefix'], []).append(framework)
+    result = []
+    for prefix, choices in grouped.items():
+        values = request.form if request.method == 'POST' else request.args
+        requested = values.get('version_' + prefix, saved.get(prefix, ''))
+        version = requested or (next(iter(bound[prefix])) if len(bound[prefix]) == 1 else None)
+        chosen = copy.deepcopy(next((framework for framework in choices if framework['version'] == version), choices[0]))
+        chosen['_boundVersion'] = next(iter(bound[prefix])) if len(bound[prefix]) == 1 else None
+        chosen['_soleVersion'] = choices[0]['version'] if len(choices) == 1 else None
+        chosen['_versionAmbiguous'] = len(choices) > 1 and not version
+        result.append(chosen)
     return result
 
 
@@ -304,6 +340,13 @@ def lxp_export_setup():
     frameworks = catalogue.get('frameworks', [])
     if isinstance(frameworks, dict):
         frameworks = list(frameworks.values())
+    display_metadata = ()
+    if request.method == 'GET' and selected:
+        try:
+            display_metadata = _lxp_metadata(_lxp_selected(selected))
+        except ValueError:
+            pass  # Invalid/inaccessible IDs cannot confer a framework binding.
+    display_frameworks = _lxp_framework_controls(frameworks, profile, display_metadata)
     if request.method == 'POST':
         _lxp_csrf()
         prepared = None
@@ -315,9 +358,10 @@ def lxp_export_setup():
             courses = _lxp_selected(selected)
             builds = [os.path.join(app.config['BUILDS_DIR'], str(course['_id']), 'build') for course in courses]
             metadata = _lxp_metadata(courses)
+            display_frameworks = _lxp_framework_controls(frameworks, profile, metadata)
             diagnostics, versions = {}, {}
             saved_diagnostics = ((profile or {}).get('settings') or {}).get('diagnostics') or {}
-            for framework in frameworks:
+            for framework in display_frameworks:
                 prefix = framework['prefix']
                 diagnostics[prefix] = {}
                 for phase in ('entry', 'final'):
@@ -327,6 +371,8 @@ def lxp_export_setup():
                     if intent not in ('omit', 'ifAvailable', 'require'):
                         raise ValueError('Ungültiger Testauftrag.')
                     diagnostics[prefix][phase] = intent
+                if len(request.form.getlist('version_' + prefix)) > 1:
+                    raise ValueError('Doppelte Rahmenfassung. Bitte das Formular erneut öffnen.')
                 chosen_version = request.form.get('version_' + prefix)
                 if chosen_version:
                     versions[prefix] = chosen_version
@@ -337,7 +383,7 @@ def lxp_export_setup():
             if not title:
                 raise ValueError('Bitte einen Titel für das Lernangebot angeben.')
             settings = dict(package_id=package_id, revision=revision, title=title, diagnostics=diagnostics,
-                            assessment_options=_lxp_assessment_options(frameworks, profile),
+                            assessment_options=_lxp_assessment_options(display_frameworks, profile),
                             framework_versions=versions, required_courses=required,
                             target_profile_id=app.config['LXP_TARGET_PROFILE_ID'],
                             legacy_import=request.form.get('legacy_import') == 'yes',
@@ -383,8 +429,9 @@ def lxp_export_setup():
     for course, source in zip(courses, _lxp_metadata(courses)):
         course['_lxp_required_key'] = source['originId'] + '::' + source['courseId']
     return render_template('lxp_export.html', courses=courses, frameworks=frameworks, profiles=profiles,
+        display_frameworks=display_frameworks,
         profile=profile, selected=selected, csrf_token=generate_csrf(),
-        assessment_form={framework['prefix']: _lxp_assessment_defaults(framework, profile) for framework in frameworks})
+        assessment_form={framework['prefix']: _lxp_assessment_defaults(framework, profile) for framework in display_frameworks})
 
 
 @app.route('/lxp/preview/<token>')
@@ -1325,7 +1372,7 @@ class CourseView(MyModelView, metaclass=Meta):
         except Exception as ex:
             flash('Failed to batch download files. {}'.format(str(ex)), 'error')
 
-    @action('package_download', 'Gemeinsame LXP vorbereiten (DigComp / AILit)')
+    @action('package_download', 'Gemeinsame LXP vorbereiten')
     def package_download(self, ids):
         return redirect(url_for('lxp_export_setup', course_id=ids))
 
