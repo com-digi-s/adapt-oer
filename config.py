@@ -17,10 +17,10 @@ GLOSSARY_JSON = "./static/glossary.json"
 ADDITIONAL_COMPONENTS = "./static/additional_components.json"
 WTF_CSRF_ENABLED = True  # enables CSRF protection globally
 AUTHORING_DOMAIN = os.environ.get("AUTHORING_DOMAIN")
-# A tested deployment can use an immutable, locally built wrapper artifact.
-# ZIP root must contain index.html/config.json and no already packaged scos.
-LXP_WRAPPER_ZIP = os.environ.get('LXP_WRAPPER_ZIP')
-LXP_WRAPPER_SHA256 = os.environ.get('LXP_WRAPPER_SHA256')
+# A pinned, tested wrapper ships with the application; no extra download/build.
+# A custom wrapper must match its separately configured SHA-256.
+LXP_WRAPPER_ZIP = os.environ.get('LXP_WRAPPER_ZIP') or './static/lxp-wrapper.zip'
+LXP_WRAPPER_SHA256 = os.environ.get('LXP_WRAPPER_SHA256') or '322f281ad57bae275dae141f07c6bd1a4c41bce65e7b702c71975be313c16d32'
 LXP_WRAPPER_URL = os.environ.get('LXP_WRAPPER_URL', 'https://github.com/com-digi-s/adapt-lxp/archive/refs/heads/main.zip')
 LXP_CATALOGUE = os.environ.get('LXP_CATALOGUE')
 # Separate writable override; the configured source catalogue stays read-only.

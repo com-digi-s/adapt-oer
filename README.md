@@ -4,24 +4,24 @@
 
 ---
 
-## **Environment Variables**
+## Environment variables
 
-You need to set the following environment variables to run Adapt|OER.
-Therefor copy the given [credentials.env.dist](credentials.env.dist) and apply the variables on your host.
+For the existing Docker stack, use [comdigi-compose](https://git.infai.org/n.radtke/comdigi-compose):
+copy its `.env.dist` to `.env`, set your credentials and AAT tenant ID, and use
+its documented local source mount. Start with `docker compose up -d`.
+Do not create a second stack for Adapt|OER.
 
-```
-USER=your-account
-PASS=your-password
-GITLAB_ACCESS_TOKEN=...
-# mongodb
-MONGODB_PORT=27017
-DB_HOST=127.0.0.1
-DB_NAME=adapt
-SECRET_KEY=123456790
-# adapt authoring
-BUILDS_DIR=/path/to/adapt_authoring/temp/tenantId/adapt_framework/courses
-AUTHORING_DOMAIN=https://your.auhtoring.url
-```
+The tested `static/lxp-wrapper.zip` and matching SHA-256 are included. No separate
+LXP checkout, wrapper download/build or manual hash calculation is necessary.
+`static/lxp-wrapper-source.json` pins its upstream commit and original notices.
+
+For a native installation, [credentials.env.dist](credentials.env.dist) lists
+the supported settings, including wrapper, registry and catalogue paths. Supply
+these environment variables through your process manager; the application does
+not load a dotenv file itself. Persist the entire `instance/` directory (registry,
+locks, catalogue edits and backups) and retain MongoDB with its export profiles.
+Keep `LXP_ORIGIN_ID` stable across updates. Custom wrappers need their own verified
+`LXP_WRAPPER_SHA256`; GitHub's repository source ZIP is not a built wrapper.
 
 ## Shared multi-framework LXP export
 
