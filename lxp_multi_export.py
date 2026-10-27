@@ -8,6 +8,8 @@ different things.  A PreparedExport owns its immutable build snapshot until
 from copy import deepcopy
 from contextlib import contextmanager
 from dataclasses import dataclass
+import base64
+import binascii
 import fcntl
 import hashlib
 from io import BytesIO
@@ -26,6 +28,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from adapt_persistence_bootstrap import bootstrap_runtime
 from lxp_catalogue import (PackageValidationError, canonical_bytes, catalogue_sha256,
                            load_catalogue, normalize_title)
+from lxp_diagnostics_articles import learning_source_view, restore_removed_nodes
 
 
 PHASE_TAG = {'entry': 'et', 'final': 'at'}
@@ -44,7 +47,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_export.py', 'lxp_multi_export.py')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py')}
 
 
 def _generator_sha256():
@@ -154,6 +157,7 @@ def learning_compatibility_fingerprint(source):
     Course and hierarchy titles are presentation metadata; component prompts and
     all hierarchy flags/links/assessment settings retain their semantic meaning.
     """
+    source, _ = learning_source_view(source)
     def node(value):
         return {key: deepcopy(item) for key, item in value.items() if key not in {'title', 'displayTitle'}}
     config = source.get('config', {})
@@ -888,9 +892,25 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         for item in prepared._sources:
             target = root / item['sco']['launch']['root']
             shutil.copytree(item['frozen'], target)
+            from lxp_export import published_course
+            raw_source = published_course(item['frozen'])
+            learning, removals = learning_source_view(raw_source)
+            json_changes = []
+            for name, entries in removals.items():
+                relative = 'course/' + raw_source['language'] + '/' + name + '.json'
+                path = target / relative
+                before_bytes = path.read_bytes()
+                before_hash = sha256_bytes(before_bytes)
+                _write(path, learning['data'][name])
+                json_changes.append({'path': relative, 'kind': 'diagnostic-only-article-removal',
+                    'input_sha256': before_hash, 'output_sha256': file_sha256(path),
+                    'input_bytes_base64': base64.b64encode(before_bytes).decode('ascii'),
+                    'source_semantic_sha256': sha256_bytes(canonical_bytes(raw_source['data'][name])),
+                    'removedIds': [entry['node']['_id'] for entry in entries], 'removedNodes': entries})
             runtime = target / 'adapt/js/adapt.min.js'
-            # Native registered SCOs retain their complete course content.  Only
-            # the declared persistence bootstrap is added to a copied runtime.
+            # The sole content exception is the explicitly validated hidden,
+            # optional diagnostic article subtree above. All original native
+            # learning content and tracking IDs otherwise remain unchanged.
             if not runtime.is_file():
                 raise PackageValidationError('Source has no supported Adapt runtime: ' + item['sco']['id'])
             try:
@@ -899,12 +919,14 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
                 raise PackageValidationError('Source persistence bootstrap unavailable: ' + item['sco']['id'] + ': ' + str(error)) from error
             runtime.write_bytes(patched)
             course_report = next(c for c in report['courses'] if c['scoId'] == item['sco']['id'])
-            course_report['copyChanges'] = [{'path': 'adapt/js/adapt.min.js', 'kind': 'persistence-bootstrap', **metadata}]
+            course_report['copyChanges'] = ([{'path': 'adapt/js/adapt.min.js', 'kind': 'persistence-bootstrap', **metadata}]
+                                           if metadata['input_sha256'] != metadata['output_sha256'] else [])
             if item.get('derivedManifest'):
                 (target / 'imsmanifest.xml').write_bytes(item['derivedManifest'])
                 course_report['copyChanges'].append({'path': 'imsmanifest.xml', 'kind': 'generated-core-build-manifest',
                     'adapterId': 'aat-core-build-v1', 'originalAbsent': True, 'output_sha256': file_sha256(target / 'imsmanifest.xml'),
                     'generatorSha256': _generator_sha256()})
+            course_report['copyChanges'].extend(json_changes)
             course_report['deliveredFileManifest'] = tree_manifest(target)
         for sco in prepared.contract['scos']:
             if sco['role'] != 'learning':
@@ -935,6 +957,68 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         return output
 
 
+def _original_learning_source(published, directory, sco, report):
+    """Verify exact copy deltas and restore diagnostic-only source questions.
+
+    Hidden helper nodes are intentionally absent from delivered learning JSON.
+    Their original JSON bytes are bound to the source file manifest. Indexed
+    removed nodes must reconstruct that exact source JSON, not merely match a
+    separately editable semantic hash in the same provenance record.
+    """
+    if not isinstance(report, dict) or report.get('source') != sco['source']:
+        raise PackageValidationError('Learning copy provenance differs from its source contract')
+    before, delivered = report.get('fileManifest'), tree_manifest(directory)
+    if not isinstance(before, dict) or sha256_bytes(canonical_bytes(before)) != sco['source']['buildSha256'] or report.get('deliveredFileManifest') != delivered:
+        raise PackageValidationError('Learning original/delivered file manifest differs from provenance')
+    changes = report.get('copyChanges')
+    if not isinstance(changes, list) or any(not isinstance(c, dict) for c in changes):
+        raise PackageValidationError('Invalid learning copy change provenance')
+    paths = [c.get('path') for c in changes]
+    difference = {path for path in set(before) | set(delivered) if before.get(path) != delivered.get(path)}
+    if any(not isinstance(path, str) for path in paths) or len(set(paths)) != len(paths) or set(paths) != difference:
+        raise PackageValidationError('Learning copy change list differs from actual source/delivery delta')
+    removals, semantic_hashes, original_json = {}, {}, {}
+    for change in changes:
+        path = change['path']
+        kind = change.get('kind')
+        if change.get('output_sha256') != delivered.get(path):
+            raise PackageValidationError('Learning copy output SHA-256 differs from actual file')
+        if kind == 'generated-core-build-manifest':
+            if path != 'imsmanifest.xml' or path in before or change.get('originalAbsent') is not True or sco['source'].get('manifestOrigin') != 'generated-aat-core-build':
+                raise PackageValidationError('Invalid generated learning manifest copy change')
+            continue
+        if change.get('input_sha256') != before.get(path) or path not in before:
+            raise PackageValidationError('Learning copy input SHA-256 differs from original file manifest')
+        if kind == 'persistence-bootstrap' and path == 'adapt/js/adapt.min.js':
+            continue
+        name = Path(path).stem
+        if kind != 'diagnostic-only-article-removal' or name not in {'articles', 'blocks', 'components'} or path != 'course/' + published['language'] + '/' + name + '.json':
+            raise PackageValidationError('Unsupported learning copy change')
+        encoded = change.get('input_bytes_base64')
+        if not isinstance(encoded, str):
+            raise PackageValidationError('Diagnostic-only original source JSON bytes are missing')
+        try:
+            original_bytes = base64.b64decode(encoded, validate=True)
+            original_json[name] = json.loads(original_bytes)
+        except (binascii.Error, ValueError, UnicodeError) as error:
+            raise PackageValidationError('Invalid diagnostic-only original source JSON bytes') from error
+        if sha256_bytes(original_bytes) != before[path]:
+            raise PackageValidationError('Diagnostic-only original source JSON bytes differ from source file SHA-256')
+        entries = change.get('removedNodes')
+        if not isinstance(entries, list) or any(not isinstance(e, dict) or not isinstance(e.get('node'), dict) for e in entries) or change.get('removedIds') != [e['node'].get('_id') for e in entries]:
+            raise PackageValidationError('Diagnostic-only removed IDs differ from recorded nodes')
+        removals[name] = entries
+        semantic_hashes[name] = change.get('source_semantic_sha256')
+    if learning_source_view(published)[1]:
+        raise PackageValidationError('Diagnostic-only article was not removed from learning delivery')
+    original = restore_removed_nodes(published, removals) if removals else published
+    if any(canonical_bytes(original['data'][name]) != canonical_bytes(values) for name, values in original_json.items()):
+        raise PackageValidationError('Diagnostic-only reconstructed nodes differ from original source JSON bytes')
+    if any(sha256_bytes(canonical_bytes(original['data'][name])) != digest for name, digest in semantic_hashes.items()):
+        raise PackageValidationError('Diagnostic-only reconstructed source semantic SHA-256 differs from provenance')
+    return original
+
+
 def validate_product_contract(contract, root):
     """Validate actual delivered provenance, references and navigation boundaries."""
     if contract.get('format') != 'adapt-lxp-multi-framework' or contract.get('version') != 1 or contract.get('exampleOnly') is not False:
@@ -949,6 +1033,12 @@ def validate_product_contract(contract, root):
     modules = {m['id']: m for m in contract['modules']}
     scos = {s['id']: s for s in contract['scos']}
     questions = {q['id']: q for q in contract['questions']}
+    provenance = _read(root / 'package-provenance.json')
+    course_reports = provenance.get('courses', [])
+    if not isinstance(course_reports, list) or any(not isinstance(c, dict) for c in course_reports) or len({c.get('scoId') for c in course_reports}) != len(course_reports):
+        raise PackageValidationError('Invalid learning course provenance')
+    course_reports = {c.get('scoId'): c for c in course_reports}
+    original_sources = {}
     if len({f.get('prefix') for f in frameworks.values()}) != len(frameworks):
         raise PackageValidationError('Multiple versions of one framework are not supported')
     if any(m.get('frameworkId') not in frameworks for m in modules.values()):
@@ -980,6 +1070,7 @@ def validate_product_contract(contract, root):
                 raise PackageValidationError('Incomplete real learning source provenance')
             from lxp_export import published_course
             published = published_course(root / prefix)
+            original_sources[sco['id']] = _original_learning_source(published, root / prefix, sco, course_reports.get(sco['id']))
             if published['language'] != source['language'] or published['course'].get('title') != source['publishedTitle']:
                 raise PackageValidationError('Delivered published title/language differs from provenance')
             if source['kind'] == 'aat-published' and '_courseId' in published['config'] and published['config']['_courseId'] != source['courseId']:
@@ -1003,10 +1094,10 @@ def validate_product_contract(contract, root):
         runtime_type = question.get('runtimeComponent', question['component'])
         if runtime_type != question['component'] or (original_type != runtime_type and (original_type, runtime_type, question.get('componentAdapter')) != ('gmcq', 'mcq', 'gmcq-to-mcq-v1')):
             raise PackageValidationError('Undeclared or unsupported source/runtime component conversion')
-        from lxp_export import published_course
-        original_components = published_course(root / course['launch']['root'])['data']['components']
+        original_source = original_sources[course['id']]
+        original_components = original_source['data']['components']
         original = next((q for q in original_components if q.get('_id') == question['sourceComponentId']), None)
-        if not original or original.get('_component') != original_type:
+        if not original or original.get('_component') != original_type or sorted(set((original.get('_classes') or '').split()) & {'et', 'at'}) != question['tags'] or not math.isclose(_validate_question(original, original_source['config'].get('_questionWeight', 1)), maximum):
             raise PackageValidationError('Declared diagnostic component type differs from actual source')
     used_assessment_scos, used_phases, global_bank_ids = set(), set(), set()
     for assessment in contract['assessments']:

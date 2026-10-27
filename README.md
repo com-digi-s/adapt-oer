@@ -46,6 +46,15 @@ requires all required learning courses across both frameworks, not a fabricated
 combined competency score. The conservative SCORM1.2 profile limits suspend
 data to 4096 characters; local persistence is not a target-LMS release.
 
+In AAT, place additional supported Core questions in ordinary unavailable
+(hidden), optional articles under the existing matching A/B/C menus. Keep the
+questions themselves available, add the question CSS classes `et` and/or `at`,
+and republish. No additional article CSS class is required. These articles remain
+in the published learning source without adding a learning-completion duty;
+the central assessment template supplies the supported question plugins and
+their dependencies for the generated tests. Changed course publications still
+need a compatibility check before existing learner state is reused.
+
 ### Regression tests
 
 Install test dependencies separately from production requirements, then run:

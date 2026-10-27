@@ -26,6 +26,18 @@ class GuiCatalogueDefaultsTest(unittest.TestCase):
         fixtures.save(ai_build / 'course/de/components.json', [{'_id': 'native-question', '_component': 'mcq',
             'body': 'Explicitly authored native question', '_items': [{'text': 'Yes', '_shouldBeSelected': True}, {'text': 'No'}]}])
         native_fixtures.hierarchical_questions(ai_build)
+        directory = ai_build / 'course/de'
+        articles = json.loads((directory / 'articles.json').read_text())
+        for article in articles:
+            article.update(_isAvailable=False, _isOptional=True)
+        fixtures.save(directory / 'articles.json', articles)
+        blocks = json.loads((directory / 'blocks.json').read_text())
+        for index, block in enumerate(blocks, 1):
+            block['_trackingId'] = index
+        fixtures.save(directory / 'blocks.json', blocks)
+        course = json.loads((directory / 'course.json').read_text())
+        course['_latestTrackingId'] = len(blocks)
+        fixtures.save(directory / 'course.json', course)
 
     def selected(self, html, prefix, phase):
         select = re.search(r'<select name="test_' + prefix + '_' + phase + r'">(.*?)</select>', html, re.S)
@@ -40,17 +52,45 @@ class GuiCatalogueDefaultsTest(unittest.TestCase):
             for phase in ('entry', 'final'):
                 self.assertEqual(self.selected(html, prefix, phase), 'require')
         self.assertIn('CSS-Klasse', html)
-        self.assertIn('lxp-diagnostics-only', html)
+        self.assertNotIn('lxp-diagnostics-only', html)
         self.assertIn('nicht verfügbar (ausgeblendet)', html)
         self.assertIn('optional markieren', html)
         self.assertIn('vorhandenen A/B/C-Menüs', html)
         self.assertIn('Die Fragen selbst müssen verfügbar bleiben', html)
+        self.assertIn('Eine zusätzliche Artikel-CSS-Klasse ist dafür nicht nötig', html)
+        self.assertIn('Danach erneut veröffentlichen', html)
+        self.assertIn('zentrale Testvorlage', html)
+        self.assertIn('Fragetypen samt Abhängigkeiten', html)
         response = self.confirm(self.prepare())  # No phase form overrides.
         with ZipFile(BytesIO(response.data)) as archive:
             contract = json.loads(archive.read('lxp-contract.json'))
         self.assertEqual(len(contract['assessments']), 4)
         self.assertTrue(all(value['intent'] == 'require' and value['status'] == 'provided'
                             for framework in contract['frameworks'] for value in framework['diagnostics'].values()))
+
+    def test_normal_hidden_optional_articles_need_no_extra_class_and_are_delivered_in_full(self):
+        build = self.root / 'builds' / self.ai / 'build'
+        paths = ['course/config.json'] + ['course/de/' + name + '.json' for name in
+            ('course', 'contentObjects', 'articles', 'blocks', 'components')]
+        before = {path: (build / path).read_bytes() for path in paths}
+        self.assertTrue(all(article.get('_isAvailable') is False and article.get('_isOptional') is True
+                            and not article.get('_classes') for article in json.loads(before['course/de/articles.json'])))
+        self.assertTrue(all(question['_isAvailable'] is True and question['_classes'] == 'et at'
+                            for question in json.loads(before['course/de/components.json'])))
+        response = self.confirm(self.prepare())
+        self.assertEqual(response.status_code, 200)
+        with ZipFile(BytesIO(response.data)) as archive:
+            contract = json.loads(archive.read('lxp-contract.json'))
+            course = next(sco for sco in contract['scos'] if sco['role'] == 'learning' and sco['source']['courseId'] == self.ai)
+            for path, original in before.items():
+                self.assertEqual(archive.read(course['launch']['root'] + '/' + path), original, path)
+            self.assertEqual(len(contract['assessments']), 4)
+            ail_tests = [test for test in contract['assessments'] if test['frameworkId'] == course['frameworkId']]
+            self.assertEqual({test['phase'] for test in ail_tests}, {'entry', 'final'})
+            self.assertTrue(all(sum(len(bank['questionIds']) for bank in test['banks']) == 3 for test in ail_tests))
+            report = next(value for value in json.loads(archive.read('package-provenance.json'))['courses'] if value['scoId'] == course['id'])
+            self.assertFalse(any(value['kind'] == 'diagnostic-only-article-removal' for value in report['copyChanges']))
+        self.assertEqual(before, {path: (build / path).read_bytes() for path in paths})
 
     def test_custom_catalogue_defaults_are_not_replaced_by_prefix_assumptions(self):
         self.catalogue['frameworks'][0]['defaultDiagnosticIntents'] = {'entry': 'omit', 'final': 'ifAvailable'}
