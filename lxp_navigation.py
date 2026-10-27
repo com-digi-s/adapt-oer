@@ -9,7 +9,8 @@ import hashlib
 import json
 from pathlib import Path
 
-from lxp_catalogue import PackageValidationError, TITLE, normalize_title
+from lxp_catalogue import PackageValidationError
+from lxp_catalogue_courses import normalize_course_title
 
 
 def source_key(metadata):
@@ -105,11 +106,8 @@ def project_navigation(catalogue, selected_sources, available_sources, registry,
                 raise PackageValidationError('Navigation publication differs from authenticated AAT source ID')
             title = source['course'].get('title', '')
             bound = previous.get('binding', {})
-            prefix = TITLE.fullmatch(title.strip())
-            bound_version = bound.get('version') if (prefix and prefix[1] == bound.get('prefix')) or (
-                not prefix and bound.get('prefix') == 'DigComp') else None
-            mapping = normalize_title(title, catalogue, framework_versions=framework_versions,
-                legacy_import=previous.get('legacyApproved') is True, bound_version=bound_version)
+            mapping = normalize_course_title(title, catalogue, framework_versions=framework_versions,
+                legacy_import=previous.get('legacyApproved') is True, binding=bound)
             if bound and any(bound.get(key) != mapping[key] for key in
                     ('frameworkId', 'prefix', 'version', 'moduleNumber', 'courseNumber')):
                 raise PackageValidationError('Referenced navigation source has an unconfirmed assignment change')

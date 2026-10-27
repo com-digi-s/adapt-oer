@@ -28,7 +28,8 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from adapt_persistence_bootstrap import bootstrap_runtime
 from lxp_catalogue import (PackageValidationError, canonical_bytes, catalogue_sha256,
-                           load_catalogue, normalize_title)
+                           load_catalogue, normalize_title, TITLE)
+from lxp_catalogue_courses import derive_course_catalogue, normalize_course_title
 from lxp_diagnostics_articles import learning_source_view, restore_removed_nodes
 from lxp_assessment_selection import (normalize_assessment_options, select_questions,
     question_fingerprint, QUESTION_FINGERPRINT_FIELDS)
@@ -51,7 +52,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
 def _reference_question_identities(candidates, framework, phase):
@@ -521,6 +522,7 @@ class PreparedExport:
     _template_sha256: str
     _catalogue_original: object
     _catalogue_sha256: str
+    _configured_catalogue_sha256: str
     _report: dict
     _candidates: dict
     _assessment_selection: list
@@ -561,7 +563,12 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
     if len({_source_key(m) for m in metadata}) != len(metadata):
         raise PackageValidationError('Duplicate selected source origin/course identity')
     original_catalogue = catalogue
-    normalized_catalogue = load_catalogue(catalogue)
+    configured_catalogue = load_catalogue(catalogue)
+    configured_catalogue_hash = catalogue_sha256(configured_catalogue)
+    registry = _registry(registry_path)
+    normalized_catalogue = derive_course_catalogue(configured_catalogue,
+        [{'title': meta['currentTitle'], 'binding': registry['sources'].get(_source_key(meta), {}).get('binding')}
+         for meta in metadata], framework_versions=framework_versions, legacy_import=legacy_import)
     normalized_assessment_options = normalize_assessment_options(assessment_options, normalized_catalogue)
     allowed_diagnostics = {value for f in normalized_catalogue['frameworks'] for value in (f['id'], f['prefix'])}
     if diagnostics is not None and (not isinstance(diagnostics, dict) or any(key not in allowed_diagnostics for key in diagnostics)):
@@ -573,7 +580,6 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
     if framework_versions is not None and (not isinstance(framework_versions, dict) or set(framework_versions) - {f['prefix'] for f in normalized_catalogue['frameworks']}):
         raise PackageValidationError('Unknown framework version-selection prefix')
     catalogue_hash = catalogue_sha256(normalized_catalogue)
-    registry = _registry(registry_path)
     temporary = tempfile.TemporaryDirectory(prefix='adapt-oer-multi-')
     try:
         frozen = Path(temporary.name)
@@ -588,7 +594,8 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         capability, persistence = _validate_wrapper(root)
         contract = {'format': 'adapt-lxp-multi-framework', 'version': 1, 'exampleOnly': False,
             'package': {'id': package_id, 'revision': revision, 'title': title, 'catalogueRevision': normalized_catalogue['revision'],
-                        'catalogueSha256': catalogue_hash, 'outerScorm': '1.2', 'manifestLaunch': 'index.html', 'targetProfileId': target_profile_id},
+                        'catalogueSha256': catalogue_hash, 'configuredCatalogueSha256': configured_catalogue_hash,
+                        'outerScorm': '1.2', 'manifestLaunch': 'index.html', 'targetProfileId': target_profile_id},
             'frameworks': [], 'modules': [], 'scos': [], 'domains': [], 'questions': [],
             'assessments': [], 'pathways': [], 'glossary': [],
             'completion': {'policy': 'all-required-learning-courses', 'outerScorePolicy': 'no-cross-framework-score'}}
@@ -597,6 +604,7 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         report = {'format': 'adapt-lxp-provenance', 'version': 2, 'packageId': package_id, 'revision': revision,
                   'wrapperSha256': wrapper_hash, 'wrapperCapability': capability, 'persistenceContract': persistence,
                   'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
+                  'configuredCatalogueSha256': configured_catalogue_hash,
                   'courses': [], 'tests': []}
         for index, (build, meta) in enumerate(zip(builds, metadata)):
             key = _source_key(meta)
@@ -623,11 +631,9 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 raise PackageValidationError('Bitte Kurs erneut veröffentlichen: aktueller AAT-Title stimmt nicht mit veröffentlichtem Title überein (' + meta['courseId'] + ')')
             bound = previous.get('binding', {})
             # Prefix changes must not apply the old framework's version to a new framework.
-            old_prefix = bound.get('prefix')
-            current_prefix = re.match(r'^([A-Za-z]+)', published_title.strip())
-            bound_version = bound.get('version') if not current_prefix or current_prefix[1] == old_prefix else None
-            mapping = normalize_title(published_title, normalized_catalogue, framework_versions=framework_versions,
-                                      legacy_import=legacy_import, bound_version=bound_version)
+            current_prefix = TITLE.fullmatch(published_title.strip())
+            mapping = normalize_course_title(published_title, normalized_catalogue, framework_versions=framework_versions,
+                                      legacy_import=legacy_import, binding=bound)
             if not current_prefix and legacy_import and not previous.get('legacyApproved'):
                 raise PackageValidationError('Numeric legacy import requires a known explicitly approved source registration')
             binding = {k: mapping[k] for k in ('frameworkId', 'prefix', 'version', 'moduleNumber', 'courseNumber')}
@@ -801,9 +807,11 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                    'assessmentSelection': deepcopy(selection_summaries),
                    'navigationProjection': deepcopy(navigation['projection']),
                    'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
+                   'configuredCatalogueSha256': configured_catalogue_hash,
                    'warnings': ['Target LMS storage/runtime acceptance remains a separate human release gate.']}
         binding = {'contract': contract, 'wrapperSha256': wrapper_hash, 'templateSha256': template_hash,
                    'catalogueSha256': catalogue_hash, 'generatorSha256': _generator_sha256(),
+                   'configuredCatalogueSha256': configured_catalogue_hash,
                    'assessmentSelection': selection_summaries,
                    'navigationProjection': navigation['projection'], 'navigationSources': navigation['evidence']}
         preflight_hash = sha256_bytes(canonical_bytes(binding))
@@ -812,7 +820,8 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         _write(frozen / 'catalogue.json', normalized_catalogue)
         _save_registry(registry_path, registry)
         return PreparedExport(deepcopy(contract), preview, preflight_hash, temporary, sources,
-            wrapper_path, wrapper_hash, template_path, template_hash, original_catalogue, catalogue_hash, report, candidates,
+            wrapper_path, wrapper_hash, template_path, template_hash, original_catalogue, catalogue_hash,
+            configured_catalogue_hash, report, candidates,
             deepcopy(selection_summaries), navigation)
     except Exception:
         temporary.cleanup()
@@ -878,7 +887,7 @@ def approve_legacy_source(registry_path, *, origin_id, course_id, current_title,
     from lxp_catalogue import LEGACY_TITLE
     if not origin_id or not course_id or not LEGACY_TITLE.fullmatch((current_title or '').strip()):
         raise PackageValidationError('Legacy approval requires a known origin/course and a numeric published title')
-    mapping = normalize_title(current_title, catalogue, legacy_import=True,
+    mapping = normalize_course_title(current_title, catalogue, legacy_import=True,
         framework_versions={'DigComp': framework_version} if framework_version else None)
     with _registry_lock(registry_path):
         registry = _registry(registry_path)
@@ -925,6 +934,7 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
     # Mutating a public preview/contract object cannot alter the confirmed package.
     binding = {'contract': prepared.contract, 'wrapperSha256': prepared._wrapper_sha256,
                'templateSha256': prepared._template_sha256, 'catalogueSha256': prepared._catalogue_sha256,
+               'configuredCatalogueSha256': prepared._configured_catalogue_sha256,
                'generatorSha256': _generator_sha256(), 'assessmentSelection': prepared._assessment_selection,
                'navigationProjection': prepared._navigation['projection'],
                'navigationSources': prepared._navigation['evidence']}
@@ -932,7 +942,7 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
         raise PackageValidationError('Prepared contract/implementation changed; create a new preview')
     if file_sha256(prepared._wrapper_original) != prepared._wrapper_sha256 or file_sha256(prepared._template_original) != prepared._template_sha256:
         raise PackageValidationError('Wrapper/template changed since preview; create a new preview')
-    if catalogue_sha256(load_catalogue(prepared._catalogue_original)) != prepared._catalogue_sha256:
+    if catalogue_sha256(load_catalogue(prepared._catalogue_original)) != prepared._configured_catalogue_sha256:
         raise PackageValidationError('Catalogue changed since preview; create a new preview')
     verify_navigation_inputs(prepared._navigation['inputs'])
     for item in prepared._sources:

@@ -70,19 +70,19 @@ def lxp_catalogue():
 
 
 def course_assignment(course, *, legacy_import=False, framework_versions=None):
-    from lxp_catalogue import normalize_title
+    from lxp_catalogue_courses import normalize_course_title
     from lxp_multi_export import get_source_binding
-    bound_version = None
+    binding = None
     approved_legacy = False
     if course.get('_id'):
         metadata = _lxp_metadata([course])[0]
         registration = get_source_binding(app.config['LXP_REGISTRY_PATH'],
             origin_id=metadata['originId'], course_id=metadata['courseId']) or {}
-        bound_version = registration.get('binding', {}).get('version')
+        binding = registration.get('binding')
         approved_legacy = registration.get('legacyApproved') is True
-    return normalize_title(course.get('title', ''), lxp_catalogue(),
+    return normalize_course_title(course.get('title', ''), lxp_catalogue(),
                            framework_versions=framework_versions,
-                           legacy_import=legacy_import or approved_legacy, bound_version=bound_version)
+                           legacy_import=legacy_import or approved_legacy, binding=binding)
 
 
 def add_assignment_columns(model):

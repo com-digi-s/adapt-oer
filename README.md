@@ -43,8 +43,15 @@ preview; excluded assets and question text are not included in the package.
 
 Administrators configure `LXP_WRAPPER_ZIP` and `LXP_WRAPPER_SHA256` with the
 new hash-bound multi-framework LXP build, a stable `LXP_ORIGIN_ID`, and a durable
-`LXP_REGISTRY_PATH`. Framework versions and permitted addresses come from
+`LXP_REGISTRY_PATH`. Registered framework versions and modules come from
 `static/lxp-catalogue.json` (or `LXP_CATALOGUE`), not from guessed prefixes.
+New course numbers inside those modules are derived from the selected published
+titles, e.g. `AILit1.5 – …`, without editing static slots. This extends only the
+export-local catalogue: the configured catalogue remains unchanged. The preview
+binds its configured hash separately from the delivered derived catalogue hash;
+existing source IDs and explicit reassignment/version guards remain authoritative.
+Prefix registration uses ASCII letters; module/course numbers stay separate
+positive integer addresses, never decimal identities.
 This does not require a new AAT plugin. Registered native sources are a separate
 administrative path, not an arbitrary ZIP import. The explicit
 `aat-core-build-v1` adapter validates known manifestless Core publications.
