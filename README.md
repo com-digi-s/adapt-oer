@@ -7,9 +7,31 @@
 ## Environment variables
 
 For the existing Docker stack, use [comdigi-compose](https://git.infai.org/n.radtke/comdigi-compose):
-copy its `.env.dist` to `.env`, set your credentials and AAT tenant ID, and use
-its documented local source mount. Start with `docker compose up -d`.
-Do not create a second stack for Adapt|OER.
+keep the original image-based deployment, existing `.env` and course mount.
+The image defaults to `/courses` and accepts the existing `SESSION_SECRET`
+(or `SESSION_KEY`) when no explicit `SECRET_KEY` is set. No source checkout,
+source mount or additional wrapper settings are needed on the Docker host.
+
+Once the tested image has been published as `aksw/adapt-oer:latest`, update only
+Adapt|OER:
+
+```sh
+docker compose pull adaptoer
+docker compose up -d --no-deps adaptoer
+```
+
+The image declares `/app/instance` as a Docker volume. Ordinary Compose image
+updates preserve the existing mounted volume; an explicit state bind/named
+volume at that path still takes precedence. **Do not use `down`/`up` or
+`--renew-anon-volumes` as the update procedure:** anonymous volumes are not
+automatically reattached after teardown. See Docker's [update semantics](https://docs.docker.com/reference/cli/docker/compose/up/)
+and [teardown limitations](https://docs.docker.com/reference/cli/docker/compose/down/).
+
+Before the first upgrade, preserve any existing registry/catalogue files from
+the old container and retain custom storage mounts/paths. Data in an old
+container's writable layer is not automatically moved into a new image volume.
+If the earlier development-only `/app` source bind was installed, remove that
+bind once: otherwise it hides the code shipped in the image.
 
 The tested `static/lxp-wrapper.zip` and matching SHA-256 are included. No separate
 LXP checkout, wrapper download/build or manual hash calculation is necessary.

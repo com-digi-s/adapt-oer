@@ -103,6 +103,33 @@ class DockerConfigurationTest(unittest.TestCase):
         for name, value in values.items():
             self.assertEqual(getattr(config, name), value)
 
+    def test_original_deployment_needs_no_new_environment_settings(self):
+        config = self.config({'SESSION_SECRET': 'existing-session-secret',
+                              'DB_HOST': 'db', 'MONGODB_PORT': '27017', 'DB_NAME': 'adapt'})
+        self.assertEqual(config.SECRET_KEY, 'existing-session-secret')
+        self.assertEqual(config.BUILDS_DIR, '/courses')
+        self.assertEqual(config.MONGO_URI, 'mongodb://db:27017/adapt')
+        self.assertEqual(config.LXP_WRAPPER_SHA256, BUNDLED_SHA256)
+        self.assertEqual(config.LXP_ORIGIN_ID, 'aat-local')
+
+    def test_secret_fallback_preserves_explicit_values_and_has_no_insecure_default(self):
+        self.assertEqual(self.config({'SECRET_KEY': 'explicit', 'SESSION_SECRET': 'session',
+                                      'SESSION_KEY': 'legacy'}).SECRET_KEY, 'explicit')
+        self.assertEqual(self.config({'SESSION_SECRET': 'session', 'SESSION_KEY': 'legacy'}).SECRET_KEY, 'session')
+        self.assertEqual(self.config({'SECRET_KEY': '', 'SESSION_SECRET': '', 'SESSION_KEY': 'legacy'}).SECRET_KEY, 'legacy')
+        self.assertIsNone(self.config().SECRET_KEY)
+
+    def test_default_course_mount_does_not_replace_configured_native_paths(self):
+        for value in ('/explicit/courses', '/native/course directory'):
+            self.assertEqual(self.config({'BUILDS_DIR': value}).BUILDS_DIR, value)
+        self.assertEqual(self.config({'BUILDS_DIR': ''}).BUILDS_DIR, '/courses')
+
+    def test_image_declares_only_its_default_state_directory_as_a_volume(self):
+        declarations = [json.loads(line.split(None, 1)[1])
+                        for line in (ROOT / 'Dockerfile').read_text().splitlines()
+                        if line.startswith('VOLUME ')]
+        self.assertEqual(declarations, [['/app/instance']])
+
     def test_native_example_matches_the_bundled_pin_and_persistence_paths(self):
         native = example_values(ROOT / 'credentials.env.dist')
         required = {'LXP_WRAPPER_ZIP', 'LXP_WRAPPER_SHA256', 'LXP_ORIGIN_ID', 'LXP_REGISTRY_PATH',

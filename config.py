@@ -1,7 +1,8 @@
 import os
 
 FLASK_ADMIN_SWATCH = 'cosmo'
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = (os.environ.get('SECRET_KEY') or os.environ.get('SESSION_SECRET')
+              or os.environ.get('SESSION_KEY'))
 MONGO_URI = 'mongodb://{}:{}/{}'.format(
     os.environ.get("DB_HOST"),
     os.environ.get("MONGODB_PORT"),
@@ -11,8 +12,9 @@ BABEL_DEFAULT_LOCALE = 'de'
 BABEL_DEFAULT_TIMEZONE = 'Europe/Berlin'
 USERNAME = os.environ.get("USER")
 PASSWORD = os.environ.get("PASS")
-BUILDS_DIR = os.path.expanduser("{}".format(
-    os.environ.get("BUILDS_DIR")))
+# The original Docker deployment already mounts published courses here.
+# Explicit native-installation paths remain authoritative.
+BUILDS_DIR = os.path.expanduser(os.environ.get('BUILDS_DIR') or '/courses')
 GLOSSARY_JSON = "./static/glossary.json"
 ADDITIONAL_COMPONENTS = "./static/additional_components.json"
 WTF_CSRF_ENABLED = True  # enables CSRF protection globally
