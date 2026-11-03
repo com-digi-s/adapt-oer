@@ -22,8 +22,8 @@ import test_multi_framework_export as fixtures
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLED_SHA256 = '322f281ad57bae275dae141f07c6bd1a4c41bce65e7b702c71975be313c16d32'
-UPSTREAM_COMMIT = '903429b527bf47241181e8dda9c7bb3992581960'
+BUNDLED_SHA256 = '72090b10614f6e8acb9bd9dad489c9d5f0e83fd50af4eade2d4cdce38d360017'
+UPSTREAM_COMMIT = 'ab1286b54e939c968262e03c919ed6595ebf3c5e'
 
 
 def load_module(name, path):
@@ -83,6 +83,7 @@ class DockerConfigurationTest(unittest.TestCase):
             capability, persistence = _validate_wrapper(directory)
             self.assertEqual(capability['capability'], 'multi-framework')
             self.assertEqual(capability['packageContract'], 'adapt-lxp-multi-framework@1')
+            self.assertEqual(capability['learningLinks'], 1)
             self.assertEqual(persistence['bootstrap'], 'parent.App.attachAdaptPersistence')
 
     def test_missing_or_empty_wrapper_environment_uses_the_included_pinned_artifact(self):
@@ -111,6 +112,18 @@ class DockerConfigurationTest(unittest.TestCase):
         self.assertEqual(config.MONGO_URI, 'mongodb://db:27017/adapt')
         self.assertEqual(config.LXP_WRAPPER_SHA256, BUNDLED_SHA256)
         self.assertEqual(config.LXP_ORIGIN_ID, 'aat-local')
+
+    def test_explicit_legacy_or_wrong_hash_is_not_silently_migrated(self):
+        for digest in ('6facc72c7e32528bf8d146fca928dc678968d4a6f876f1ace0d76b5d281a2c6b', 'a' * 64):
+            with self.subTest(digest=digest):
+                config = self.config({'LXP_WRAPPER_SHA256': digest})
+                self.assertEqual(config.LXP_WRAPPER_SHA256, digest)
+                source = fixtures.MixedPackageTest()
+                source.setUp()
+                self.addCleanup(source.doCleanups)
+                source.wrapper = ROOT / config.LXP_WRAPPER_ZIP
+                with self.assertRaisesRegex(PackageValidationError, 'wrapper SHA-256 mismatch'):
+                    source.prepare(expected_wrapper_sha256=config.LXP_WRAPPER_SHA256)
 
     def test_secret_fallback_preserves_explicit_values_and_has_no_insecure_default(self):
         self.assertEqual(self.config({'SECRET_KEY': 'explicit', 'SESSION_SECRET': 'session',

@@ -34,6 +34,7 @@ from lxp_diagnostics_articles import learning_source_view, restore_removed_nodes
 from lxp_assessment_selection import (normalize_assessment_options, select_questions,
     question_fingerprint, QUESTION_FINGERPRINT_FIELDS)
 from lxp_navigation import project_navigation, verify_navigation_inputs
+from lxp_learning_links import project_learning_links, verify_learning_links
 
 
 PHASE_TAG = {'entry': 'et', 'final': 'at'}
@@ -52,7 +53,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_learning_links.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
 def _validated_source_component_aliases(aliases):
@@ -244,6 +245,15 @@ def learning_compatibility_fingerprint(source):
         'course': node(source['course']),
         'completionConfig': {key: deepcopy(config[key]) for key in ('_completionCriteria', '_assessment', '_requireCompletionOf', '_isTrackable', '_questionWeight', '_spoor') if key in config}}
     return sha256_bytes(canonical_bytes(semantic))
+
+
+def _learning_link_sources(contract, sources):
+    frameworks = {framework['id']: framework for framework in contract['frameworks']}
+    modules = {module['id']: module for module in contract['modules']}
+    return [{**item, 'source': learning_source_view(item['source'])[0],
+             'framework': frameworks[item['sco']['frameworkId']],
+             'moduleNumber': modules[item['sco']['moduleId']]['number']}
+            for item in sources]
 
 
 def _manifest_launch(directory, resource_id=None):
@@ -838,10 +848,14 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
         contract['assessments'].sort(key=lambda a: (a['frameworkId'], a['phase']))
         report['diagnostics'] = {f['id']: f['diagnostics'] for f in contract['frameworks']}
         report['assessmentSelection'] = deepcopy(selection_summaries)
+        contract['learningLinks'] = project_learning_links(_learning_link_sources(contract, sources))
+        if contract['learningLinks'] and capability.get('learningLinks') != 1:
+            raise PackageValidationError('Der LXP-Wrapper unterstützt noch keine kursübergreifenden Weiterlernlinks. Bitte den aktuellen Wrapper verwenden.')
         preview = {'package': deepcopy(contract['package']), 'frameworks': deepcopy(contract['frameworks']),
                    'modules': deepcopy(contract['modules']), 'scos': deepcopy(contract['scos']),
                    'assessments': deepcopy(contract['assessments']), 'diagnostics': deepcopy(report['diagnostics']),
                    'assessmentSelection': deepcopy(selection_summaries),
+                   'learningLinks': deepcopy(contract['learningLinks']),
                    'navigationProjection': deepcopy(navigation['projection']),
                    'catalogueRevision': normalized_catalogue['revision'], 'catalogueSha256': catalogue_hash,
                    'configuredCatalogueSha256': configured_catalogue_hash,
@@ -1290,6 +1304,11 @@ def validate_product_contract(contract, root):
                 raise PackageValidationError('Invalid explicit glossary target references')
     if not any(s['role'] == 'learning' and s.get('requiredForCompletion') is True for s in scos.values()):
         raise PackageValidationError('Empty required learning-course set')
+    link_sources = [{'sco': sco, 'source': original_sources[sco['id']], 'frozen': root / sco['launch']['root']}
+                    for sco in scos.values() if sco['role'] == 'learning']
+    verify_learning_links(contract, _learning_link_sources(contract, link_sources))
+    if contract.get('learningLinks') and provenance.get('wrapperCapability', {}).get('learningLinks') != 1:
+        raise PackageValidationError('Wrapper unterstützt die gelieferten Weiterlernlinks nicht.')
     from lxp_assessment_validation import validate_assessment_selection
     validate_assessment_selection(contract, root, original_sources, provenance)
     return True

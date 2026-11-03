@@ -51,7 +51,12 @@ bind once: otherwise it hides the code shipped in the image.
 
 The tested `static/lxp-wrapper.zip` and matching SHA-256 are included. No separate
 LXP checkout, wrapper download/build or manual hash calculation is necessary.
-`static/lxp-wrapper-source.json` pins its upstream commit and original notices.
+`static/lxp-wrapper-source.json` pins its reviewed source commit and original
+notices. A locally reviewed successor may still require maintainer publication;
+the recorded commit and archive hash do not claim a registry or remote release.
+The bundled runtime supports framework-aware reading recommendations. Explicit
+wrapper paths and SHA-256 overrides remain authoritative; a new image does not
+silently migrate an explicitly configured older pin.
 
 For a native installation, [credentials.env.dist](credentials.env.dist) lists
 the supported settings, including wrapper, registry and catalogue paths. Supply
@@ -93,6 +98,32 @@ positive integer addresses, never decimal identities.
 This does not require a new AAT plugin. Registered native sources are a separate
 administrative path, not an arbitrary ZIP import. The explicit
 `aat-core-build-v1` adapter validates known manifestless Core publications.
+
+### Local Markdown recommendations and LXP destinations
+
+Keep authored recommendations as relative links to Markdown files in the
+Markledge project. The same files travel as normal AAT material. A linked file
+can explicitly identify its current LXP destination in its front matter:
+
+```yaml
+---
+lxp:framework: "DigComp"
+lxp:frameworkVersion: "2.2"
+lxp:course: "1.1"
+lxp:pageId: "the-verified-current-Adapt-page-id"
+---
+```
+
+Only these fields and optional `lxp:legacyPageId` are read; unrelated metadata
+stays untouched. The exporter requires the named course in the selected offer
+and checks that the exact current page is available. It never guesses old IDs
+or matches titles. The preview binds the resulting `learningLinks` to each
+material file's SHA-256; delivered-package validation reconstructs the mapping.
+Course JSON and files remain unchanged. Ordinary Markdown without these fields
+remains downloadable material. An older wrapper without `learningLinks: 1`
+cannot export this feature: update the wrapper first. In the current LXP,
+opening the recommendation switches course and framework through the normal
+launch controller, keeping each course's answers and progress separate.
 
 ### One course inventory: the actual AAT courses
 
