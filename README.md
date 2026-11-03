@@ -12,6 +12,22 @@ The image defaults to `/courses` and accepts the existing `SESSION_SECRET`
 (or `SESSION_KEY`) when no explicit `SECRET_KEY` is set. No source checkout,
 source mount or additional wrapper settings are needed on the Docker host.
 
+Image maintainers build a clean, reviewed checkout with its full commit recorded
+in the OCI metadata (a local build does not publish the image):
+
+```sh
+git status --short
+git rev-parse HEAD
+docker build --pull=false --build-arg VCS_REF=<full-reviewed-commit> --tag <approved-local-tag> .
+docker image inspect <approved-local-tag> --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'
+```
+
+Use the exact full commit printed above, not a guessed release label. Confirm
+the base image according to the deployment's own policy; `--pull=false` reuses
+the locally available Python base and is not a security-update procedure.
+The default revision `unknown` is deliberately not an approved release identity.
+Tag/push to the existing registry only through its authorized maintainer.
+
 Once the tested image has been published as `aksw/adapt-oer:latest`, update only
 Adapt|OER:
 

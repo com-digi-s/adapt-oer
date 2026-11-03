@@ -13,4 +13,8 @@ VOLUME ["/app/instance"]
 
 EXPOSE 5000
 
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.source="https://github.com/com-digi-s/adapt-oer" \
+      org.opencontainers.image.revision="${VCS_REF}"
+
 CMD ["python", "app.py"]

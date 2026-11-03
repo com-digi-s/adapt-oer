@@ -130,6 +130,13 @@ class DockerConfigurationTest(unittest.TestCase):
                         if line.startswith('VOLUME ')]
         self.assertEqual(declarations, [['/app/instance']])
 
+    def test_image_accepts_an_explicit_revision_without_runtime_configuration(self):
+        dockerfile = (ROOT / 'Dockerfile').read_text()
+        self.assertIn('ARG VCS_REF=unknown', dockerfile)
+        self.assertIn('org.opencontainers.image.revision="${VCS_REF}"', dockerfile)
+        self.assertIn('org.opencontainers.image.source="https://github.com/com-digi-s/adapt-oer"', dockerfile)
+        self.assertNotIn('ENV VCS_REF', dockerfile)
+
     def test_native_example_matches_the_bundled_pin_and_persistence_paths(self):
         native = example_values(ROOT / 'credentials.env.dist')
         required = {'LXP_WRAPPER_ZIP', 'LXP_WRAPPER_SHA256', 'LXP_ORIGIN_ID', 'LXP_REGISTRY_PATH',
