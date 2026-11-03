@@ -78,6 +78,29 @@ This does not require a new AAT plugin. Registered native sources are a separate
 administrative path, not an arbitrary ZIP import. The explicit
 `aat-core-build-v1` adapter validates known manifestless Core publications.
 
+### One course inventory: the actual AAT courses
+
+The course list and shared LXP export read the actual AAT `courses` collection,
+with the existing `_isShared` filter. There is no separate GUI inventory of
+published references. Courses must exist in AAT, be shared there, and have a
+current publication under `BUILDS_DIR/<course-id>/build`. Both the course list
+and export selection link directly to the corresponding AAT editor.
+
+The former `LXP_COURSES_COLLECTION` option is no longer used. A previous local
+reference inventory must be migrated explicitly to real AAT courses, preserving
+the verified source/question mappings and existing offer identities; merely
+copying reference metadata into `courses` does not create editable course content.
+
+When a verified source migration reallocates component IDs, a registry source
+may carry `sourceComponentAliases` (original component ID → current AAT ID).
+The public diagnostic selection accepts only this explicit, source-scoped map;
+question content fingerprints, domain and grading weight must still match.
+Ambiguous aliases and missing or changed reference questions are rejected.
+Aliases for still-present components are bound into the frozen package source
+provenance, so the delivered ZIP validates without access to the live registry.
+Historical aliases for normally deleted, unused components do not prevent a
+new export; deleting a required reference question still requires a new selection.
+
 ### Maintain frameworks in the GUI
 
 Use **Kompetenzrahmen verwalten** next to **LXP-Export** while signed in with

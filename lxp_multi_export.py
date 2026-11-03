@@ -55,7 +55,16 @@ def _generator_files():
     return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
-def _reference_question_identities(candidates, framework, phase):
+def _validated_source_component_aliases(aliases):
+    if (not isinstance(aliases, dict)
+            or any(not isinstance(old, str) or not old or not isinstance(new, str) or not new
+                   for old, new in aliases.items())
+            or len(set(aliases.values())) != len(aliases)):
+        raise PackageValidationError('Ungültige oder mehrdeutige Quellfragen-Zuordnung für die Referenzauswahl.')
+    return aliases
+
+
+def _reference_question_identities(candidates, framework, phase, *, source_component_aliases=None):
     """Bind the known public selection to actual, unchanged published questions."""
     reference = _read(Path(__file__).parent / 'static/assessment-reference-digcomp22.json')
     if (reference.get('format') != 'adapt-oer-assessment-reference' or reference.get('version') != 1
@@ -66,10 +75,25 @@ def _reference_question_identities(candidates, framework, phase):
     rows = selected.get('questions', [])
     if not rows or selected.get('expectedCount') != len(rows):
         raise PackageValidationError('Die geprüfte öffentliche Referenzauswahl ist unvollständig.')
-    by_address = {(row['moduleNumber'], row['courseNumber'], row['identity'][-1]): row for row in candidates}
+    # A normal AAT source import allocates new component IDs. Only an explicit,
+    # verified per-source migration map may bridge those IDs. Content hashes,
+    # domain and grading weight remain mandatory; no title/fuzzy hash fallback.
+    aliases_by_source = {} if source_component_aliases is None else source_component_aliases
+    if not isinstance(aliases_by_source, dict):
+        raise PackageValidationError('Ungültige Quellfragen-Zuordnung für die Referenzauswahl.')
+    for aliases in aliases_by_source.values():
+        _validated_source_component_aliases(aliases)
     identities = []
     for row in rows:
-        candidate = by_address.get((row['moduleNumber'], row['courseNumber'], row['sourceComponentId']))
+        matches = []
+        for item in candidates:
+            if (item['moduleNumber'], item['courseNumber']) != (row['moduleNumber'], row['courseNumber']):
+                continue
+            identity = item['identity']
+            aliases = aliases_by_source.get(_source_key({'originId': identity[0], 'courseId': identity[1]}), {})
+            if identity[-1] == row['sourceComponentId'] or aliases.get(row['sourceComponentId']) == identity[-1]:
+                matches.append(item)
+        candidate = matches[0] if len(matches) == 1 else None
         if (not candidate or candidate['fingerprint'] != row['questionSha256']
                 or candidate['domainId'] != row['domainId']
                 or candidate['effectiveQuestionWeight'] != row['effectiveQuestionWeight']):
@@ -665,6 +689,15 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 'componentFingerprint': learning_compatibility_fingerprint(source)}
             if 'questionDomains' in meta:
                 source_info['questionDomains'] = deepcopy(meta['questionDomains'])
+            if 'sourceComponentAliases' in previous:
+                aliases = _validated_source_component_aliases(previous['sourceComponentAliases'])
+                present = {node['_id'] for node in source['data']['components']}
+                # Bind the migration proof into the frozen contract/provenance,
+                # so independent delivered-ZIP validation needs no live registry.
+                # Keep historical aliases in the registry, but do not make a
+                # normally deleted, unused component block future authoring.
+                # A missing required reference question still fails selection.
+                source_info['sourceComponentAliases'] = {old: new for old, new in aliases.items() if new in present}
             if adapter:
                 source_info['launchAdapter'] = adapter
                 source_info['manifestOrigin'] = 'generated-aat-core-build'
@@ -741,7 +774,9 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 # Old API callers retain the unchanged full-pool/template policy.
                 selection_options = configured_options or {'mode': 'all', 'questionCount': None,
                     'equalSampling': False, 'showMarking': True, 'showModelAnswer': True}
-                reference = (_reference_question_identities(pool, framework, phase)
+                reference = (_reference_question_identities(pool, framework, phase,
+                    source_component_aliases={key: value['sourceComponentAliases']
+                        for key, value in registry['sources'].items() if 'sourceComponentAliases' in value})
                     if selection_options['mode'] == 'reference' else None)
                 chosen, summary = select_questions(pool, selection_options, framework, phase,
                     reference_identities=reference, include_available_questions=True)
@@ -1148,6 +1183,10 @@ def validate_product_contract(contract, root):
             from lxp_export import published_course
             published = published_course(root / prefix)
             original_sources[sco['id']] = _original_learning_source(published, root / prefix, sco, course_reports.get(sco['id']))
+            if 'sourceComponentAliases' in source:
+                aliases = _validated_source_component_aliases(source['sourceComponentAliases'])
+                if not set(aliases.values()) <= {node['_id'] for node in original_sources[sco['id']]['data']['components']}:
+                    raise PackageValidationError('Quellfragen-Zuordnung verweist nicht auf die tatsächliche AAT-Quelle.')
             if published['language'] != source['language'] or published['course'].get('title') != source['publishedTitle']:
                 raise PackageValidationError('Delivered published title/language differs from provenance')
             if source['kind'] == 'aat-published' and '_courseId' in published['config'] and published['config']['_courseId'] != source['courseId']:

@@ -66,6 +66,15 @@ from lxp_catalogue_admin import blueprint as catalogue_admin_blueprint
 app.register_blueprint(catalogue_admin_blueprint)
 
 
+def lxp_courses():
+    """The GUI has one inventory: actual AAT courses, with sharing filters.
+
+    Resolve the handle on every call so isolated databases cannot retain an
+    import-time handle. Published reference inventories are not authoring data.
+    """
+    return db.courses
+
+
 def lxp_catalogue():
     from lxp_catalogue_store import read_snapshot
     store = app.config.get('LXP_CATALOGUE_STORE_PATH')
@@ -124,7 +133,7 @@ def _lxp_selected(ids):
         raise ValueError('Bitte mindestens einen gültigen veröffentlichten Kurs auswählen; keine doppelten IDs.')
     # The same shared/authorization base query is retained, never replaced by
     # selection or a framework filter.
-    courses = list(db.courses.find({'$and': [{'_isShared': True}, {'_id': {'$in': [ObjectId(value) for value in ids]}}]}))
+    courses = list(lxp_courses().find({'$and': [{'_isShared': True}, {'_id': {'$in': [ObjectId(value) for value in ids]}}]}))
     if len(courses) != len(ids):
         raise ValueError('Ein gewählter Kurs ist nicht mehr freigegeben oder nicht zugänglich.')
     return sorted(courses, key=lambda course: str(course['_id']))
@@ -150,7 +159,7 @@ def _lxp_metadata(courses):
 
 def _lxp_navigation_sources():
     """Only explicitly shared publications can prove excluded link targets."""
-    courses = sorted(db.courses.find({'_isShared': True}), key=lambda course: str(course['_id']))
+    courses = sorted(lxp_courses().find({'_isShared': True}), key=lambda course: str(course['_id']))
     result = []
     for course, metadata in zip(courses, _lxp_metadata(courses)):
         build = pathlib.Path(app.config['BUILDS_DIR']) / str(course['_id']) / 'build'
@@ -556,7 +565,7 @@ def lxp_export_setup():
             if prepared:
                 prepared.close()
             flash('LXP-Export gestoppt: ' + str(error), 'error')
-    courses = list(db.courses.find({'_isShared': True}))
+    courses = list(lxp_courses().find({'_isShared': True}))
     courses.sort(key=assignment_sort_key)
     for course, source in zip(courses, _lxp_metadata(courses)):
         course['_lxp_required_key'] = source['originId'] + '::' + source['courseId']
@@ -1548,7 +1557,7 @@ class CourseView(MyModelView, metaclass=Meta):
     column_filters = [
         CustomFilter(column="tags", name="Tags",
             options=lambda: [(str(tag['_id']), tag['title']) for tag in db.tags.find()])
-    ] + [AssignmentFilter(column=key, name=label, courses=lambda: db.courses.find({'_isShared': True}),
+    ] + [AssignmentFilter(column=key, name=label, courses=lambda: lxp_courses().find({'_isShared': True}),
                          normalize=course_assignment, course_field='_id')
          for key, label in [('prefix', 'Kompetenzrahmen'), ('version', 'Rahmenfassung'), ('moduleNumber', 'Modul'), ('courseNumber', 'Kursnummer')]]
 
@@ -1562,8 +1571,18 @@ class CourseView(MyModelView, metaclass=Meta):
 
         return Markup('<span style="color:#999;" title="Noch nicht veröffentlicht">—</span>')
 
+    def editor_formatter(view, context, model, name):
+        label = model.get('displayTitle') or model.get('title') or 'Kurs im AAT öffnen'
+        domain = app.config.get('AUTHORING_DOMAIN')
+        if not domain:
+            return Markup('{}').format(label)
+        url = domain.rstrip('/') + '/#editor/' + str(model['_id'])
+        return Markup('<a data-aat-course-id="{}" href="{}" target="_blank" rel="noopener noreferrer">{}</a>').format(
+            str(model['_id']), url, label)
+
     column_formatters = {
-        'download': download_formatter
+        'download': download_formatter,
+        'displayTitle': editor_formatter
     }
 
     @action('batch_download', 'Kurse herunterladen', 'Ihr Download beginnt nach der Bestätigung. Laden Sie die Kurse in den Kurskonfigurator und schnüren Sie ein individuelles Lernpaket!')
@@ -1606,7 +1625,7 @@ class CourseView(MyModelView, metaclass=Meta):
 
     def get_query(self):
         # Fetch IDs of shared courses
-        shared_course_ids = [ObjectId(str(course['_id'])) for course in db.courses.find({'_isShared': True})]
+        shared_course_ids = [ObjectId(str(course['_id'])) for course in lxp_courses().find({'_isShared': True})]
 
         if hasattr(self, 'init_query') and self.init_query:
             return {'$and': [copy.deepcopy(self.init_query), {"_id": {"$in": shared_course_ids}}]}
@@ -2077,7 +2096,7 @@ class GlossaryView(BaseModelView):
 
 
 admin = Admin(app, name='ADAPT|OER', index_view=MyAdminIndexView(url='/admin'), template_mode='bootstrap4')
-admin.add_view(CourseView(db['courses'], 'Kurse'))
+admin.add_view(CourseView(lxp_courses(), 'Kurse', endpoint='coursesview'))
 admin.add_view(ContentsView(db['contentobjects'], 'Lerneinheiten'))
 admin.add_view(QuestionView(db['components'], 'Fragen', endpoint='questionsview'))
 admin.add_view(PresentationView(db['components'], 'Texte', endpoint='presentationview'))

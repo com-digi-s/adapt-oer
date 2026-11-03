@@ -110,7 +110,7 @@ def validate_assessment_selection(contract, root, original_sources, provenance):
     summaries = _read(path)
     if not isinstance(summaries, list) or not _same(summaries, provenance['assessmentSelection']):
         raise PackageValidationError('Assessment selection sidecar differs from its provenance')
-    from lxp_multi_export import _complete_selection_coverage, _reference_question_identities
+    from lxp_multi_export import _complete_selection_coverage, _reference_question_identities, _source_key
     catalogue = load_catalogue(root / 'lxp-catalogue.json')
     framework_configs = {framework['id']: framework for framework in catalogue['frameworks']}
     frameworks = {framework['id']: framework for framework in contract['frameworks']}
@@ -123,6 +123,8 @@ def validate_assessment_selection(contract, root, original_sources, provenance):
                        if framework['diagnostics'][phase]['intent'] != 'omit'}
     sources = [{'sco': scos[report['scoId']]} for report in provenance['courses']
                if report.get('scoId') in scos and scos[report['scoId']]['role'] == 'learning']
+    source_aliases = {_source_key(item['sco']['source']): item['sco']['source']['sourceComponentAliases']
+                     for item in sources if 'sourceComponentAliases' in item['sco']['source']}
     seen = set()
     for summary in summaries:
         if not isinstance(summary, dict):
@@ -145,7 +147,7 @@ def validate_assessment_selection(contract, root, original_sources, provenance):
         if normalize_overrides(options) and not has_inventory:
             raise PackageValidationError('Manual assessment selection requires the complete available question inventory')
         pool = _pool(contract, original_sources, sources, framework, phase)
-        reference = (_reference_question_identities(pool, framework, phase)
+        reference = (_reference_question_identities(pool, framework, phase, source_component_aliases=source_aliases)
                      if options.get('mode') == 'reference' else None)
         selected, expected = select_questions(pool, options, framework, phase, reference_identities=reference,
                                              include_available_questions=has_inventory)

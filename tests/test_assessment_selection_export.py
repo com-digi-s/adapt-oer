@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 from zipfile import ZipFile
 
 from lxp_catalogue import PackageValidationError, load_catalogue
@@ -109,3 +110,103 @@ class AssessmentSelectionExportTest(unittest.TestCase):
                 bad = deepcopy(candidates); mutate(bad)
                 with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
                     _reference_question_identities(bad, framework, phase)
+
+    def test_reimported_reference_questions_require_exact_source_scoped_aliases(self):
+        reference = json.loads((Path(__file__).resolve().parents[1] / 'static/assessment-reference-digcomp22.json').read_text())
+        framework = next(row for row in load_catalogue()['frameworks'] if row['prefix'] == 'DigComp')
+        for phase in ('entry', 'final'):
+            candidates, aliases = [], {}
+            rows = reference['phases'][phase]['questions']
+            for row in rows:
+                course = 'actual-' + row['moduleNumber'] + '.' + row['courseNumber']
+                source_key = json.dumps(['actual-aat', course], separators=(',', ':'))
+                current_id = 'imported-' + row['sourceComponentId']
+                aliases.setdefault(source_key, {})[row['sourceComponentId']] = current_id
+                candidates.append({'identity': ('actual-aat', course, current_id),
+                    'moduleNumber': row['moduleNumber'], 'courseNumber': row['courseNumber'],
+                    'fingerprint': row['questionSha256'], 'domainId': row['domainId'],
+                    'effectiveQuestionWeight': row['effectiveQuestionWeight']})
+            with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
+                _reference_question_identities(candidates, framework, phase)
+            result = _reference_question_identities(candidates, framework, phase, source_component_aliases=aliases)
+            self.assertEqual(result, [row['identity'] for row in candidates])
+            wrong_scope = {key.replace('actual-aat', 'another-aat'): value for key, value in aliases.items()}
+            with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
+                _reference_question_identities(candidates, framework, phase, source_component_aliases=wrong_scope)
+            for field, value in (('fingerprint', '0' * 64), ('domainId', 'wrong-domain'), ('effectiveQuestionWeight', 9)):
+                changed = deepcopy(candidates)
+                changed[0][field] = value
+                with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
+                    _reference_question_identities(changed, framework, phase, source_component_aliases=aliases)
+            # An old ID and an alias pointing to a second current candidate may
+            # never silently select one of two equally addressed questions.
+            duplicate = deepcopy(candidates[0])
+            duplicate['identity'] = (*duplicate['identity'][:2], rows[0]['sourceComponentId'])
+            with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
+                _reference_question_identities(candidates + [duplicate], framework, phase, source_component_aliases=aliases)
+            invalid = deepcopy(aliases)
+            first = next(iter(invalid))
+            invalid[first]['another-original-id'] = next(iter(invalid[first].values()))
+            with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl'):
+                _reference_question_identities(candidates, framework, phase, source_component_aliases=invalid)
+
+    def test_migrated_reference_aliases_survive_real_zip_build_and_independent_validation(self):
+        import lxp_multi_export as implementation
+        baseline = self.prepare(assessment_options=self.options())
+        pool = next(row for row in baseline.preview['assessmentSelection']
+                    if row['prefix'] == 'DigComp' and row['phase'] == 'entry')['availableQuestions']
+        source = self.fixture.metadata[0]
+        source_key = json.dumps([source['originId'], source['courseId']], separators=(',', ':'))
+        aliases = {'original-' + row['sourceComponentId']: row['sourceComponentId'] for row in pool}
+        registry = json.loads(self.fixture.registry.read_text())
+        registry['sources'][source_key]['sourceComponentAliases'] = {
+            **aliases, 'removed-unused-original': 'removed-unused-current'}
+        save(self.fixture.registry, registry)
+        reference = json.loads((Path(__file__).resolve().parents[1] / 'static/assessment-reference-digcomp22.json').read_text())
+        rows = [{'moduleNumber': '1', 'courseNumber': '1',
+                 'sourceComponentId': 'original-' + row['sourceComponentId'],
+                 'questionSha256': row['fingerprint'], 'domainId': row['domainId'],
+                 'effectiveQuestionWeight': 1} for row in pool[:2]]
+        reference['phases'] = {phase: {'expectedCount': 2, 'questions': deepcopy(rows)}
+                               for phase in ('entry', 'final')}
+        options = self.options()
+        for phase in ('entry', 'final'):
+            options['DigComp'][phase]['mode'] = 'reference'
+        original_read = implementation._read
+
+        def read_reference(path):
+            return deepcopy(reference) if Path(path).name == 'assessment-reference-digcomp22.json' else original_read(path)
+
+        with patch.object(implementation, '_read', side_effect=read_reference):
+            prepared = self.prepare(assessment_options=options)
+            # This executes the production ZIP builder AND its independent
+            # packaged-source assessment validator, not only the preflight.
+            output = build_multi_framework_export(prepared, confirmed_preflight_sha256=prepared.preflight_sha256)
+            delivered = self.fixture.root / 'delivered-alias-reference'
+            with ZipFile(output) as archive:
+                archive.extractall(delivered)
+            contract = json.loads((delivered / 'lxp-contract.json').read_text())
+            provenance = json.loads((delivered / 'package-provenance.json').read_text())
+            sco = next(row for row in contract['scos'] if row['role'] == 'learning'
+                       and row['source']['originId'] == source['originId'])
+            self.assertEqual(sco['source']['sourceComponentAliases'], aliases)
+            implementation.validate_product_contract(contract, delivered)
+            original_contract, original_provenance = deepcopy(contract), deepcopy(provenance)
+            for change in ('absent', 'wrong-existing-target', 'unknown-target'):
+                with self.subTest(change=change):
+                    contract, provenance = deepcopy(original_contract), deepcopy(original_provenance)
+                    sco = next(row for row in contract['scos'] if row['id'] == sco['id'])
+                    if change == 'absent':
+                        del sco['source']['sourceComponentAliases']
+                    else:
+                        mapping = sco['source']['sourceComponentAliases']
+                        first, third = list(aliases)[:3:2]
+                        if change == 'wrong-existing-target':
+                            mapping[first], mapping[third] = mapping[third], mapping[first]
+                        else:
+                            mapping[first] = 'not-in-the-actual-source'
+                    report = next(row for row in provenance['courses'] if row['scoId'] == sco['id'])
+                    report['source'] = deepcopy(sco['source'])
+                    save(delivered / 'package-provenance.json', provenance)
+                    with self.assertRaisesRegex(PackageValidationError, 'Referenzauswahl|Quellfragen-Zuordnung'):
+                        implementation.validate_product_contract(contract, delivered)
