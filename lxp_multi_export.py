@@ -53,7 +53,7 @@ def file_sha256(path):
 
 def _generator_files():
     base = Path(__file__).parent
-    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_learning_links.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
+    return {name: file_sha256(base / name) for name in ('adapt_persistence_bootstrap.py', 'lxp_catalogue.py', 'lxp_catalogue_courses.py', 'lxp_diagnostics_articles.py', 'lxp_export.py', 'lxp_multi_export.py', 'lxp_navigation.py', 'lxp_learning_links.py', 'lxp_presentation_compat.py', 'lxp_assessment_selection.py', 'lxp_assessment_overrides.py', 'lxp_assessment_validation.py', 'static/assessment-reference-digcomp22.json')}
 
 
 def _validated_source_component_aliases(aliases):
@@ -351,12 +351,11 @@ def _extract(path, destination):
         safe_extract(archive, destination)
 
 
-def _validate_wrapper(directory):
+def _validate_wrapper_runtime(directory):
+    """Validate actual wrapper runtime bytes, including an already packaged root."""
     root = Path(directory)
     if not (root / 'index.html').is_file() or not (root / 'config.json').is_file():
         raise PackageValidationError('LXP wrapper must contain index.html and config.json at its root')
-    if (root / 'scos').exists() or (root / 'lxp-contract.json').exists():
-        raise PackageValidationError('LXP wrapper must not contain prepackaged SCOs or a stale product contract')
     persistence_path = root / 'adapt-persistence-contract.json'
     if not persistence_path.is_file():
         raise PackageValidationError('LXP wrapper lacks persistence contract v1')
@@ -389,6 +388,16 @@ def _validate_wrapper(directory):
     if 'attachAdaptPersistence' not in app or not contract_loader or 'frameworkId' not in implementation or 'assessmentId' not in implementation:
         raise PackageValidationError('Capability declaration does not match a multi-framework implementation')
     return capability, persistence
+
+
+def _validate_wrapper(directory):
+    root = Path(directory)
+    # Preserve the wrapper-only refusal and its historical error ordering.
+    if not (root / 'index.html').is_file() or not (root / 'config.json').is_file():
+        raise PackageValidationError('LXP wrapper must contain index.html and config.json at its root')
+    if (root / 'scos').exists() or (root / 'lxp-contract.json').exists():
+        raise PackageValidationError('LXP wrapper must not contain prepackaged SCOs or a stale product contract')
+    return _validate_wrapper_runtime(root)
 
 
 def _metadata_for(builds, source_metadata):
@@ -1183,6 +1192,8 @@ def validate_product_contract(contract, root):
             raise PackageValidationError('SCO target directories collide or overlap')
         roots.append(prefix)
         source = sco.get('source', {})
+        if sco.get('role') != 'learning' and 'presentationCompatibility' in source:
+            raise PackageValidationError('Presentation compatibility aliases are not permitted on generated assessments')
         if not SHA.fullmatch(source.get('buildSha256', '')):
             raise PackageValidationError('Missing actual source build SHA-256')
         manifest, actual_entry = _manifest_launch(root / prefix, source.get('manifest', {}).get('resourceId'))
@@ -1207,6 +1218,15 @@ def validate_product_contract(contract, root):
                 raise PackageValidationError('Delivered AAT _courseId differs from source provenance')
             if source.get('componentFingerprint') != learning_compatibility_fingerprint(published):
                 raise PackageValidationError('Delivered learning content/completion hierarchy differs from original source')
+            if 'presentationCompatibility' in source:
+                capability = provenance.get('wrapperCapability', {})
+                actual_capability, _ = _validate_wrapper_runtime(root)
+                if (canonical_bytes(capability) != canonical_bytes(actual_capability) or type(capability.get('presentationCompatibility')) is not int
+                        or capability.get('presentationCompatibility') != 1):
+                    raise PackageValidationError('Wrapper lacks verified presentation compatibility capability v1')
+                from lxp_presentation_compat import validate_presentation_compatibility
+                validate_presentation_compatibility(source['presentationCompatibility'], root, sco,
+                    contract['package']['id'], published, learning_compatibility_fingerprint)
             if not isinstance(sco.get('requiredForCompletion'), bool):
                 raise PackageValidationError('Learning completion requirement must be boolean')
             address = (sco['frameworkId'], sco['moduleId'], sco['number'])
