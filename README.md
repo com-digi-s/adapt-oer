@@ -54,7 +54,9 @@ LXP checkout, wrapper download/build or manual hash calculation is necessary.
 `static/lxp-wrapper-source.json` pins its reviewed source commit and original
 notices. A locally reviewed successor may still require maintainer publication;
 the recorded commit and archive hash do not claim a registry or remote release.
-The bundled runtime supports framework-aware reading recommendations. Explicit
+The bundled runtime supports framework-aware reading recommendations, readable
+course navigation and proven presentation-only progress compatibility. Closed
+native course controllers are released after their final state flush. Explicit
 wrapper paths and SHA-256 overrides remain authoritative; a new image does not
 silently migrate an explicitly configured older pin.
 

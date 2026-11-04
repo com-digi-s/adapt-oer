@@ -2,11 +2,11 @@
   "format": "adapt-oer-bundled-lxp-wrapper",
   "version": 1,
   "sourceRepository": "https://github.com/com-digi-s/adapt-lxp",
-  "sourceCommit": "ab1286b54e939c968262e03c919ed6595ebf3c5e",
+  "sourceCommit": "44590b31a75a3496e63480d096268cfdc95ef1a0",
   "sourceDirectory": "dist",
-  "sourceDirectoryGitTree": "592fc93a3358dc746a00973cc4676faab361c0cb",
+  "sourceDirectoryGitTree": "a9cbca1021de1cdf89023e408c2ffc8042397521",
   "additionalUpstreamNotices": ["LICENSE", "libraries/react-bootstrap.min.js.LICENSE.txt"],
   "archive": "lxp-wrapper.zip",
-  "sha256": "72090b10614f6e8acb9bd9dad489c9d5f0e83fd50af4eade2d4cdce38d360017",
+  "sha256": "b9798216102fa72abe492820100c768faf7581342c3cceb963dff0cd79c2e237",
   "buildCommand": "python3 tools/build_lxp_wrapper.py ../adapt-lxp/dist"
 }

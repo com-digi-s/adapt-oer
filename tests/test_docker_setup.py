@@ -22,8 +22,8 @@ import test_multi_framework_export as fixtures
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLED_SHA256 = '72090b10614f6e8acb9bd9dad489c9d5f0e83fd50af4eade2d4cdce38d360017'
-UPSTREAM_COMMIT = 'ab1286b54e939c968262e03c919ed6595ebf3c5e'
+BUNDLED_SHA256 = 'b9798216102fa72abe492820100c768faf7581342c3cceb963dff0cd79c2e237'
+UPSTREAM_COMMIT = '44590b31a75a3496e63480d096268cfdc95ef1a0'
 
 
 def load_module(name, path):
@@ -84,6 +84,7 @@ class DockerConfigurationTest(unittest.TestCase):
             self.assertEqual(capability['capability'], 'multi-framework')
             self.assertEqual(capability['packageContract'], 'adapt-lxp-multi-framework@1')
             self.assertEqual(capability['learningLinks'], 1)
+            self.assertEqual(capability['presentationCompatibility'], 1)
             self.assertEqual(persistence['bootstrap'], 'parent.App.attachAdaptPersistence')
 
     def test_missing_or_empty_wrapper_environment_uses_the_included_pinned_artifact(self):

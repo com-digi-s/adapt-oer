@@ -22,7 +22,7 @@ AUTHORING_DOMAIN = os.environ.get("AUTHORING_DOMAIN")
 # A pinned, tested wrapper ships with the application; no extra download/build.
 # A custom wrapper must match its separately configured SHA-256.
 LXP_WRAPPER_ZIP = os.environ.get('LXP_WRAPPER_ZIP') or './static/lxp-wrapper.zip'
-LXP_WRAPPER_SHA256 = os.environ.get('LXP_WRAPPER_SHA256') or '72090b10614f6e8acb9bd9dad489c9d5f0e83fd50af4eade2d4cdce38d360017'
+LXP_WRAPPER_SHA256 = os.environ.get('LXP_WRAPPER_SHA256') or 'b9798216102fa72abe492820100c768faf7581342c3cceb963dff0cd79c2e237'
 LXP_WRAPPER_URL = os.environ.get('LXP_WRAPPER_URL', 'https://github.com/com-digi-s/adapt-lxp/archive/refs/heads/main.zip')
 LXP_CATALOGUE = os.environ.get('LXP_CATALOGUE')
 # Separate writable override; the configured source catalogue stays read-only.
