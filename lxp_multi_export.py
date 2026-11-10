@@ -726,6 +726,25 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
             sco = {'id': sco_id, 'frameworkId': framework['id'], 'moduleId': mapping['moduleId'], 'number': mapping['courseNumber'],
                 'role': 'learning', 'requiredForCompletion': required, 'label': mapping['label'], 'source': source_info,
                 'launch': {'root': 'scos/' + sco_id, 'entry': entry, 'manifestHref': manifest['href']}}
+            if 'presentationCompatibilityProofs' in previous:
+                from lxp_presentation_compat import RULE, registered_proof_payloads, validate_presentation_compatibility
+                learning, _ = learning_source_view(source)
+                identity = {'packageId': package_id, 'scoId': sco_id,
+                            'originId': meta['originId'], 'courseId': meta['courseId']}
+                payloads = registered_proof_payloads(previous['presentationCompatibilityProofs'],
+                    learning, identity, learning_compatibility_fingerprint)
+                if payloads:
+                    if type(capability.get('presentationCompatibility')) is not int or capability['presentationCompatibility'] != 1:
+                        raise PackageValidationError('Wrapper lacks verified presentation compatibility capability v1')
+                    for relative, raw, _ in payloads:
+                        target = frozen / relative
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        with target.open('xb') as stream:
+                            stream.write(raw)
+                    source_info['presentationCompatibility'] = {'version': 1, 'rule': RULE,
+                        'proofs': [record for _, _, record in payloads]}
+                    validate_presentation_compatibility(source_info['presentationCompatibility'], frozen,
+                        sco, package_id, learning, learning_compatibility_fingerprint)
             contract['scos'].append(sco)
             if not any(m['id'] == mapping['moduleId'] for m in contract['modules']):
                 contract['modules'].append({'id': mapping['moduleId'], 'frameworkId': framework['id'], 'number': mapping['moduleNumber'], 'label': mapping['moduleLabel']})
@@ -1062,6 +1081,19 @@ def build_multi_framework_export(prepared, *, confirmed_preflight_sha256, source
                     'generatorSha256': _generator_sha256()})
             course_report['copyChanges'].extend(json_changes)
             course_report['deliveredFileManifest'] = tree_manifest(target)
+            if 'presentationCompatibility' in item['sco']['source']:
+                from lxp_presentation_compat import _read_proof, validate_presentation_compatibility
+                metadata = item['sco']['source']['presentationCompatibility']
+                validate_presentation_compatibility(metadata, frozen, item['sco'],
+                    prepared.contract['package']['id'], learning, learning_compatibility_fingerprint)
+                for record in metadata['proofs']:
+                    raw = _read_proof(frozen, record['path'])
+                    if sha256_bytes(raw) != record['sha256']:
+                        raise PackageValidationError('Frozen presentation proof changed since preview')
+                    proof_target = root / record['path']
+                    proof_target.parent.mkdir(parents=True, exist_ok=True)
+                    with proof_target.open('xb') as stream:
+                        stream.write(raw)
         for sco in prepared.contract['scos']:
             if sco['role'] != 'learning':
                 source = frozen / 'generated' / sco['id']

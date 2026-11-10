@@ -1,4 +1,4 @@
-"""Bounded, replayable proofs for two explicit Markledge display changes.
+"""Bounded, replayable proofs for explicit Markledge display changes.
 
 Learning fingerprints remain unchanged. This module never writes sources or a
 registry, and never equates content by stripping presentation-looking keys.
@@ -198,6 +198,11 @@ def _replay(previous, current):
                 old["_graphic"] = deepcopy(new["_graphic"])
             else:
                 _require(False, "real content or unsupported presentation field changed")
+    old_menu, new_menu = replayed["course"].get("_boxMenu"), current["course"].get("_boxMenu")
+    if isinstance(old_menu, dict) and isinstance(new_menu, dict) and not _same(old_menu, new_menu):
+        old_graphic, new_graphic = old_menu.get("_graphic"), new_menu.get("_graphic")
+        _require(_graphic(old_graphic) and _graphic(new_graphic), "not an eligible existing course cover replacement")
+        old_menu["_graphic"] = deepcopy(new_graphic)
     _require(_same(replayed, current), "course/config/language/content differs after exact replay")
     _require(len(rows) <= MAX_COMPONENT_TITLES, "too many component title changes")
     return rows
@@ -216,6 +221,42 @@ def build_proof(previous_source, current_source, identity, fingerprint_fn):
                 "componentDisplayTitles": rows}
     _require(len(canonical_bytes(envelope)) <= MAX_PROOF_BYTES, "proof exceeds 2 MiB")
     return envelope, deepcopy(rows)
+
+
+def registered_proof_payloads(registrations, current_source, identity, fingerprint_fn):
+    """Replay explicit package-scoped registry envelopes; return frozen payloads.
+
+    Other offers and content revisions do not inherit these aliases. Historical
+    proofs remain available for learners skipping an unchanged-content release.
+    This function does not write the source, registry or package.
+    """
+    context = _identity(identity)
+    _require(isinstance(registrations, dict) and 1 <= len(registrations) <= 8
+             and all(_text(package, 1024) and isinstance(targets, dict) and 1 <= len(targets) <= 8
+                     and all(isinstance(target, str) and _SHA.fullmatch(target) and isinstance(values, list)
+                             and 1 <= len(values) <= MAX_PROOFS for target, values in targets.items())
+                     for package, targets in registrations.items()), "invalid package/target-scoped registry proof map")
+    _json_data(registrations)
+    _require(len(canonical_bytes(registrations)) <= 8 * MAX_PROOF_BYTES, "registry proof map exceeds 16 MiB")
+    current_fingerprint = fingerprint_fn(current_source)
+    result, seen = [], set()
+    for envelope in registrations.get(context["packageId"], {}).get(current_fingerprint, []):
+        _require(isinstance(envelope, dict) and set(envelope) == _ENVELOPE
+                 and envelope.get("identity") == context, "registry proof identity/fields differ")
+        _json_data(envelope)
+        _require(len(canonical_bytes(envelope)) <= MAX_PROOF_BYTES, "registry proof exceeds 2 MiB")
+        rebuilt, rows = build_proof(envelope["previousSource"], current_source, context, fingerprint_fn)
+        _require(envelope.get("currentFingerprint") == current_fingerprint and _same(envelope, rebuilt),
+                 "altered registry proof or target fingerprint differs")
+        previous = rebuilt["previousFingerprint"]
+        _require(previous not in seen, "duplicate registry fingerprint alias")
+        seen.add(previous)
+        raw = canonical_bytes(rebuilt)
+        relative = proof_path(context["scoId"], previous)
+        record = {"previousFingerprint": previous, "path": relative,
+                  "sha256": hashlib.sha256(raw).hexdigest(), "componentDisplayTitles": rows}
+        result.append((relative, raw, record))
+    return result
 
 
 def _read_proof(root, relative):
