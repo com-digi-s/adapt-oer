@@ -68,6 +68,8 @@ class RegisteredProofTest(unittest.TestCase):
 
 
 class NormalExportProofTest(unittest.TestCase):
+    old_asset = 'b' * 40 + '.png'
+    new_asset = 'a' * 40 + '.png'
     setUp = fixtures.MixedPackageTest.setUp
     write_wrapper = fixtures.MixedPackageTest.write_wrapper
     add_source = fixtures.MixedPackageTest.add_source
@@ -85,25 +87,29 @@ class NormalExportProofTest(unittest.TestCase):
                 archive.writestr(name, data)
         build = self.builds[0]
         previous = published_course(build)
-        previous['course']['_boxMenu'] = {'_graphic': {'_src': 'course/de/assets/old.png', 'alt': 'Old'}}
+        previous['course']['_boxMenu'] = {'_graphic': {'_src': 'course/de/assets/' + self.old_asset, 'alt': 'Old'}}
         graph = previous['data']
         graph['contentObjects'][0].update(_markledgeMenuContent={'_sourceKey': 'A/lesson.md'},
-                                         _graphic={'src': 'course/de/assets/old.png', 'alt': 'Old'})
+                                         _graphic={'src': 'course/de/assets/' + self.old_asset, 'alt': 'Old'})
         for name, kind in [('articles', 'article'), ('blocks', 'block'), ('components', 'component')]:
             for row in graph[name]:
                 row['_type'] = kind
-        for name in ('old.png',):
+        for name in (self.old_asset,):
             file = build / 'course/de/assets' / name
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_bytes(b'fixture ' + name.encode())
+        inventory = {self.old_asset: {'title': self.old_asset, 'description': self.old_asset, 'tags': []}}
+        fixtures.save(build / 'course/de/assets.json', inventory)
         self.save_source(build, previous)
         baseline = self.prepare()
         self.baseline_contract = deepcopy(baseline.contract)
         sco = next(s for s in baseline.contract['scos'] if s.get('source', {}).get('originId') == 'tenant-a')
         current = deepcopy(previous)
-        current['course']['_boxMenu']['_graphic']['_src'] = 'course/de/assets/new.png'
-        current['data']['contentObjects'][0]['_graphic']['src'] = 'course/de/assets/new.png'
-        (build / 'course/de/assets/new.png').write_bytes(b'new thumbnail fixture')
+        current['course']['_boxMenu']['_graphic']['_src'] = 'course/de/assets/' + self.new_asset
+        current['data']['contentObjects'][0]['_graphic']['src'] = 'course/de/assets/' + self.new_asset
+        (build / 'course/de/assets' / self.new_asset).write_bytes(b'new thumbnail fixture')
+        inventory[self.new_asset] = {'title': 'New course thumbnail', 'description': 'Editorial illustration', 'tags': []}
+        fixtures.save(build / 'course/de/assets.json', inventory)
         self.save_source(build, current)
         identity = {'packageId': baseline.contract['package']['id'], 'scoId': sco['id'],
                     'originId': sco['source']['originId'], 'courseId': sco['source']['courseId']}
@@ -137,11 +143,11 @@ class NormalExportProofTest(unittest.TestCase):
         with self.export(repeated) as archive:
             for test in (s for s in contract['scos'] if s['role'] != 'learning'):
                 prefix = test['launch']['root'] + '/course/en/assets/'
-                self.assertFalse(any(name.startswith(prefix) and name.endswith('/new.png') for name in archive.namelist()))
+                self.assertFalse(any(name.startswith(prefix) and name.endswith('/' + self.new_asset) for name in archive.namelist()))
             learning_root = sco['launch']['root']
-            self.assertIn(learning_root + '/course/de/assets/new.png', archive.namelist())
+            self.assertIn(learning_root + '/course/de/assets/' + self.new_asset, archive.namelist())
             old_test = next(s for s in contract['scos'] if s['role'] != 'learning' and s['frameworkId'] == sco['frameworkId'])
-            self.assertIn(old_test['launch']['root'] + '/course/en/assets/' + sco['id'] + '/course/old.png', archive.namelist())
+            self.assertIn(old_test['launch']['root'] + '/course/en/assets/' + sco['id'] + '/course/' + self.old_asset, archive.namelist())
 
     def test_tampered_frozen_proof_never_builds(self):
         prepared, _ = self.registered_transition()
@@ -160,7 +166,7 @@ class NormalExportProofTest(unittest.TestCase):
         self.assertFalse(any('presentationCompatibility' in s['source'] for s in prepared.contract['scos']))
         with self.export(prepared) as archive:
             self.assertFalse(any(name.startswith('presentation-compatibility/') for name in archive.namelist()))
-            self.assertTrue(any('/course/en/assets/' in name and name.endswith('/new.png') for name in archive.namelist()))
+            self.assertTrue(any('/course/en/assets/' in name and name.endswith('/' + self.new_asset) for name in archive.namelist()))
 
     def test_another_offer_can_use_the_sources_without_inheriting_alias(self):
         self.registered_transition()

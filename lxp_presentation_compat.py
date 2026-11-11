@@ -308,6 +308,37 @@ def registered_proof_payloads(registrations, current_source, identity, fingerpri
     return result
 
 
+def _asset_inventory_references(text, directory):
+    """Keep metadata references, but not a native AAT inventory's own filenames.
+
+    AAT emits course/<language>/assets.json beside the asset directory. Its
+    keys enumerate uploaded files; that listing is not a use by a question.
+    Unknown shapes, missing files and nontrivial metadata references stay
+    conservative. This does not alter or omit the source inventory itself.
+    """
+    if len(text) > MAX_PROOF_BYTES or not directory.is_dir() or directory.is_symlink():
+        return text
+    try:
+        entries = json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)
+    except (ValueError, PackageValidationError, RecursionError):
+        return text
+    if not isinstance(entries, dict) or not entries:
+        return text
+    for name, record in entries.items():
+        if (not re.fullmatch(r'[0-9a-f]{40}\.[A-Za-z0-9_-]+', name)
+                or not isinstance(record, dict) or set(record) != {'title', 'description', 'tags'}
+                or not all(isinstance(record[key], str) for key in ('title', 'description'))
+                or not isinstance(record['tags'], list) or not all(isinstance(tag, str) for tag in record['tags'])
+                or not (directory / name).is_file() or (directory / name).is_symlink()):
+            return text
+    references = [{key: value for key, value in record.items()
+                   if not (key in {'title', 'description'} and value == name)} for name, record in entries.items()]
+    try:
+        return canonical_bytes(references).decode('utf-8')
+    except (UnicodeError, ValueError):
+        return text
+
+
 def diagnostic_menu_asset_exclusions(full_source, learning_source, payloads, identity, fingerprint_fn):
     """Omit newly introduced, proved menu-only raster files from quiz copies.
 
@@ -378,7 +409,10 @@ def diagnostic_menu_asset_exclusions(full_source, learning_source, payloads, ide
         size += file.stat().st_size
         if size > 64 * 1024 * 1024 or file.is_symlink():
             return frozenset()  # Uncertain/oversized source: keep the usual full copy.
-        runtime_text.append(unquote(unquote(unescape(file.read_text(encoding='utf-8', errors='replace')))).casefold())
+        text = file.read_text(encoding='utf-8', errors='replace')
+        if relative == 'course/' + snapshot['language'] + '/assets.json':
+            text = _asset_inventory_references(text, file.parent / 'assets')
+        runtime_text.append(unquote(unquote(unescape(text))).casefold())
     excluded = set()
     for url, permitted in candidates.items():
         filename = url.rsplit('/', 1)[-1].casefold()

@@ -114,6 +114,44 @@ class DiagnosticMenuAssetsTest(unittest.TestCase):
         self.write('adapt/css/theme.css', b'.cover { background: url(../../course/de/assets/new.png) }')
         self.assertEqual(self.exclusions(), set())
 
+    def native_inventory(self):
+        filename = 'd7bc1515f6333520e1fff7aaed866206a0c76c63.png'
+        path = 'course/de/assets/' + filename
+        self.current['course']['_boxMenu']['_graphic']['_src'] = path
+        self.current['data']['contentObjects'][0]['_graphic']['src'] = path
+        self.write(path, b'native PNG fixture')
+        return filename, {filename: {'title': 'Editorial course illustration',
+            'description': 'New menu graphic', 'tags': []}}
+
+    def test_native_aat_asset_inventory_is_not_a_question_reference(self):
+        filename, inventory = self.native_inventory()
+        for record in (inventory[filename], {'title': filename, 'description': filename, 'tags': []}):
+            self.write('course/de/assets.json', json.dumps({filename: record}).encode())
+            self.assertEqual(self.exclusions(), {'course/' + filename})
+        self.assertTrue((self.root / 'course/de/assets.json').is_file())
+
+    def test_inventory_nontrivial_metadata_references_still_retain_asset(self):
+        filename, inventory = self.native_inventory()
+        for key, value in (('title', 'See ' + filename), ('description', 'course/de/assets/' + filename),
+                           ('tags', [filename])):
+            changed = deepcopy(inventory)
+            changed[filename][key] = value
+            self.write('course/de/assets.json', json.dumps(changed).encode())
+            with self.subTest(key=key):
+                self.assertEqual(self.exclusions(), set())
+
+    def test_unknown_inventory_shape_location_missing_file_or_duplicate_key_is_not_ignored(self):
+        filename, inventory = self.native_inventory()
+        unknown = deepcopy(inventory); unknown[filename]['body'] = filename
+        missing = deepcopy(inventory); missing['e' * 40 + '.png'] = {'title': '', 'description': '', 'tags': []}
+        duplicate = ('{"' + filename + '":' + json.dumps(inventory[filename]) + ',"' + filename + '":' + json.dumps(inventory[filename]) + '}').encode()
+        for raw in (json.dumps(unknown).encode(), json.dumps(missing).encode(), duplicate):
+            self.write('course/de/assets.json', raw)
+            self.assertEqual(self.exclusions(), set())
+        self.write('course/de/assets.json', json.dumps(inventory).encode())
+        self.write('course/de/other/assets.json', json.dumps(inventory).encode())
+        self.assertEqual(self.exclusions(), set())
+
     def test_root_assets_supported_but_unknown_alias_and_svg_not_filtered(self):
         for target, expected in [('assets/root.webp', {'root/root.webp'}), ('course/assets/alias.png', set()),
                                  ('course/de/assets/vector.svg', set())]:
