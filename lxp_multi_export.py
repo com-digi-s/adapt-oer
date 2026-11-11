@@ -726,8 +726,10 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
             sco = {'id': sco_id, 'frameworkId': framework['id'], 'moduleId': mapping['moduleId'], 'number': mapping['courseNumber'],
                 'role': 'learning', 'requiredForCompletion': required, 'label': mapping['label'], 'source': source_info,
                 'launch': {'root': 'scos/' + sco_id, 'entry': entry, 'manifestHref': manifest['href']}}
+            diagnostic_asset_exclusions = frozenset()
             if 'presentationCompatibilityProofs' in previous:
-                from lxp_presentation_compat import RULE, registered_proof_payloads, validate_presentation_compatibility
+                from lxp_presentation_compat import (RULE, registered_proof_payloads,
+                    validate_presentation_compatibility, diagnostic_menu_asset_exclusions)
                 learning, _ = learning_source_view(source)
                 identity = {'packageId': package_id, 'scoId': sco_id,
                             'originId': meta['originId'], 'courseId': meta['courseId']}
@@ -745,11 +747,14 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                         'proofs': [record for _, _, record in payloads]}
                     validate_presentation_compatibility(source_info['presentationCompatibility'], frozen,
                         sco, package_id, learning, learning_compatibility_fingerprint)
+                    diagnostic_asset_exclusions = diagnostic_menu_asset_exclusions(
+                        source, learning, payloads, identity, learning_compatibility_fingerprint)
             contract['scos'].append(sco)
             if not any(m['id'] == mapping['moduleId'] for m in contract['modules']):
                 contract['modules'].append({'id': mapping['moduleId'], 'frameworkId': framework['id'], 'number': mapping['moduleNumber'], 'label': mapping['moduleLabel']})
             sources.append({'original': build, 'frozen': frozen_build, 'hash': original_hash, 'metadata': meta,
-                            'source': source, 'sco': sco, 'mappingChanged': changed, 'derivedManifest': derived_manifest})
+                            'source': source, 'sco': sco, 'mappingChanged': changed, 'derivedManifest': derived_manifest,
+                            'diagnosticAssetExclusions': diagnostic_asset_exclusions})
             report['courses'].append({'scoId': sco_id, 'source': deepcopy(source_info), 'mapping': binding,
                                      'mappingChanged': changed, 'fileManifest': tree_manifest(frozen_build), 'copyChanges': []})
         if not any(s['requiredForCompletion'] for s in contract['scos']):
@@ -863,7 +868,9 @@ def _prepare_multi_framework_export(builds, wrapper_path, template_path, *, sour
                 continue
             target = frozen / 'generated' / sco['id']
             bootstrap = make_quiz(target, frozen / 'template.zip', candidates[sco['id']], sco['label'],
-                assessment_options=quiz_options[sco['id']])
+                assessment_options=quiz_options[sco['id']],
+                excluded_assets={item['sco']['id']: item['diagnosticAssetExclusions'] for item in sources
+                    if item['diagnosticAssetExclusions'] and item['sco']['id'] in {row[3] for row in candidates[sco['id']]}})
             manifest, entry = _manifest_launch(target)
             sco['launch'].update(entry=entry, manifestHref=manifest['href'])
             sco['source'].update(buildSha256=tree_sha256(target), manifest=manifest)

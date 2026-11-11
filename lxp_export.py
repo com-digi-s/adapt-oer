@@ -266,12 +266,19 @@ def remove_oer_helper(data):
         data[name] = [item for item in items if item['_id'] not in removed]
 
 
-def make_quiz(destination, template_path, candidates, title, *, assessment_options=None):
+def make_quiz(destination, template_path, candidates, title, *, assessment_options=None, excluded_assets=None):
     if not candidates:
         raise PackageValidationError(title + ' contains no supported graded questions. Mark actual question components with et/at and publish again.')
     if assessment_options is not None and (not isinstance(assessment_options, dict)
             or any(type(assessment_options.get(key)) is not bool for key in ('showMarking', 'showModelAnswer'))):
         raise PackageValidationError('Assessment marking options must be explicit booleans')
+    excluded_assets = {} if excluded_assets is None else excluded_assets
+    namespaces = {candidate[3] for candidate in candidates}
+    if (not isinstance(excluded_assets, dict) or not set(excluded_assets) <= namespaces
+            or any(not isinstance(paths, (set, frozenset, list, tuple)) or any(not isinstance(path, str)
+                or not re.fullmatch(r'(?:course|root)/[A-Za-z0-9_.-]+\.(?:png|jpe?g|gif|webp|avif)', path)
+                for path in paths) for paths in excluded_assets.values())):
+        raise PackageValidationError('Invalid exact diagnostic asset exclusions')
     capabilities = validate_assessment_template(template_path)
     with ZipFile(template_path) as archive:
         # The manifest qualifies the input template. Keep generated SCO bytes
@@ -334,7 +341,13 @@ def make_quiz(destination, template_path, candidates, title, *, assessment_optio
                        '_assessment': {'_quizBankID': bank}})
         for asset_type, source_path in [('course', source['build'] / 'course' / source['language'] / 'assets'), ('root', source['build'] / 'assets')]:
             if source_path.is_dir():
-                shutil.copytree(source_path, directory / 'assets' / namespace / asset_type, dirs_exist_ok=True)
+                excluded = excluded_assets.get(namespace, ())
+                def ignore(folder, names):
+                    relative = Path(folder).relative_to(source_path)
+                    return [name for name in names if asset_type + '/' + (relative / name).as_posix() in excluded
+                            and (Path(folder) / name).is_file() and not (Path(folder) / name).is_symlink()]
+                shutil.copytree(source_path, directory / 'assets' / namespace / asset_type,
+                                dirs_exist_ok=True, ignore=ignore if excluded else None)
     result_block['_trackingId'] = len(blocks)
     blocks.append(result_block)
     components.append(result_component)

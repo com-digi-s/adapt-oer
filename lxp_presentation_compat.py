@@ -4,6 +4,7 @@ Learning fingerprints remain unchanged. This module never writes sources or a
 registry, and never equates content by stripping presentation-looking keys.
 """
 from copy import deepcopy
+from html import unescape
 import hashlib
 import json
 import math
@@ -11,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import stat
+from urllib.parse import unquote
 
 from lxp_catalogue import PackageValidationError, canonical_bytes
 
@@ -257,6 +259,92 @@ def registered_proof_payloads(registrations, current_source, identity, fingerpri
                   "sha256": hashlib.sha256(raw).hexdigest(), "componentDisplayTitles": rows}
         result.append((relative, raw, record))
     return result
+
+
+def diagnostic_menu_asset_exclusions(full_source, learning_source, payloads, identity, fingerprint_fn):
+    """Omit newly introduced, proved menu-only raster files from quiz copies.
+
+    Never relax a diagnostic fingerprint. Historical files and all ambiguous
+    references stay in the copy. A proof records previous JSON, not a historical
+    file inventory: callers must still compare real diagnostic build hashes
+    before promising resume compatibility for a particular release.
+    """
+    if not payloads:
+        return frozenset()
+    # Recheck the exact frozen payloads, not just a presentation metadata flag.
+    try:
+        envelopes = [json.loads(raw) for _, raw, _ in payloads]
+    except (ValueError, TypeError) as error:
+        raise PackageValidationError('Presentation compatibility: invalid frozen proof JSON') from error
+    checked = registered_proof_payloads(
+        {identity['packageId']: {fingerprint_fn(learning_source): envelopes}},
+        learning_source, identity, fingerprint_fn)
+    _require(len(checked) == len(payloads) and all(
+        path == actual_path and raw == actual_raw and _same(record, actual_record)
+        for (path, raw, record), (actual_path, actual_raw, actual_record) in zip(checked, payloads)),
+        'frozen proof payload differs')
+    snapshot = _snapshot(full_source)
+    from lxp_diagnostics_articles import learning_source_view
+    _require(_same(_snapshot(learning_source_view(full_source)[0]), _snapshot(learning_source)),
+             'full raw source differs from the proved learning view')
+
+    def strings(value, path=()):
+        if isinstance(value, str):
+            yield path, unquote(unquote(unescape(value))).casefold()
+        elif isinstance(value, dict):
+            for key, child in value.items():
+                yield from strings(key, path + ('$key', key))
+                yield from strings(child, path + (key,))
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                yield from strings(child, path + (index,))
+
+    references = list(strings(snapshot))
+    historical = [text for envelope in envelopes for _, text in strings(envelope['previousSource'])]
+    menu = snapshot['course'].get('_boxMenu')
+    graphics = [(('course', '_boxMenu', '_graphic'), menu.get('_graphic') if isinstance(menu, dict) else None)]
+    graphics.extend((('data', 'contentObjects', index, '_graphic'), node.get('_graphic'))
+                    for index, node in enumerate(snapshot['data']['contentObjects']) if _source_key(node))
+    candidates = {}
+    for path, graphic in graphics:
+        if not _graphic(graphic):
+            continue
+        key = 'src' if 'src' in graphic else '_src'
+        url = graphic[key]
+        match = re.fullmatch(r'(course/' + re.escape(snapshot['language'])
+                            + r'/assets|assets)/([A-Za-z0-9_.-]+\.(?:png|jpe?g|gif|webp|avif))', url)
+        if match:
+            candidates.setdefault(url, set()).add(path + (key,))
+    build = Path(full_source['build'])
+    files = [file for file in build.rglob('*') if file.is_file()]
+    # Complete raw course JSON includes hidden/diagnostics-only questions. Also
+    # retain files mentioned by runtime code, CSS, SVG or ancillary content.
+    known_json = {'course/config.json', 'course/' + snapshot['language'] + '/course.json'}
+    known_json.update('course/' + snapshot['language'] + '/' + name + '.json' for name in _DATA)
+    runtime_text, size = [], 0
+    for file in files:
+        relative = file.relative_to(build).as_posix()
+        if relative in known_json or relative == 'imsmanifest.xml':
+            continue  # SCORM resource inventory is not a learner-content reference.
+        if file.suffix.lower() not in {'.json', '.js', '.css', '.html', '.htm', '.svg', '.txt', '.xml', '.vtt'}:
+            continue
+        size += file.stat().st_size
+        if size > 64 * 1024 * 1024 or file.is_symlink():
+            return frozenset()  # Uncertain/oversized source: keep the usual full copy.
+        runtime_text.append(unquote(unquote(unescape(file.read_text(encoding='utf-8', errors='replace')))).casefold())
+    excluded = set()
+    for url, permitted in candidates.items():
+        filename = url.rsplit('/', 1)[-1].casefold()
+        matches = [file for file in files if file.name.casefold() == filename]
+        expected = build / url
+        if len(matches) != 1 or matches[0] != expected or any(part.is_symlink() for part in (expected, *expected.parents)):
+            continue
+        if any(filename in text for text in historical + runtime_text):
+            continue
+        if any(filename in text and (path not in permitted or text != url.casefold()) for path, text in references):
+            continue
+        excluded.add(('course/' if url.startswith('course/') else 'root/') + expected.name)
+    return frozenset(excluded)
 
 
 def _read_proof(root, relative):
