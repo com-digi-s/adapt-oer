@@ -178,9 +178,56 @@ def _graphic(value):
             and all(isinstance(item, str) for item in value.values()))
 
 
-def _replay(previous, current):
+def _replay_legacy_aat_ui_republish(previous, current, identity):
+    """One audited legacy republish, not a general globals/config exemption.
+
+    The 2026-11-08 native build of this DigComp course removed old UI defaults.
+    Release inspection separately established that all 128 other files,
+    including runtime and CSS, are byte-identical. These eight JSON changes
+    affect labels, tooltips, responsive presentation and build metadata only.
+    This is an explicit UI-normalization exception, NOT a thumbnail change.
+    Never combine it with heading/graphic replay or accept a subset.
+    """
+    _require(identity["courseId"] == "6ae22a899986b0c258cb95a6", "legacy UI republish belongs to another course")
+    replayed = deepcopy(previous)
+    removals = (
+        (("config", "screenSize", "xlarge"), 1280),
+        (("course", "_globals", "_accessibility", "_ariaLabels", "optional"), "Optional"),
+        (("course", "_globals", "_accessibility", "_ariaLabels", "required"), "Required"),
+        (("course", "_globals", "_accessibility", "altFeedbackTitle"), "Feedback"),
+        (("course", "_globals", "_extensions", "_additionalResources"), {}),
+        (("course", "_globals", "_extensions", "_drawer"), {
+            "_navOrder": 100, "_navTooltip": {"_isEnabled": True, "text": "{{ariaLabel}}"}}),
+        (("course", "_globals", "_extensions", "_navigation"), {
+            "_skipButton": {"_navOrder": -100}, "_backButton": {"_navOrder": 0},
+            "_backNavTooltip": {"_isEnabled": True, "text": "{{ariaLabel}}"}, "_spacers": [{"_navOrder": 0}]}),
+    )
+    for path, expected in removals:
+        old, new = replayed, current
+        for key in path[:-1]:
+            _require(isinstance(old, dict) and isinstance(new, dict)
+                     and isinstance(old.get(key), dict) and isinstance(new.get(key), dict),
+                     "incomplete legacy UI republish containers")
+            old, new = old[key], new[key]
+        key = path[-1]
+        _require(key in old and _same(old[key], expected) and key not in new,
+                 "legacy UI republish requires all exact removals")
+        del old[key]
+    _require("_themePreset" not in previous["config"]
+             and current["config"].get("_themePreset") == "660c6033c240300006d0c110",
+             "legacy UI republish requires the exact added theme preset")
+    replayed["config"]["_themePreset"] = "660c6033c240300006d0c110"
+    _require(_same(replayed, current), "legacy UI republish contains another change")
+    return []
+
+
+def _replay(previous, current, identity):
     eligible = _eligible_titles(previous["data"])
     _graph(current["data"])
+    if identity["courseId"] == "6ae22a899986b0c258cb95a6" and (
+            not _same(previous["config"], current["config"])
+            or not _same(previous["course"].get("_globals"), current["course"].get("_globals"))):
+        return _replay_legacy_aat_ui_republish(previous, current, identity)
     replayed, rows = deepcopy(previous), []
     for name in _DATA:
         old_nodes, new_nodes = replayed["data"][name], current["data"][name]
@@ -214,7 +261,7 @@ def build_proof(previous_source, current_source, identity, fingerprint_fn):
     """Return (proof envelope, derived title rows); perform no filesystem writes."""
     previous, current, context = _snapshot(previous_source), _snapshot(current_source), _identity(identity)
     _require(callable(fingerprint_fn), "missing canonical fingerprint function")
-    rows = _replay(previous, current)
+    rows = _replay(previous, current, context)
     before, after = fingerprint_fn(previous), fingerprint_fn(current)
     _require(isinstance(before, str) and _SHA.fullmatch(before) and isinstance(after, str) and _SHA.fullmatch(after)
              and before != after, "invalid or redundant self fingerprint alias")
